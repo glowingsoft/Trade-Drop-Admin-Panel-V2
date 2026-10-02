@@ -1,9 +1,10 @@
-import { useState } from 'react';
 import { alpha, Box, Card, Chip, Grid, Stack, Typography } from '@mui/material';
+import { useState } from 'react';
 
 import { Iconify } from 'src/components/iconify';
 import { Image } from 'src/components/image';
 import { Lightbox } from 'src/components/lightbox';
+import { getDisplayImage } from 'src/constants/upload';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 export function PortfolioTab({ items = [] }) {
@@ -12,7 +13,10 @@ export function PortfolioTab({ items = [] }) {
     const [activeItem, setActiveItem] = useState(null);
     const [previewIndex, setPreviewIndex] = useState(0);
 
-    const slides = (activeItem?.images || []).map((img) => ({ src: img }));
+    const slides = (activeItem?.images?.length
+        ? activeItem.images
+        : [activeItem?.imageUrl].filter(Boolean)
+    ).map((img) => ({ src: img }));
 
     const handleOpenGallery = (item) => {
         setActiveItem(item);
@@ -31,11 +35,15 @@ export function PortfolioTab({ items = [] }) {
 
             {items.length > 0 ? (
                 <Grid container spacing={3}>
-                    {items.map((item) => (
+                    {items.map((item) => {
+                        const coverSrc = getDisplayImage(item.images?.[0] || item.imageUrl);
+
+                        return (
                         <Grid item xs={12} sm={6} md={4} key={item.id}>
                             <Card
                                 sx={{
                                     borderRadius: 2,
+                                    height: 1,
                                     boxShadow: (theme) => theme.customShadows?.z8,
                                     transition: (theme) =>
                                         theme.transitions.create(['box-shadow', 'transform'], {
@@ -53,15 +61,28 @@ export function PortfolioTab({ items = [] }) {
                                         position: 'relative',
                                         cursor: 'pointer',
                                         overflow: 'hidden',
+                                        width: 1,
+                                        aspectRatio: '4 / 3',
+                                        bgcolor: 'background.neutral',
                                     }}
                                     onClick={() => handleOpenGallery(item)}
                                 >
                                     <Image
                                         className="portfolio-cover-img"
-                                        src={item.images?.[0]}
-                                        ratio="4/3"
+                                        src={coverSrc}
                                         alt={item.title}
+                                        visibleByDefault
                                         sx={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            display: 'block',
+                                            width: 1,
+                                            height: 1,
+                                            '& img': {
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                            },
                                             transition: (theme) =>
                                                 theme.transitions.create('transform', {
                                                     duration: theme.transitions.duration.complex,
@@ -78,7 +99,7 @@ export function PortfolioTab({ items = [] }) {
                                         }}
                                     />
 
-                                    {item.images?.length > 1 && (
+                                    {(item.images?.length || 0) > 1 && (
                                         <Chip
                                             size="small"
                                             icon={<Iconify icon="solar:gallery-wide-bold" width={14} sx={{ color: 'common.black !important' }} />}
@@ -106,7 +127,7 @@ export function PortfolioTab({ items = [] }) {
                                     >
                                         <Chip
                                             size="small"
-                                            label={item.category}
+                                            label={item.category || item.tags?.[0] || '—'}
                                             sx={{
                                                 mb: 1,
                                                 color: 'common.white',
@@ -158,7 +179,8 @@ export function PortfolioTab({ items = [] }) {
                                 </Box>
                             </Card>
                         </Grid>
-                    ))}
+                        );
+                    })}
                 </Grid>
             ) : (
                 <Typography variant="body2" color="text.secondary">

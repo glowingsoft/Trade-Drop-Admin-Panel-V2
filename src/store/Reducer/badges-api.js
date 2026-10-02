@@ -30,7 +30,7 @@ export const badgesApi = createApi({
     updateBadge: builder.mutation({
       query: ({ id, ...body }) => ({
         url: API_ROUTES.BADGES_BY_ID(id),
-        method: 'PUT',
+        method: 'PATCH',
         body,
       }),
       invalidatesTags: ['badge'],

@@ -54,7 +54,7 @@ export function UserTableRow({ row, selected, onEditRow, serialNumber }) {
 
       <TableCell>
         <Stack spacing={2} direction="row" alignItems="center">
-          <Avatar alt={row.name} src={row.image} sx={{ width: 32, height: 32 }}>
+          <Avatar alt={row.name} src={row.image} sx={{ width: 32, height: 32, fontSize: 16 }}>
             {row.name?.charAt(0)}
           </Avatar>
 

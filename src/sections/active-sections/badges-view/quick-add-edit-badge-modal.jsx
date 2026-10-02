@@ -13,13 +13,21 @@ import { useEffect, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z as zod } from 'zod';
 
+import { WALLET_STATUS_OPTIONS } from 'src/_mock';
 import { Field, Form } from 'src/components/hook-form';
 import { toast } from 'src/components/snackbar';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_AVATAR_SIZE,
+  isImagePublicId,
+} from 'src/constants/upload';
 import { useAddBadgeMutation, useUpdateBadgeMutation } from 'src/store/Reducer/badges-api';
+import { useUploadFileMutation } from 'src/store/Reducer/upload-api';
 import { handleApiError } from 'src/utils/errorHandler';
+import { fData } from 'src/utils/format-number';
 
 const METRIC_OPTIONS = [
-  { value: 'user_registration_number', label: 'User registration number' },
+  // { value: 'user_registration_number', label: 'User registration number' },
   { value: 'completed_trades', label: 'Completed trades' },
   { value: 'founding_member', label: 'Founding member' },
 ];
@@ -32,12 +40,24 @@ const OPERATOR_OPTIONS = [
   { value: '<', label: '<' },
 ];
 
+const getBadgeStatus = (badge) =>
+  badge?.status === 'inactive' || badge?.isActive === false ? 'inactive' : 'active';
+
 const toSlug = (value) =>
   String(value || '')
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+
+const toImagePublicId = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  if (isImagePublicId(value)) return value.trim();
+  const marker = '/image/upload/';
+  const index = value.indexOf(marker);
+  if (index === -1) return '';
+  return value.slice(index + marker.length).replace(/^v\d+\//, '');
+};
 
 const schema = zod.object({
   name: zod.string().trim().min(1, 'Name is required'),
@@ -46,29 +66,29 @@ const schema = zod.object({
     .transform((value) => toSlug(value))
     .pipe(zod.string().min(1, 'Slug is required')),
   description: zod.string().trim().min(1, 'Description is required'),
-  icon: zod.string().trim().min(1, 'Icon is required'),
+  icon: zod
+    .any()
+    .refine(
+      (value) => value instanceof File || (typeof value === 'string' && value.trim().length > 0),
+      { message: 'Icon is required' }
+    )
+    .refine((value) => !(value instanceof File) || value.size <= MAX_AVATAR_SIZE, {
+      message: `Image size must be less than ${fData(MAX_AVATAR_SIZE)}`,
+    })
+    .refine((value) => !(value instanceof File) || ACCEPTED_IMAGE_TYPES.includes(value.type), {
+      message: 'Only PNG, JPG, JPEG, WEBP, AVIF and GIF images are allowed',
+    }),
   metric: zod.string().min(1, 'Metric is required'),
   operator: zod.string().min(1, 'Operator is required'),
   threshold: zod.coerce.number({ invalid_type_error: 'Threshold is required' }),
   sortOrder: zod.coerce.number({ invalid_type_error: 'Sort order is required' }).int().min(1, {
     message: 'Sort order must be at least 1',
   }),
-  isActive: zod.boolean(),
-});
-
-const buildPayload = (data) => ({
-  name: data.name.trim(),
-  slug: data.slug,
-  description: data.description.trim(),
-  icon: data.icon.trim(),
-  metric: data.metric,
-  operator: data.operator,
-  threshold: Number(data.threshold),
-  sortOrder: Number(data.sortOrder),
-  isActive: !!data.isActive,
+  status: zod.enum(['active', 'inactive']),
 });
 
 export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) {
+  const [uploadFile] = useUploadFileMutation();
   const [addBadge] = useAddBadgeMutation();
   const [updateBadge] = useUpdateBadgeMutation();
 
@@ -82,7 +102,7 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
       operator: currentBadge?.operator || '<=',
       threshold: currentBadge?.threshold ?? '',
       sortOrder: currentBadge?.sortOrder ?? '',
-      isActive: currentBadge?.isActive !== false,
+      status: getBadgeStatus(currentBadge),
     }),
     [currentBadge]
   );
@@ -118,7 +138,25 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const payload = buildPayload(data);
+      let icon = toImagePublicId(data.icon);
+
+      if (data.icon instanceof File) {
+        const uploadResponse = await uploadFile(data.icon).unwrap();
+        icon = uploadResponse?.data?.file;
+      }
+
+      const payload = {
+        name: data.name.trim(),
+        slug: data.slug,
+        description: data.description.trim(),
+        icon,
+        metric: data.metric,
+        operator: data.operator,
+        threshold: Number(data.threshold),
+        sortOrder: Number(data.sortOrder),
+        status: data.status === 'inactive' ? 'inactive' : 'active',
+      };
+
       const response = currentBadge
         ? await updateBadge({ id: currentBadge._id, ...payload }).unwrap()
         : await addBadge(payload).unwrap();
@@ -135,11 +173,12 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
       <Form methods={methods} onSubmit={onSubmit}>
         <DialogTitle>{currentBadge ? 'Edit Badge' : 'Add Badge'}</DialogTitle>
         <DialogContent>
-          <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Field.UploadImage name="icon" sx={{ mt: 1, mb: 2 }} />
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Field.Text name="name" label="Name" />
             <Field.Text name="slug" label="Slug" />
             <Field.Text name="description" label="Description" multiline rows={3} />
-            <Field.Text name="icon" label="Icon" placeholder="⭐" />
             <Field.Select name="metric" label="Metric">
               {METRIC_OPTIONS.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -156,7 +195,13 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
             </Field.Select>
             <Field.Text name="threshold" label="Threshold" type="number" />
             <Field.Text name="sortOrder" label="Sort Order" type="number" />
-            <Field.Switch name="isActive" label="Active" />
+            <Field.Select name="status" label="Status">
+              {WALLET_STATUS_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Field.Select>
           </Box>
         </DialogContent>
         <DialogActions>

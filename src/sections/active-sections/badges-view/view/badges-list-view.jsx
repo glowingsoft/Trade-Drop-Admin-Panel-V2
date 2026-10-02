@@ -38,7 +38,7 @@ const TABLE_HEAD = [
   { id: 'metric', label: 'Metric' },
   { id: 'operator', label: 'Operator', width: 100 },
   { id: 'threshold', label: 'Threshold', width: 120 },
-  { id: 'sortOrder', label: 'Sort Order', width: 120 },
+  { id: 'sortOrder', label: 'Sort Order', width: 150 },
   { id: 'status', label: 'Status' },
   { id: 'actions', label: 'Actions', width: 100 },
 ];
