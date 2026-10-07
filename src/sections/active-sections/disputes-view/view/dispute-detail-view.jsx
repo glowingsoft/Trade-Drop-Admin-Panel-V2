@@ -40,7 +40,7 @@ const PartyCard = ({ party, statement, evidence }) => (
   <Card sx={{ height: 1 }}>
     <CardContent>
       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
-        <Avatar>{party.initials}</Avatar>
+        <Avatar sx={{ width: 40, height: 40, fontSize: 16 }}>{party.initials}</Avatar>
         <Box>
           <Typography variant="subtitle1">{party.name}</Typography>
           <Typography variant="caption" color="text.secondary">

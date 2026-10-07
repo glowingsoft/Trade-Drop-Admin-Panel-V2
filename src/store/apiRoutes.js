@@ -46,6 +46,7 @@ export const API_ROUTES = {
     NOTIFICATIONS_SEND_BY_SEGMENTS: '/notifications/send-by-segments',
 
     DROPS_ALL: '/drops/all',
+    TAP_INS: '/tap-ins',
 
     BADGES: '/admin/badges',
     BADGES_BY_ID: (id) => `/admin/badges/${id}`,

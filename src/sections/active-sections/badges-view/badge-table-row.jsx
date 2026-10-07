@@ -41,7 +41,6 @@ export function BadgeTableRow({ row, serialNumber, onEditRow, onDeleteRow }) {
       <TableCell sx={{ whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{row.name || '—'}</TableCell>
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.slug || '—'}</TableCell>
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatMetric(row.metric)}</TableCell>
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.operator || '—'}</TableCell>
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.threshold ?? '—'}</TableCell>
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.sortOrder ?? '—'}</TableCell>
       <TableCell>

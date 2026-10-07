@@ -48,7 +48,7 @@ export function DisputeTableRow({ row, serialNumber, onViewRow }) {
           {statusOption?.label || row.status}
         </Label>
       </TableCell>
-      <TableCell>
+      {/* <TableCell>
         {row.assignee === 'Unassigned' ? (
           <Typography variant="body2" color="text.secondary">
             Unassigned
@@ -73,7 +73,7 @@ export function DisputeTableRow({ row, serialNumber, onViewRow }) {
         ) : (
           <Typography variant="body2">{row.slaLabel}</Typography>
         )}
-      </TableCell>
+      </TableCell> */}
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.openedLabel}</TableCell>
       <TableCell align="center" onClick={(event) => event.stopPropagation()}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>

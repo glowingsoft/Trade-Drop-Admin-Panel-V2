@@ -220,7 +220,7 @@ export function Section({ sx, layoutQuery, ...other }) {
             ))}
           </Stack>
 
-          <Stack
+          {/* <Stack
             direction="row"
             spacing={0.75}
             alignItems="center"
@@ -248,7 +248,7 @@ export function Section({ sx, layoutQuery, ...other }) {
             >
               Restricted access — authorized personnel only
             </Typography>
-          </Stack>
+          </Stack> */}
         </Box>
       </Box>
 

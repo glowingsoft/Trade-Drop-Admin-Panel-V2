@@ -32,14 +32,6 @@ const METRIC_OPTIONS = [
   { value: 'founding_member', label: 'Founding member' },
 ];
 
-const OPERATOR_OPTIONS = [
-  { value: '>=', label: '>=' },
-  { value: '>', label: '>' },
-  { value: '=', label: '=' },
-  { value: '<=', label: '<=' },
-  { value: '<', label: '<' },
-];
-
 const getBadgeStatus = (badge) =>
   badge?.status === 'inactive' || badge?.isActive === false ? 'inactive' : 'active';
 
@@ -65,7 +57,6 @@ const schema = zod.object({
     .string()
     .transform((value) => toSlug(value))
     .pipe(zod.string().min(1, 'Slug is required')),
-  description: zod.string().trim().min(1, 'Description is required'),
   icon: zod
     .any()
     .refine(
@@ -79,7 +70,6 @@ const schema = zod.object({
       message: 'Only PNG, JPG, JPEG, WEBP, AVIF and GIF images are allowed',
     }),
   metric: zod.string().min(1, 'Metric is required'),
-  operator: zod.string().min(1, 'Operator is required'),
   threshold: zod.coerce.number({ invalid_type_error: 'Threshold is required' }),
   sortOrder: zod.coerce.number({ invalid_type_error: 'Sort order is required' }).int().min(1, {
     message: 'Sort order must be at least 1',
@@ -96,10 +86,8 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
     () => ({
       name: currentBadge?.name || '',
       slug: currentBadge?.slug || toSlug(currentBadge?.name || ''),
-      description: currentBadge?.description || '',
       icon: currentBadge?.icon || '',
       metric: currentBadge?.metric || METRIC_OPTIONS[0].value,
-      operator: currentBadge?.operator || '<=',
       threshold: currentBadge?.threshold ?? '',
       sortOrder: currentBadge?.sortOrder ?? '',
       status: getBadgeStatus(currentBadge),
@@ -148,10 +136,9 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
       const payload = {
         name: data.name.trim(),
         slug: data.slug,
-        description: data.description.trim(),
         icon,
         metric: data.metric,
-        operator: data.operator,
+        operator: '=',
         threshold: Number(data.threshold),
         sortOrder: Number(data.sortOrder),
         status: data.status === 'inactive' ? 'inactive' : 'active',
@@ -178,16 +165,8 @@ export default function QuickAddEditBadgeModal({ currentBadge, open, onClose }) 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Field.Text name="name" label="Name" />
             <Field.Text name="slug" label="Slug" />
-            <Field.Text name="description" label="Description" multiline rows={3} />
             <Field.Select name="metric" label="Metric">
               {METRIC_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Field.Select>
-            <Field.Select name="operator" label="Operator">
-              {OPERATOR_OPTIONS.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>

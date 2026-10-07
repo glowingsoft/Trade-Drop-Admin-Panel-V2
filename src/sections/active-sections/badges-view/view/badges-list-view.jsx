@@ -36,7 +36,6 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Name' },
   { id: 'slug', label: 'Slug' },
   { id: 'metric', label: 'Metric' },
-  { id: 'operator', label: 'Operator', width: 100 },
   { id: 'threshold', label: 'Threshold', width: 120 },
   { id: 'sortOrder', label: 'Sort Order', width: 150 },
   { id: 'status', label: 'Status' },

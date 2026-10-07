@@ -169,7 +169,7 @@ function UserProfileView() {
 
       {value === 'drops' && <DropsListView ownerId={user.id} embedded />}
 
-      {value === 'tapHistory' && <TapTab droplist={user?.drops} />}
+      {value === 'tapHistory' && <TapTab applicantId={user.id} />}
 
       {value === 'reviews' && <ReviewTab toUserId={user.id} />}
 

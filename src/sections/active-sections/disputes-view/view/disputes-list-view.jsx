@@ -46,8 +46,8 @@ const TABLE_HEAD = [
   { id: 'trade', label: 'Trade', width: 120 },
   { id: 'priority', label: 'Priority', width: 120, align: 'center' },
   { id: 'status', label: 'Status', width: 140, align: 'center' },
-  { id: 'assignee', label: 'Assigned to', minWidth: 160 },
-  { id: 'sla', label: 'SLA', width: 120, align: 'center' },
+  // { id: 'assignee', label: 'Assigned to', minWidth: 160 },
+  // { id: 'sla', label: 'SLA', width: 120, align: 'center' },
   { id: 'opened', label: 'Opened', width: 120 },
   { id: 'actions', label: 'Actions', width: 80, align: 'center' },
 ];
@@ -213,7 +213,7 @@ export function DisputesListView() {
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {DISPUTE_STATS.map((stat) => (
-          <Grid key={stat.key} item xs={12} sm={6} md={3}>
+          <Grid key={stat.key} item xs={12} sm={6} md={4}>
             <DisputeStatCard
               title={stat.title}
               value={stat.value}

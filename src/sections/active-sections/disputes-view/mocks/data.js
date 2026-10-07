@@ -2,7 +2,7 @@ export const DISPUTE_STATS = [
   { key: 'open', title: 'Open', value: '9', color: 'warning', icon: 'solar:inbox-in-bold' },
   { key: 'under_review', title: 'Under review', value: '5', color: 'info', icon: 'solar:eye-bold' },
   { key: 'avg_resolve', title: 'Avg. time to resolve', value: '1.8 days', color: 'success', icon: 'solar:clock-circle-bold' },
-  { key: 'sla', title: 'SLA breaches', value: '2', color: 'error', icon: 'solar:danger-triangle-bold' },
+  // { key: 'sla', title: 'SLA breaches', value: '2', color: 'error', icon: 'solar:danger-triangle-bold' },
 ];
 
 export const DISPUTES = [
