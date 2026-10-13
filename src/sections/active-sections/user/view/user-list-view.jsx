@@ -200,7 +200,7 @@ export function UserListView() {
   return (
     <DashboardContent maxWidth={false}>
       <CustomBreadcrumbs
-        heading="List"
+        heading="Users"
         links={[
           { name: 'Dashboard', href: paths.adminDashboard.root },
           { name: 'Users', href: paths.adminDashboard.users.root },

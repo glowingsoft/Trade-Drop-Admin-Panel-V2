@@ -15,6 +15,7 @@ import { announcementsApi } from './Reducer/announcements-api';
 import { dropsApi } from './Reducer/drops-api';
 import { tapInsApi } from './Reducer/tapins-api';
 import { badgesApi } from './Reducer/badges-api';
+import { disputesApi } from './Reducer/disputes-api';
 
 const persistConfig = {
   key: 'root',
@@ -43,6 +44,7 @@ export const store = configureStore({
     [dropsApi.reducerPath]: dropsApi.reducer,
     [tapInsApi.reducerPath]: tapInsApi.reducer,
     [badgesApi.reducerPath]: badgesApi.reducer,
+    [disputesApi.reducerPath]: disputesApi.reducer,
     user: persistedUserReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -62,7 +64,8 @@ export const store = configureStore({
       announcementsApi.middleware,
       dropsApi.middleware,
       tapInsApi.middleware,
-      badgesApi.middleware
+      badgesApi.middleware,
+      disputesApi.middleware
     ),
 });
 

@@ -361,7 +361,7 @@ export function DropsListView({ ownerId, embedded = false }) {
   return (
     <DashboardContent maxWidth={false}>
       <CustomBreadcrumbs
-        heading="List"
+        heading="Drops"
         links={[{ name: 'Dashboard', href: paths.adminDashboard.root }, { name: 'Drops' }]}
         action={
           <Stack direction={{ md: 'row', xs: 'column' }} spacing={1.5}>

@@ -31,6 +31,7 @@ import {
 import { handleApiError } from 'src/utils/errorHandler';
 import QuickAddTimingChipModal from '../quick-add-timing-chip-modal';
 import { TimingChipTableRow } from '../timing-chip-table-row';
+import { DashboardContent } from 'src/layouts/dashboard';
 
 const TABLE_HEAD = [
   { id: 'sr', label: 'Sr#', width: 80 },
@@ -116,7 +117,7 @@ export function TimingChipsListView() {
 
   return (
     <>
-      <Box sx={{ px: { xs: 2, md: 6 }, pb: 5, pt: 3, display: 'flex', flexDirection: 'column' }}>
+      <DashboardContent maxWidth={false}>
         <CustomBreadcrumbs
           heading="Timing chips"
           links={[
@@ -189,7 +190,7 @@ export function TimingChipsListView() {
             rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
           />
         </Card>
-      </Box>
+      </DashboardContent>
 
       <QuickAddTimingChipModal
         currentChip={currentChip}

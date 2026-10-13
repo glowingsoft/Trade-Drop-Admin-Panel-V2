@@ -29,6 +29,7 @@ import { handleApiError } from 'src/utils/errorHandler';
 
 import { BadgeTableRow } from '../badge-table-row';
 import QuickAddEditBadgeModal from '../quick-add-edit-badge-modal';
+import { DashboardContent } from 'src/layouts/dashboard';
 
 const TABLE_HEAD = [
   { id: 'sr', label: 'Sr#', width: 80 },
@@ -120,7 +121,7 @@ export function BadgesListView() {
 
   return (
     <>
-      <Box sx={{ px: { xs: 2, md: 6 }, pb: 5, pt: 3, display: 'flex', flexDirection: 'column' }}>
+      <DashboardContent maxWidth={false}>
         <CustomBreadcrumbs
           heading="Badges"
           links={[
@@ -193,7 +194,7 @@ export function BadgesListView() {
             rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
           />
         </Card>
-      </Box>
+      </DashboardContent>
 
       <QuickAddEditBadgeModal
         currentBadge={currentBadge}

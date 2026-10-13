@@ -29,12 +29,14 @@ export function DisputeTableRow({ row, serialNumber, onViewRow }) {
   return (
     <TableRow hover tabIndex={-1} sx={{ cursor: 'pointer' }} onClick={onViewRow}>
       <TableCell>{serialNumber}</TableCell>
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.id}</TableCell>
+      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.tradeCode || '—'}</TableCell>
       <TableCell>{row.title}</TableCell>
       <TableCell sx={{ whiteSpace: 'nowrap' }}>
         {row.partyA.name} vs {row.partyB.name}
       </TableCell>
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.tradeId}</TableCell>
+      <TableCell>
+        <Typography variant="body2">{row.tradeSummary || '—'}</Typography>
+      </TableCell>
       <TableCell align="center">
         <Label variant="soft" color={priorityOption?.color || 'default'}>
           {priorityOption?.label || row.priority}
@@ -42,7 +44,7 @@ export function DisputeTableRow({ row, serialNumber, onViewRow }) {
       </TableCell>
       <TableCell align="center">
         <Label
-          variant={row.status === 'resolved' ? 'filled' : 'soft'}
+          variant={row.status === 'closed' ? 'filled' : 'soft'}
           color={statusOption?.color || 'default'}
         >
           {statusOption?.label || row.status}

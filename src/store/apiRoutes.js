@@ -50,4 +50,8 @@ export const API_ROUTES = {
 
     BADGES: '/admin/badges',
     BADGES_BY_ID: (id) => `/admin/badges/${id}`,
+
+    DISPUTES: '/disputes',
+    DISPUTES_BY_ID: (id) => `/disputes/${id}`,
+    DISPUTES_RESOLVE: (id) => `/disputes/${id}/resolve`,
 };

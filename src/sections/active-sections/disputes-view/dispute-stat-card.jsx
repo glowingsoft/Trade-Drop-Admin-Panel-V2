@@ -9,7 +9,7 @@ import { varAlpha } from 'src/theme/styles';
 
 export function DisputeStatCard({ title, value, color = 'primary', icon }) {
   const theme = useTheme();
-  const palette = theme.vars.palette[color];
+  const palette = theme.vars.palette[color] || theme.vars.palette.primary;
 
   return (
     <Card
