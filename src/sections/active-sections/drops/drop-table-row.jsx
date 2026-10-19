@@ -14,7 +14,7 @@ import { getDropStatusOption } from './drop-status';
 
 export function DropTableRow({ row, selected, onEditRow, serialNumber }) {
 
-    const actions =[
+    const actions = [
         {
             key: 'edit',
             icon: 'solar:pen-bold',
@@ -38,7 +38,7 @@ export function DropTableRow({ row, selected, onEditRow, serialNumber }) {
 
             <TableCell>
                 <Stack spacing={2} direction="row" alignItems="center">
-                    <Avatar alt={row.name} src={row.image}>
+                    <Avatar alt={row.name} src={row.image} sx={{ width: 32, height: 32, fontSize: 16 }}>
                         {row.name?.charAt(0)}
                     </Avatar>
 
@@ -88,11 +88,11 @@ export function DropTableRow({ row, selected, onEditRow, serialNumber }) {
                 </Label>
             </TableCell>
             {/* Actions */}
-            <TableCell align="center">
+            {/* <TableCell align="center">
                 <Box onClick={(event) => event.stopPropagation()} sx={{ display: 'flex', justifyContent: 'center' }}>
                     <GenericTableRowActions actions={actions} />
                 </Box>
-            </TableCell>
+            </TableCell> */}
         </TableRow>
     );
 }

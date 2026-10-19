@@ -17,6 +17,7 @@ export const API_ROUTES = {
     USERS_BY_ID: (id) => `/users/${id}`,
     ADMIN_USERS: '/admin/users',
     ADMIN_USERS_BY_ID: (id) => `/admin/users/${id}`,
+    ADMIN_USER_REVIEWS: '/admin/users/reviews',
 
     CATEGORIES: '/admin/catalog/categories',
     CATEGORIES_ALL: '/admin/catalog/categories/all',
@@ -24,6 +25,7 @@ export const API_ROUTES = {
     CATEGORIES_STATUS: (id) => `/admin/catalog/categories/${id}/status`,
     TIMING_CHIPS: '/admin/catalog/timing-chips',
     TIMING_CHIPS_BY_ID: (id) => `/admin/catalog/timing-chips/${id}`,
+    APP_SETTINGS: '/admin/catalog/app-settings',
 
     UPLOAD: '/upload',
 
@@ -44,7 +46,12 @@ export const API_ROUTES = {
     NOTIFICATIONS_SEND_BY_SEGMENTS: '/notifications/send-by-segments',
 
     DROPS_ALL: '/drops/all',
+    TAP_INS: '/tap-ins',
 
     BADGES: '/admin/badges',
     BADGES_BY_ID: (id) => `/admin/badges/${id}`,
+
+    DISPUTES: '/disputes',
+    DISPUTES_BY_ID: (id) => `/disputes/${id}`,
+    DISPUTES_RESOLVE: (id) => `/disputes/${id}/resolve`,
 };

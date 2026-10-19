@@ -5,8 +5,26 @@ import { createCustomFetchBaseQuery } from '../baseQuery';
 export const settingsApi = createApi({
   reducerPath: 'settingsApi',
   baseQuery: createCustomFetchBaseQuery(),
-  tagTypes: ['settings'],
+  tagTypes: ['settings', 'appSettings'],
   endpoints: (builder) => ({
+    getAppSettings: builder.query({
+      query: () => ({
+        url: API_ROUTES.APP_SETTINGS,
+        method: 'GET',
+      }),
+      transformResponse: (res) => res?.data ?? res,
+      providesTags: ['appSettings'],
+    }),
+
+    updateAppSettings: builder.mutation({
+      query: (body) => ({
+        url: API_ROUTES.APP_SETTINGS,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['appSettings'],
+    }),
+
     getTermsConditions: builder.query({
       query: () => ({
         url: API_ROUTES.SETTINGS_TERMS,
@@ -52,6 +70,8 @@ export const settingsApi = createApi({
 });
 
 export const {
+  useGetAppSettingsQuery,
+  useUpdateAppSettingsMutation,
   useGetTermsConditionsQuery,
   useGetAboutUsQuery,
   useGetPrivacyPolicyQuery,

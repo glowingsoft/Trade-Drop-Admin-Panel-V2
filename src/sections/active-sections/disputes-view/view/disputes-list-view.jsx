@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,6 +10,7 @@ import TableBody from '@mui/material/TableBody';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
+import { useDebounce } from 'src/hooks/use-debounce';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -27,27 +28,30 @@ import {
   useTable,
 } from 'src/components/table';
 
+import { useGetDisputesQuery } from 'src/store/Reducer/disputes-api';
+import { handleApiError } from 'src/utils/errorHandler';
 import { exportToCsv } from 'src/utils/export-to-csv';
+import { fToNow } from 'src/utils/format-time';
 
+import UserLoadingSkeleton from '../../user/user-loading-skeleton';
 import {
-  DISPUTE_ASSIGNEE_OPTIONS,
   DISPUTE_PRIORITY_OPTIONS,
   DISPUTE_STATUS_OPTIONS,
+  getDisputePriorityOption,
+  getDisputeReasonOption,
+  getDisputeStatusOption,
 } from '../dispute-status';
 import { DisputeStatCard } from '../dispute-stat-card';
 import { DisputeTableRow } from '../dispute-table-row';
-import { DISPUTE_STATS, DISPUTES } from '../mocks/data';
 
 const TABLE_HEAD = [
   { id: 'sr', label: 'Sr#', width: 60 },
   { id: 'id', label: 'ID', width: 100 },
   { id: 'title', label: 'Title', minWidth: 240 },
   { id: 'parties', label: 'Parties', minWidth: 200 },
-  { id: 'trade', label: 'Trade', width: 120 },
+  { id: 'trade', label: 'Trade', minWidth: 220 },
   { id: 'priority', label: 'Priority', width: 120, align: 'center' },
   { id: 'status', label: 'Status', width: 140, align: 'center' },
-  { id: 'assignee', label: 'Assigned to', minWidth: 160 },
-  { id: 'sla', label: 'SLA', width: 120, align: 'center' },
   { id: 'opened', label: 'Opened', width: 120 },
   { id: 'actions', label: 'Actions', width: 80, align: 'center' },
 ];
@@ -68,66 +72,100 @@ const FILTER_FIELDS = [
     label: 'Priority',
     options: [{ value: 'all', label: 'All' }, ...DISPUTE_PRIORITY_OPTIONS],
   }),
-  createFilterField.select({
-    key: 'assignee',
-    label: 'Assignee',
-    options: DISPUTE_ASSIGNEE_OPTIONS,
-  }),
 ];
 
 const DEFAULT_FILTERS = {
   search: '',
   status: 'all',
   priority: 'all',
-  assignee: 'all',
 };
 
 const EXPORT_HEADERS = [
-  { key: 'id', label: 'Dispute' },
+  { key: 'tradeCode', label: 'ID' },
   { key: 'title', label: 'Title' },
   { key: 'parties', label: 'Parties' },
-  { key: 'tradeId', label: 'Trade' },
+  { key: 'tradeSummary', label: 'Trade' },
   { key: 'priority', label: 'Priority' },
   { key: 'status', label: 'Status' },
-  { key: 'assignee', label: 'Assigned to' },
-  { key: 'slaLabel', label: 'SLA' },
   { key: 'openedLabel', label: 'Opened' },
 ];
 
+const PAGE_LIMIT = 10;
+
+const partyName = (party) => party?.name || '—';
+
+const getTradeSummary = (trade) => {
+  if (!trade || typeof trade === 'string') return '';
+
+  const drop = trade.dropIdDrop;
+  const tapIn = trade.tapInIdTapIn;
+  const dropLabel = [drop?.needText, drop?.offerText].filter(Boolean).join(' → ');
+
+  if (dropLabel) return dropLabel;
+  return tapIn?.yourOffer || drop?.areaLabel || '';
+};
+
+const mapDisputeRow = (dispute) => {
+  const reasonLabel = getDisputeReasonOption(dispute?.reason)?.label || dispute?.reason || '';
+  const trade = dispute?.tradeId;
+  const tradeCode =
+    typeof trade === 'string' ? trade : trade?.tradeCode || trade?._id || '—';
+
+  return {
+    id: dispute?._id,
+    title: dispute?.description || reasonLabel || '—',
+    partyA: { name: partyName(dispute?.raisedBy) },
+    partyB: { name: partyName(dispute?.against) },
+    tradeId: typeof trade === 'string' ? trade : trade?._id || '—',
+    tradeCode,
+    tradeSummary: getTradeSummary(trade),
+    priority: dispute?.priority || '',
+    status: dispute?.status || '',
+    openedLabel: dispute?.createdAt ? fToNow(dispute.createdAt) : '—',
+  };
+};
+
 export function DisputesListView() {
   const router = useRouter();
-  const table = useTable({ defaultRowsPerPage: 25, defaultDense: true });
+  const table = useTable({ defaultRowsPerPage: PAGE_LIMIT, defaultDense: true });
   const filters = useSetState(DEFAULT_FILTERS);
+  const keyword = useDebounce(filters.state.search, 500);
 
-  const filteredRows = useMemo(() => {
-    const keyword = filters.state.search.trim().toLowerCase();
+  const { data, isLoading, isFetching, error } = useGetDisputesQuery({
+    page: table.page,
+    limit: PAGE_LIMIT,
+    scope: 'all',
+    keyword: keyword.trim() || undefined,
+    status: filters.state.status === 'all' ? undefined : filters.state.status,
+    priority: filters.state.priority === 'all' ? undefined : filters.state.priority,
+  });
 
-    return DISPUTES.filter((row) => {
-      const matchesSearch =
-        !keyword ||
-        row.id.toLowerCase().includes(keyword) ||
-        row.title.toLowerCase().includes(keyword) ||
-        row.tradeId.toLowerCase().includes(keyword) ||
-        row.partyA.name.toLowerCase().includes(keyword) ||
-        row.partyB.name.toLowerCase().includes(keyword);
+  useEffect(() => {
+    if (error) handleApiError(error);
+  }, [error]);
 
-      const matchesStatus = filters.state.status === 'all' || row.status === filters.state.status;
-      const matchesPriority =
-        filters.state.priority === 'all' || row.priority === filters.state.priority;
-      const matchesAssignee =
-        filters.state.assignee === 'all' || row.assignee === filters.state.assignee;
+  const tableData = useMemo(() => (data?.data || []).map(mapDisputeRow), [data?.data]);
+  const totalRecords = data?.total_length || 0;
+  const statusStats = data?.meta?.stats?.status || {};
 
-      return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
-    });
-  }, [filters.state]);
-
-  const paginatedRows = useMemo(
-    () =>
-      filteredRows.slice(
-        table.page * table.rowsPerPage,
-        table.page * table.rowsPerPage + table.rowsPerPage
-      ),
-    [filteredRows, table.page, table.rowsPerPage]
+  const disputeStats = useMemo(
+    () => [
+      {
+        key: 'open',
+        title: 'Open',
+        value: statusStats.open ?? 0,
+        color: 'warning',
+        icon: 'solar:inbox-in-bold',
+      },
+      {
+        key: 'closed',
+        title: 'Closed',
+        value: statusStats.closed ?? statusStats.resolved ?? 0,
+        color: 'success',
+        icon: 'solar:check-circle-bold',
+      },
+    ],
+    [statusStats.open, statusStats.closed, statusStats.resolved]
   );
 
   const activeFilters = useMemo(
@@ -184,12 +222,14 @@ export function DisputesListView() {
     exportToCsv({
       filename: 'disputes',
       headers: EXPORT_HEADERS,
-      rows: filteredRows.map((row) => ({
+      rows: tableData.map((row) => ({
         ...row,
         parties: `${row.partyA.name} vs ${row.partyB.name}`,
+        priority: getDisputePriorityOption(row.priority)?.label || row.priority,
+        status: getDisputeStatusOption(row.status)?.label || row.status,
       })),
     });
-  }, [filteredRows]);
+  }, [tableData]);
 
   return (
     <DashboardContent maxWidth={false}>
@@ -212,8 +252,8 @@ export function DisputesListView() {
       />
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {DISPUTE_STATS.map((stat) => (
-          <Grid key={stat.key} item xs={12} sm={6} md={3}>
+        {disputeStats.map((stat) => (
+          <Grid key={stat.key} item xs={12} sm={6} md={4}>
             <DisputeStatCard
               title={stat.title}
               value={stat.value}
@@ -236,7 +276,7 @@ export function DisputesListView() {
         {activeFilters.length > 0 && (
           <FlexibleTableFiltersResult
             activeFilters={activeFilters}
-            totalResults={filteredRows.length}
+            totalResults={totalRecords}
             onResetFilters={handleReset}
             onRemoveFilter={handleRemoveFilter}
             sx={{ p: 2.5, pt: 0 }}
@@ -252,12 +292,14 @@ export function DisputesListView() {
                 headLabel={TABLE_HEAD}
               />
               <TableBody>
-                {paginatedRows.length > 0 ? (
-                  paginatedRows.map((row, index) => (
+                {isLoading || isFetching ? (
+                  <UserLoadingSkeleton />
+                ) : tableData.length > 0 ? (
+                  tableData.map((row, index) => (
                     <DisputeTableRow
                       key={row.id}
                       row={row}
-                      serialNumber={index + 1 + table.page * table.rowsPerPage}
+                      serialNumber={index + 1 + table.page * PAGE_LIMIT}
                       onViewRow={() => handleViewRow(row.id)}
                     />
                   ))
@@ -272,11 +314,11 @@ export function DisputesListView() {
         <TablePaginationCustom
           page={table.page}
           dense={table.dense}
-          count={filteredRows.length}
-          rowsPerPage={table.rowsPerPage}
+          count={totalRecords}
+          rowsPerPage={PAGE_LIMIT}
+          rowsPerPageOptions={[]}
           onPageChange={table.onChangePage}
           onChangeDense={table.onChangeDense}
-          onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
     </DashboardContent>

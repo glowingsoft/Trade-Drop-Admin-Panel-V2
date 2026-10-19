@@ -1,0 +1,136 @@
+name: CI/CD - Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Build
+        env:
+          ENV_FILE: ${{ secrets.REACT_ENV_FILE_PROD }}
+        run: |
+          set -e
+          trap 'rm -f .env' EXIT
+          printf '%s\n' "$ENV_FILE" > .env
+          npm install --no-audit --no-fund
+          CI=false npm run build
+          test -f dist/index.html
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 1
+
+  deploy:
+    name: Deploy Production
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+
+      - name: Setup SSH
+        env:
+          EC2_KEY: ${{ secrets.EC2_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$EC2_KEY" > ~/.ssh/ec2_key.pem
+          chmod 600 ~/.ssh/ec2_key.pem
+
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Package build
+        run: |
+          ZIP_NAME="build-${GITHUB_SHA::7}.zip"
+          echo "ZIP_NAME=$ZIP_NAME" >> "$GITHUB_ENV"
+          cd dist
+          zip -qr "../$ZIP_NAME" .
+
+      - name: Upload build
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          scp -i ~/.ssh/ec2_key.pem \
+            -o StrictHostKeyChecking=yes \
+            "$ZIP_NAME" \
+            "$EC2_USER@$EC2_HOST:/tmp/"
+
+      - name: Deploy with rollback
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/ec2_key.pem \
+            -o StrictHostKeyChecking=yes \
+            "$EC2_USER@$EC2_HOST" \
+            "bash -s -- '$ZIP_NAME'" <<'EOF'
+          set -Eeuo pipefail
+
+          ZIP_NAME="$1"
+          LIVE="/var/www/html"
+          BACKUP="/var/www/html-backups/current"
+          TEMP="/tmp/site-new-$RANDOM"
+
+          cleanup() {
+            sudo rm -rf "$TEMP"
+            sudo rm -f "/tmp/$ZIP_NAME"
+          }
+          trap cleanup EXIT
+
+          sudo mkdir -p /var/www/html-backups "$LIVE" "$TEMP"
+          sudo unzip -q "/tmp/$ZIP_NAME" -d "$TEMP"
+          test -f "$TEMP/index.html"
+
+          # Keep only one backup of the previous deployment.
+          sudo rm -rf "$BACKUP"
+          sudo mv "$LIVE" "$BACKUP"
+
+          # Deploy and restore the backup if deployment fails.
+          if sudo mv "$TEMP" "$LIVE" &&
+             sudo chown -R www-data:www-data "$LIVE"; then
+            echo "Production deployment successful."
+          else
+            sudo rm -rf "$LIVE"
+            sudo mv "$BACKUP" "$LIVE"
+            exit 1
+          fi
+          EOF
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/ec2_key.pem
+          rm -f "${ZIP_NAME:-}"

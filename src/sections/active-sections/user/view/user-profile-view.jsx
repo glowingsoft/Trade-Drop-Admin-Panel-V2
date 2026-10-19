@@ -1,87 +1,104 @@
+import { useEffect } from 'react';
 
 import { IconButton, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { EmptyContent } from 'src/components/empty-content';
 import { Iconify } from 'src/components/iconify';
-import { varAlpha } from 'src/theme/styles';
+import { LoadingScreen } from 'src/components/loading-screen';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useTabs } from 'src/hooks/use-tabs';
-import { useRouter } from 'src/routes/hooks';
+import { useParams } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import { DropsTab } from '../drops-tab';
-import { userDetail } from '../mocks/data';
+import { useGetUserByIdQuery } from 'src/store/Reducer/users-api';
+import { varAlpha } from 'src/theme/styles';
+import { handleApiError } from 'src/utils/errorHandler';
+
+import { DropsListView } from 'src/sections/active-sections/drops/view/drops-list-view';
+import { mapUserDetail } from '../map-user-detail';
+import { PortfolioTab } from '../portfolio-tab';
 import { ProfileCover } from '../profile-cover';
 import ProfileTab from '../profile-tab';
-import { PortfolioTab } from '../portfolio-tab';
 import { ReviewTab } from '../review-tab';
 import { TapTab } from '../tap-tab';
 import QuickStatusChangeModal from '../user-status-dialog';
-
-// ----------------------------------------------------------------------
 
 const TABS = [
   {
     value: 'profile',
     label: 'Profile',
-    icon: "solar:users-group-rounded-bold-duotone",
+    icon: 'solar:users-group-rounded-bold-duotone',
   },
   {
     value: 'portfolio',
     label: 'Portfolio',
-    icon: "solar:gallery-wide-bold-duotone",
+    icon: 'solar:gallery-wide-bold-duotone',
   },
   {
     value: 'drops',
     label: 'Drops',
-    icon: "boxicons:git-pull-request",
+    icon: 'boxicons:git-pull-request',
   },
   {
     value: 'tapHistory',
     label: 'Tap History',
-    icon: "fluent:cursor-click-20-filled",
+    icon: 'fluent:cursor-click-20-filled',
   },
   {
     value: 'reviews',
     label: 'Reviews',
-    icon: "eva:star-fill",
-  }
+    icon: 'eva:star-fill',
+  },
 ];
 
-// ----------------------------------------------------------------------
-
 function UserProfileView() {
-
-  const { value, onChange } = useTabs("profile");
-
-  const user = userDetail;
-
+  const { id } = useParams();
+  const { value, onChange } = useTabs('profile');
   const openModal = useBoolean();
 
-  const router = useRouter();
+  const { data, isLoading, error } = useGetUserByIdQuery(id, { skip: !id });
+
+  useEffect(() => {
+    if (error) handleApiError(error);
+  }, [error]);
+
+  const user = mapUserDetail(data);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (error || !data) {
+    return (
+      <Box sx={{ px: { xs: 2, md: 6 }, pb: 5, pt: 3 }}>
+        <CustomBreadcrumbs
+          heading="User Details"
+          links={[
+            { name: 'Dashboard', href: paths.adminDashboard.root },
+            { name: 'Users', href: paths.adminDashboard.users.root },
+            { name: 'User Details' },
+          ]}
+          sx={{ mb: { xs: 3, md: 3 } }}
+        />
+        <EmptyContent filled sx={{ py: 10 }} />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ px: { xs: 2, md: 6 }, pb: 5, pt: 3, display: 'flex', flexDirection: 'column' }}>
-
-      <Box sx={{ mb: 2 }}>
-        <Button
-          onClick={router.back}
-          startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}>
-          Back
-        </Button>
-      </Box>
-
+    <Box sx={{ px: { xs: 2, md: 5 }, pb: 5, pt: 1, display: 'flex', flexDirection: 'column' }}>
       <CustomBreadcrumbs
         heading="User Details"
         links={[
           { name: 'Dashboard', href: paths.adminDashboard.root },
           { name: 'Users', href: paths.adminDashboard.users.root },
-          { name: 'User Details' },
+          { name: user.kv?.name || 'User Details' },
         ]}
-        sx={{ mb: { xs: 3, md: 5 } }}
+        sx={{ mb: { xs: 3, md: 3 } }}
       />
 
       <Card sx={{ mb: 3, height: 320 }}>
@@ -92,18 +109,19 @@ function UserProfileView() {
           trustScore={user?.kv?.trust}
         />
 
-        <Box sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 1,
-          width: 1,
-          top: 20,
-          zIndex: 9,
-          px: { md: 3 },
-          position: 'absolute',
-        }}>
-
-           <Tooltip title="Edit" arrow placement='top'>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 1,
+            width: 1,
+            top: 20,
+            zIndex: 9,
+            px: { md: 3 },
+            position: 'absolute',
+          }}
+        >
+          <Tooltip title="Edit" arrow placement="top">
             <IconButton
               onClick={openModal.onTrue}
               sx={{
@@ -118,8 +136,6 @@ function UserProfileView() {
               <Iconify icon="solar:pen-bold" />
             </IconButton>
           </Tooltip>
-
-         
         </Box>
 
         <Box
@@ -151,20 +167,18 @@ function UserProfileView() {
 
       {value === 'portfolio' && <PortfolioTab items={user?.portfolioItems} />}
 
-      {value === 'drops' && <DropsTab droplist={user?.drops} />}
+      {value === 'drops' && <DropsListView ownerId={user.id} embedded />}
 
-      {value === 'tapHistory' && <TapTab droplist={user?.drops} />}
+      {value === 'tapHistory' && <TapTab applicantId={user.id} />}
 
-      {value === "reviews" && <ReviewTab reviews={user?.reviews} />}
+      {value === 'reviews' && <ReviewTab toUserId={user.id} />}
 
       <QuickStatusChangeModal
         open={openModal.value}
         onClose={openModal.onFalse}
-        currentUser={{}}
+        currentUser={{ id: user.id, status: user.kv?.status }}
       />
-
-
-    </Box >
+    </Box>
   );
 }
 

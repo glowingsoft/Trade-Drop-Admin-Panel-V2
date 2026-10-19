@@ -29,6 +29,7 @@ import { handleApiError } from 'src/utils/errorHandler';
 
 import { BadgeTableRow } from '../badge-table-row';
 import QuickAddEditBadgeModal from '../quick-add-edit-badge-modal';
+import { DashboardContent } from 'src/layouts/dashboard';
 
 const TABLE_HEAD = [
   { id: 'sr', label: 'Sr#', width: 80 },
@@ -36,9 +37,8 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Name' },
   { id: 'slug', label: 'Slug' },
   { id: 'metric', label: 'Metric' },
-  { id: 'operator', label: 'Operator', width: 100 },
   { id: 'threshold', label: 'Threshold', width: 120 },
-  { id: 'sortOrder', label: 'Sort Order', width: 120 },
+  { id: 'sortOrder', label: 'Sort Order', width: 150 },
   { id: 'status', label: 'Status' },
   { id: 'actions', label: 'Actions', width: 100 },
 ];
@@ -121,7 +121,7 @@ export function BadgesListView() {
 
   return (
     <>
-      <Box sx={{ px: { xs: 2, md: 6 }, pb: 5, pt: 3, display: 'flex', flexDirection: 'column' }}>
+      <DashboardContent maxWidth={false}>
         <CustomBreadcrumbs
           heading="Badges"
           links={[
@@ -194,7 +194,7 @@ export function BadgesListView() {
             rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
           />
         </Card>
-      </Box>
+      </DashboardContent>
 
       <QuickAddEditBadgeModal
         currentBadge={currentBadge}

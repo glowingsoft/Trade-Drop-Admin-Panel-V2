@@ -72,6 +72,7 @@ export function ProfileCover({ name, avatarUrl, city, trustScore }) {
             height: { xs: 64, md: 128 },
             border: `solid 3px ${varAlpha(theme.vars.palette.common.whiteChannel, 0.8)}`,
             boxShadow: `0 8px 24px ${varAlpha(theme.vars.palette.common.blackChannel, 0.24)}`,
+            fontSize: { xs: 24, md: 40 },
           }}
         >
           {name?.charAt(0).toUpperCase()}
@@ -91,7 +92,7 @@ export function ProfileCover({ name, avatarUrl, city, trustScore }) {
           >
             <Stack direction="row" spacing={0.5} alignItems="center" sx={{ opacity: 0.86 }}>
               <Iconify icon="solar:map-point-bold" width={16} />
-              <Typography variant="body2">{city}</Typography>
+              <Typography variant="body2">{city || '—'}</Typography>
             </Stack>
 
             <Stack
@@ -108,7 +109,7 @@ export function ProfileCover({ name, avatarUrl, city, trustScore }) {
             >
               <Iconify icon="solar:shield-star-bold" width={14} />
               <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                {`Trust score ${trustScore}`}
+                {`Trust score ${trustScore || '—'}`}
               </Typography>
             </Stack>
           </Stack>

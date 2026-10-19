@@ -8,7 +8,7 @@ export const dropsApi = createApi({
   tagTypes: ['drop'],
   endpoints: (builder) => ({
     getDrops: builder.query({
-      query: ({ page = 0, limit = 10, category, area, timingChip, status } = {}) => {
+      query: ({ page = 0, limit = 10, category, area, timingChip, status, ownerId } = {}) => {
         const params = {
           page: page + 1,
           limit,
@@ -17,6 +17,7 @@ export const dropsApi = createApi({
         if (area) params.area = area;
         if (timingChip) params.timingChip = timingChip;
         if (status) params.status = status;
+        if (ownerId) params.ownerId = ownerId;
         return {
           url: API_ROUTES.DROPS_ALL,
           method: 'GET',

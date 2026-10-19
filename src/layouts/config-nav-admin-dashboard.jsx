@@ -70,10 +70,10 @@ export const navDataAdmin = [
    * Overview
    */
   {
-    subheader: 'Overview',
+    subheader: 'Dashboard',
     items: [
       { title: 'Dashboard', path: paths.adminDashboard.root, icon: ICONS.dashboard },
-      { title: "Users", path: paths.adminDashboard.users.root, icon: ICONS.users },
+      { title: "Users", path: paths.adminDashboard.users.root, icon: ICONS.users, deepMatch: true },
       { title: "Drops", path: paths.adminDashboard.drops, icon: ICONS.request },
       { title: "Category", path: paths.adminDashboard.categories, icon: ICONS.category },
       { title: "Timing chips", path: paths.adminDashboard.timingChips, icon: ICONS.timingChips },

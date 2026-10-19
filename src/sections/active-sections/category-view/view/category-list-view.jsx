@@ -34,6 +34,7 @@ import { handleApiError } from 'src/utils/errorHandler';
 import { UserTableFiltersResult } from '../../user/user-table-filters-result';
 import { CategoryTableRow } from '../category-table-row';
 import QuickAddEditCategoryModal from '../quick-add-edit-category-modal';
+import { DashboardContent } from 'src/layouts/dashboard';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All', color: 'default' },
@@ -162,7 +163,7 @@ export function CategoryListView() {
 
   return (
     <>
-      <Box sx={{ px: { xs: 2, md: 6 }, pb: 5, pt: 3, display: 'flex', flexDirection: 'column' }}>
+      <DashboardContent maxWidth={false}>
         <CustomBreadcrumbs
           heading={` Categories`}
           links={[
@@ -258,7 +259,7 @@ export function CategoryListView() {
             rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
           />
         </Card>
-      </Box>
+      </DashboardContent>
 
       <QuickAddEditCategoryModal
         currentCategory={currentCategory}

@@ -61,7 +61,7 @@ const TABLE_HEAD = [
   { id: 'areas', label: 'Area', minWidth: 160 },
   { id: 'urgency', label: 'Urgency', width: 120, align: 'center' },
   { id: 'status', label: 'Status', width: 120, align: 'center' },
-  { id: 'actions', label: 'Actions', width: 100, align: 'center' },
+  // { id: 'actions', label: 'Actions', width: 100, align: 'center' },
 ];
 
 const DEFAULT_FILTERS = {
@@ -86,6 +86,20 @@ const mapSelectOptions = (items, getValue, getLabel) => {
   return options;
 };
 
+const mergeSelectOptions = (previous, nextItems, getValue, getLabel) => {
+  const next = mapSelectOptions(nextItems, getValue, getLabel);
+  if (next.length <= 1) return previous.length ? previous : next;
+
+  const byValue = new Map();
+  [...previous, ...next].forEach((option) => {
+    if (option?.value == null) return;
+    byValue.set(option.value, option);
+  });
+
+  const rest = [...byValue.values()].filter((option) => option.value !== ALL_OPTION.value);
+  return [ALL_OPTION, ...rest];
+};
+
 const mapDropRow = (drop) => ({
   id: drop?._id,
   title: [drop?.needText, drop?.offerText].filter(Boolean).join(' → '),
@@ -98,20 +112,24 @@ const mapDropRow = (drop) => ({
   status: drop?.status || '',
 });
 
-export function DropsListView() {
+export function DropsListView({ ownerId, embedded = false }) {
   const table = useTable({ defaultRowsPerPage: PAGE_LIMIT, defaultDense: true });
   const filters = useSetState(DEFAULT_FILTERS);
   const [currentDrop, setCurrentDrop] = useState(null);
   const openStatusChangeModal = useBoolean();
 
-  const { data, isLoading, isFetching, error } = useGetDropsQuery({
-    page: table.page,
-    limit: PAGE_LIMIT,
-    category: filters.state.categories === 'all' ? undefined : filters.state.categories,
-    area: filters.state.areas === 'all' ? undefined : filters.state.areas,
-    timingChip: filters.state.urgency === 'all' ? undefined : filters.state.urgency,
-    status: filters.state.status === 'all' ? undefined : filters.state.status,
-  });
+  const { data, isLoading, isFetching, error } = useGetDropsQuery(
+    {
+      page: table.page,
+      limit: PAGE_LIMIT,
+      category: filters.state.categories === 'all' ? undefined : filters.state.categories,
+      area: filters.state.areas === 'all' ? undefined : filters.state.areas,
+      timingChip: filters.state.urgency === 'all' ? undefined : filters.state.urgency,
+      status: filters.state.status === 'all' ? undefined : filters.state.status,
+      ownerId: ownerId || undefined,
+    },
+    { skip: embedded && !ownerId }
+  );
 
   useEffect(() => {
     if (error) handleApiError(error);
@@ -121,6 +139,35 @@ export function DropsListView() {
   const totalRecords = data?.total_length || 0;
   const statusCounts = data?.meta?.counts || {};
   const meta = data?.meta || {};
+
+  const [catalogFilters, setCatalogFilters] = useState({
+    categories: [ALL_OPTION],
+    areas: [ALL_OPTION],
+    timingChips: [ALL_OPTION],
+  });
+
+  useEffect(() => {
+    setCatalogFilters((previous) => ({
+      categories: mergeSelectOptions(
+        previous.categories,
+        meta.categories,
+        (item) => item._id,
+        (item) => item.name
+      ),
+      areas: mergeSelectOptions(
+        previous.areas,
+        meta.areas,
+        (item) => item.value,
+        (item) => item.label
+      ),
+      timingChips: mergeSelectOptions(
+        previous.timingChips,
+        meta.timingChips,
+        (item) => item._id,
+        (item) => item.label
+      ),
+    }));
+  }, [meta.areas, meta.categories, meta.timingChips]);
 
   const filterFields = useMemo(
     () => [
@@ -135,23 +182,23 @@ export function DropsListView() {
       createFilterField.select({
         key: 'categories',
         label: 'Categories',
-        options: mapSelectOptions(meta.categories, (item) => item._id, (item) => item.name),
+        options: catalogFilters.categories,
         defaultValue: 'all',
       }),
       createFilterField.select({
         key: 'areas',
         label: 'Areas',
-        options: mapSelectOptions(meta.areas, (item) => item.value, (item) => item.label),
+        options: catalogFilters.areas,
         defaultValue: 'all',
       }),
       createFilterField.select({
         key: 'urgency',
         label: 'Urgency',
-        options: mapSelectOptions(meta.timingChips, (item) => item._id, (item) => item.label),
+        options: catalogFilters.timingChips,
         defaultValue: 'all',
       }),
     ],
-    [meta.areas, meta.categories, meta.timingChips]
+    [catalogFilters]
   );
 
   const statusFilterField = useMemo(() => filterFields.find((field) => field.type === 'status'), [filterFields]);
@@ -231,32 +278,7 @@ export function DropsListView() {
     toast.success('Drops exported to PDF');
   }, [tableData]);
 
-  return (
-    <DashboardContent maxWidth={false}>
-      <CustomBreadcrumbs
-        heading="List"
-        links={[{ name: 'Dashboard', href: paths.adminDashboard.root }, { name: 'Drops' }]}
-        action={
-          <Stack direction={{ md: 'row', xs: 'column' }} spacing={1.5}>
-            <Button
-              variant="outlined"
-              startIcon={<Iconify icon="solar:export-bold" />}
-              onClick={handleExportCsv}
-            >
-              Export to CSV
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<Iconify icon="solar:file-bold" />}
-              onClick={handleExportPdf}
-            >
-              Export to PDF
-            </Button>
-          </Stack>
-        }
-        sx={{ mb: { xs: 3, md: 5 } }}
-      />
-
+  const tableCard = (
       <Card>
         <StatusTabsFilterWrapper
           filterField={statusFilterField}
@@ -330,6 +352,39 @@ export function DropsListView() {
           currentUser={currentDrop}
         />
       </Card>
+  );
+
+  if (embedded) {
+    return tableCard;
+  }
+
+  return (
+    <DashboardContent maxWidth={false}>
+      <CustomBreadcrumbs
+        heading="Drops"
+        links={[{ name: 'Dashboard', href: paths.adminDashboard.root }, { name: 'Drops' }]}
+        action={
+          <Stack direction={{ md: 'row', xs: 'column' }} spacing={1.5}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="solar:export-bold" />}
+              onClick={handleExportCsv}
+            >
+              Export to CSV
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="solar:file-bold" />}
+              onClick={handleExportPdf}
+            >
+              Export to PDF
+            </Button>
+          </Stack>
+        }
+        sx={{ mb: { xs: 3, md: 5 } }}
+      />
+
+      {tableCard}
     </DashboardContent>
   );
 }
