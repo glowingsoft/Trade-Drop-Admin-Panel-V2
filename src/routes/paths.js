@@ -2,7 +2,6 @@ import { paramCase } from 'src/utils/change-case';
 
 import { _id, _postTitles } from 'src/_mock/assets';
 
-// ----------------------------------------------------------------------
 
 const MOCK_ID = _id[1];
 
@@ -16,7 +15,6 @@ const ROOTS = {
   SUPER_ADMIN_DASHBOARD: '/super-admin-dashboard',
 };
 
-// ----------------------------------------------------------------------
 
 export const paths = {
   comingSoon: '/coming-soon',
@@ -96,7 +94,6 @@ export const paths = {
       verify: `${ROOTS.AUTH_DEMO}/centered/verify`,
     },
   },
-  // DASHBOARD
   dashboard: {
     root: ROOTS.DASHBOARD,
     mail: `${ROOTS.DASHBOARD}/mail`,
@@ -111,11 +108,7 @@ export const paths = {
     transactions: `${ROOTS.DASHBOARD}/transactions`,
     income: `${ROOTS.DASHBOARD}/category/income`,
     expense: `${ROOTS.DASHBOARD}/category/expense`,
-    // category: {
-    //   app: `${ROOTS.DASHBOARD}/app`,
-    //   income: `${ROOTS.DASHBOARD}/income`,
-    //   expense: `${ROOTS.DASHBOARD}/expense`,
-    // },
+
 
     general: {
       app: `${ROOTS.DASHBOARD}/app`,
@@ -197,14 +190,15 @@ export const paths = {
       },
     },
   },
-  // ADMIN DASHBOARD
   adminDashboard: {
     root: `${ROOTS.ADMIN_DASHBOARD}`,
     users: {
       root: `${ROOTS.ADMIN_DASHBOARD}/users`,
       details: (id) => `${ROOTS.ADMIN_DASHBOARD}/users/${id}`,
     },
-    drops:`${ROOTS.ADMIN_DASHBOARD}/drops`,
+    drops: `${ROOTS.ADMIN_DASHBOARD}/drops`,
+    circles: `${ROOTS.ADMIN_DASHBOARD}/circles`,
+    events: `${ROOTS.ADMIN_DASHBOARD}/events`,
     categories: `${ROOTS.ADMIN_DASHBOARD}/categories`,
     timingChips: `${ROOTS.ADMIN_DASHBOARD}/timing-chips`,
     badges: `${ROOTS.ADMIN_DASHBOARD}/badges`,
@@ -212,11 +206,11 @@ export const paths = {
     disputesDetails: (id) => `${ROOTS.ADMIN_DASHBOARD}/disputes/${id}`,
     notifications: `${ROOTS.ADMIN_DASHBOARD}/notifications`,
     cms: {
-      root:`${ROOTS.ADMIN_DASHBOARD}/cms`,
-      faqs:`${ROOTS.ADMIN_DASHBOARD}/cms/faqs`,
-      aboutUs:`${ROOTS.ADMIN_DASHBOARD}/cms/about`,
-      termsOfService:`${ROOTS.ADMIN_DASHBOARD}/cms/terms`,
-      privacyPolicy:`${ROOTS.ADMIN_DASHBOARD}/cms/privacy`,
+      root: `${ROOTS.ADMIN_DASHBOARD}/cms`,
+      faqs: `${ROOTS.ADMIN_DASHBOARD}/cms/faqs`,
+      aboutUs: `${ROOTS.ADMIN_DASHBOARD}/cms/about`,
+      termsOfService: `${ROOTS.ADMIN_DASHBOARD}/cms/terms`,
+      privacyPolicy: `${ROOTS.ADMIN_DASHBOARD}/cms/privacy`,
     },
     settings: `${ROOTS.ADMIN_DASHBOARD}/settings`,
     profile: `${ROOTS.ADMIN_DASHBOARD}/profile`,
