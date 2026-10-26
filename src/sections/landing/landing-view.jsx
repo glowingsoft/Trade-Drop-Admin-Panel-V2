@@ -531,10 +531,12 @@ export function LandingView() {
             sx={{
               mt: 5,
               display: 'grid',
+              width: '100%',
+              minWidth: 0,
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1.35fr 1fr 1fr' },
               gridAutoRows: { md: 'minmax(250px, auto)' },
-              columnGap: { xs: 3, md: 6 },
-              rowGap: { xs: 3, md: 4 },
+              columnGap: { md: 6 },
+              rowGap: { xs: 2.5, md: 4 },
             }}
           >
             {PRODUCT.map((item, index) => (
@@ -546,9 +548,11 @@ export function LandingView() {
                   gridRow: { lg: item.wide ? '1 / span 2' : 'auto' },
                   position: 'relative',
                   overflow: 'hidden',
+                  minWidth: 0,
+                  maxWidth: '100%',
                   borderRadius: '22px',
-                  height: { xs: item.wide ? 300 : 200, md: item.wide ? 420 : 230, lg: 'auto' },
-                  minHeight: { lg: item.wide ? '100%' : 250 },
+                  height: { xs: 'auto', md: item.wide ? 420 : 230, lg: 'auto' },
+                  minHeight: { xs: item.wide ? 280 : 0, lg: item.wide ? '100%' : 250 },
                   border: `1px solid ${line}`,
                   color: ink,
                   transition: 'transform 0.5s ease',
@@ -590,16 +594,21 @@ export function LandingView() {
                 )}
                 <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${copper}, transparent)` }} />
                 {!item.image && (
-                  <Typography sx={{ position: 'absolute', top: { xs: 12, md: 18 }, left: { xs: 18, md: 24 }, zIndex: 1, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(4.6rem, 6vw, 7rem)', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px rgba(244,240,230,0.7)', pointerEvents: 'none' }}>
+                  <Typography sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 18, left: 24, zIndex: 1, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(4.6rem, 6vw, 7rem)', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px rgba(244,240,230,0.7)', pointerEvents: 'none' }}>
                     0{index + 1}
                   </Typography>
                 )}
-                <Box sx={{ position: 'relative', zIndex: 1, height: '100%', minHeight: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', p: { xs: 2.5, md: 3 } }}>
+                <Box sx={{ position: 'relative', zIndex: 1, height: { md: '100%' }, minHeight: { md: 'inherit' }, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', p: { xs: 2, md: 3 } }}>
+                  {!item.image && (
+                    <Typography sx={{ display: { md: 'none' }, mb: 1, fontFamily: 'Impact, sans-serif', fontSize: '2.4rem', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px rgba(244,240,230,0.7)' }}>
+                      0{index + 1}
+                    </Typography>
+                  )}
                   {item.image && (
                     <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: '#F5E8C8' }}>0{index + 1}</Typography>
                   )}
-                  <Typography sx={{ mt: item.image ? 1 : 0, fontFamily: poster, fontSize: item.wide ? { xs: '34px', sm: '42px', lg: '48px' } : { xs: '26px', md: '30px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{item.title}</Typography>
-                  <Typography sx={{ mt: 1.25, color: 'rgba(244,240,230,0.86)', fontFamily: mono, fontSize: '13px', lineHeight: 1.65, maxWidth: 420 }}>{item.text}</Typography>
+                  <Typography sx={{ mt: item.image ? 1 : 0, maxWidth: '100%', fontFamily: poster, fontSize: item.wide ? { xs: '30px', sm: '42px', lg: '48px' } : { xs: '22px', md: '30px' }, lineHeight: 1.15, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{item.title}</Typography>
+                  <Typography sx={{ mt: 1.25, maxWidth: '100%', color: 'rgba(244,240,230,0.86)', fontFamily: mono, fontSize: { xs: '12px', md: '13px' }, lineHeight: 1.65 }}>{item.text}</Typography>
                 </Box>
               </Reveal>
             ))}
