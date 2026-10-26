@@ -33,7 +33,7 @@ const bg = '#0C0C0C';
 const raised = '#161616';
 const onGold = '#FFFFFF';
 const poster = 'Anton, "Arial Black", sans-serif !important';
-const headingTrack = '0.06em';
+const headingTrack = '0.02em';
 const mono = '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
 const NAV = [
