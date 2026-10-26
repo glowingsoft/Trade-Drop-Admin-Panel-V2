@@ -5,13 +5,9 @@ import { CONFIG } from 'src/config-global';
 import { SvgColor } from 'src/components/svg-color';
 import { SvgIcon } from '@mui/material';
 
-// ----------------------------------------------------------------------
 
 const icon = (name) => <SvgColor src={`${CONFIG.site.basePath}/assets/icons/navbar/${name}.svg`} />;
 
-// const icon = (name) => (
-//   <Iconify icon={name} />
-// );
 
 const ICONS = {
   job: icon('ic-job'),
@@ -50,10 +46,8 @@ const ICONS = {
   request: icon("ic-request")
 };
 
-// ----------------------------------------------------------------------
 
 let notification = <SvgIcon>
-  {/* https://icon-sets.iconify.design/solar/bell-bing-bold-duotone/ */}
   <path
     fill="currentColor"
     d="M18.75 9v.704c0 .845.24 1.671.692 2.374l1.108 1.723c1.011 1.574.239 3.713-1.52 4.21a25.794 25.794 0 0 1-14.06 0c-1.759-.497-2.531-2.636-1.52-4.21l1.108-1.723a4.393 4.393 0 0 0 .693-2.374V9c0-3.866 3.022-7 6.749-7s6.75 3.134 6.75 7"
@@ -66,14 +60,14 @@ let notification = <SvgIcon>
 </SvgIcon>
 
 export const navDataAdmin = [
-  /**
-   * Overview
-   */
+
   {
     subheader: 'Dashboard',
     items: [
       { title: 'Dashboard', path: paths.adminDashboard.root, icon: ICONS.dashboard },
       { title: "Users", path: paths.adminDashboard.users.root, icon: ICONS.users, deepMatch: true },
+      { title: "Circles", path: paths.adminDashboard.circles, icon: ICONS.chat },
+      { title: "Events", path: paths.adminDashboard.events, icon: ICONS.calendar },
       { title: "Drops", path: paths.adminDashboard.drops, icon: ICONS.request },
       { title: "Category", path: paths.adminDashboard.categories, icon: ICONS.category },
       { title: "Timing chips", path: paths.adminDashboard.timingChips, icon: ICONS.timingChips },

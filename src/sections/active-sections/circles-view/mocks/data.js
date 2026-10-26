@@ -1,0 +1,38 @@
+export const CIRCLES = [
+  {
+    id: '1',
+    name: 'NYC Film Photographers',
+    category: 'Photography',
+    visibility: 'public',
+    location: 'New York, US',
+    members: 184,
+    status: 'active',
+  },
+  {
+    id: '2',
+    name: 'Editorial Stylists Collective',
+    category: 'Styling',
+    visibility: 'private',
+    location: 'London, UK',
+    members: 62,
+    status: 'active',
+  },
+  {
+    id: '3',
+    name: 'Golden Hour Portraits',
+    category: 'Photography',
+    visibility: 'public',
+    location: 'Los Angeles, US',
+    members: 97,
+    status: 'reviewing',
+  },
+  {
+    id: '4',
+    name: 'Braid & Color Studio',
+    category: 'Hair & Color',
+    visibility: 'public',
+    location: 'Toronto, CA',
+    members: 41,
+    status: 'active',
+  },
+];
