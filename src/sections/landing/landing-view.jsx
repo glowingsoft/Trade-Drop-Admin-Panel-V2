@@ -278,8 +278,24 @@ function Header() {
   };
 
   return (
-    <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 30, bgcolor: 'rgba(12,12,12,0.92)', backdropFilter: 'blur(16px)' }}>
-      <Stack direction="row" alignItems="center" sx={{ ...wrap, position: 'relative', height: 72, gap: 2 }}>
+    <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 30, overflow: 'hidden', bgcolor: 'rgba(12,12,12,0.92)', backdropFilter: 'blur(16px)' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          width: { xs: '78%', md: '46%' },
+          height: '220%',
+          transform: 'translate(-50%, -50%)',
+          borderRadius: '50%',
+          background: 'radial-gradient(ellipse at center, rgba(245,232,200,0.5) 0%, rgba(217,185,106,0.36) 24%, rgba(184,146,61,0.2) 48%, rgba(138,107,37,0.06) 68%, transparent 78%)',
+          filter: 'blur(12px)',
+          pointerEvents: 'none',
+          animation: 'glowBreath 8s ease-in-out infinite',
+          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+        }}
+      />
+      <Stack direction="row" alignItems="center" sx={{ ...wrap, position: 'relative', zIndex: 1, height: 72, gap: 2 }}>
         <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', mr: 'auto' }}>
           <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 34, sm: 44 }, width: 'auto', mixBlendMode: 'screen' }} />
         </Box>
@@ -307,7 +323,7 @@ function Header() {
         </IconButton>
       </Stack>
       {open && (
-        <Stack spacing={1.5} sx={{ ...wrap, pb: 2, display: { md: 'none' } }}>
+        <Stack spacing={1.5} sx={{ ...wrap, position: 'relative', zIndex: 1, pb: 2, display: { md: 'none' } }}>
           {NAV.map((item) => (
             <Box key={item.id} component="button" type="button" onClick={() => go(item.id)} sx={{ border: 0, p: 0, textAlign: 'left', bgcolor: 'transparent', color: ink, fontSize: 16, cursor: 'pointer' }}>
               {item.label}
@@ -733,8 +749,35 @@ export function LandingView() {
         </Box>
       </Box>
 
-      <Box id="circles" sx={{ ...pad, bgcolor: '#080808' }}>
-        <Box sx={wrap}>
+      <Box
+        id="circles"
+        sx={{
+          ...pad,
+          position: 'relative',
+          overflow: 'hidden',
+          bgcolor: '#080808',
+          '@keyframes glowCorner': {
+            '0%, 100%': { transform: 'translate(22%, 0) scale(1)', opacity: 0.75 },
+            '50%': { transform: 'translate(22%, 0) scale(1.08)', opacity: 1 },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 96, md: 140 },
+            right: 0,
+            width: { xs: 280, md: 460 },
+            height: { xs: 280, md: 460 },
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.32) 24%, rgba(184,146,61,0.18) 48%, rgba(138,107,37,0.06) 70%, transparent 78%)',
+            filter: 'blur(10px)',
+            pointerEvents: 'none',
+            animation: 'glowCorner 8s ease-in-out infinite',
+            '@media (prefers-reduced-motion: reduce)': { animation: 'none', transform: 'translate(22%, 0)' },
+          }}
+        />
+        <Box sx={{ ...wrap, position: 'relative', zIndex: 1 }}>
           <Reveal>
             <Kicker>Membership</Kicker>
             <Title>Circles with a door policy.</Title>
@@ -751,6 +794,7 @@ export function LandingView() {
                   rowGap: 1,
                   alignItems: 'center',
                   py: { xs: 3, md: 4 },
+                  px: { xs: 2, md: 3 },
                   borderTop: `1px solid ${line}`,
                   borderBottom: index === CIRCLES.length - 1 ? `1px solid ${line}` : 'none',
                   background: circle.access === 'Private' ? 'linear-gradient(90deg, rgba(184,146,61,0.16), transparent 55%)' : 'transparent',
