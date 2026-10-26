@@ -424,87 +424,87 @@ export function LandingView() {
             minHeight: { md: 620, lg: '82vh' },
           }}
         >
-        <Typography
-          aria-hidden
-          sx={{
-            display: { xs: 'none', lg: 'block' },
-            position: 'absolute',
-            left: '28%',
-            top: '46%',
-            transform: 'translateY(-50%)',
-            m: 0,
-            fontFamily: 'Impact, sans-serif',
-            fontSize: 'clamp(8rem, 16vw, 14rem)',
-            lineHeight: 0.8,
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-            color: 'transparent',
-            WebkitTextStroke: '1px rgba(184,146,61,0.28)',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            zIndex: 0,
-            animation: 'strokePulse 7s ease-in-out infinite',
-            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-          }}
-        >
-          Drop
-        </Typography>
-
-        <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: { xs: 5, md: 8 }, pr: { lg: 3 } }}>
-          <Typography sx={{ fontFamily: mono, fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper, ...rise(0.05, heroOn) }}>
-            For people who trade the work
-          </Typography>
-
-          <Box
-            component="h1"
+          <Typography
+            aria-hidden
             sx={{
+              display: { xs: 'none', lg: 'block' },
+              position: 'absolute',
+              left: '28%',
+              top: '46%',
+              transform: 'translateY(-50%)',
               m: 0,
-              pt: { xs: 2, md: 2.5 },
               fontFamily: 'Impact, sans-serif',
-              fontWeight: 400,
-              fontSize: { xs: 'clamp(2.7rem, 15vw, 4rem)', sm: 'clamp(3.5rem, 11vw, 5.6rem)', md: 'clamp(3.6rem, 6.2vw, 6.4rem)', lg: 'clamp(3.8rem, 7vw, 8.8rem)' },
-              lineHeight: 1,
+              fontSize: 'clamp(8rem, 16vw, 14rem)',
+              lineHeight: 0.8,
               letterSpacing: '0.02em',
               textTransform: 'uppercase',
+              color: 'transparent',
+              WebkitTextStroke: '1px rgba(184,146,61,0.28)',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              zIndex: 0,
+              animation: 'strokePulse 7s ease-in-out infinite',
+              '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
             }}
           >
-            <Box component="span" sx={{ display: 'block', color: '#f3efe6', ...rise(0.12, heroOn) }}>
-              Trade
-            </Box>
-            <Box component="span" sx={{ display: 'block', color: copper, ...rise(0.24, heroOn) }}>
-              Your
-            </Box>
-            <Box component="span" sx={{ display: 'block', color: 'transparent', WebkitTextStroke: '0.035em #6d645e', ...rise(0.36, heroOn) }}>
-              Craft.
-            </Box>
-          </Box>
-
-          <Typography sx={{ maxWidth: 520, mt: { xs: 3, md: 4 }, color: muted, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, ...rise(0.48, heroOn) }}>
-            A photographer needs styling. A designer needs the still. Post both sides, agree once, and keep the client. No fee.
+            Drop
           </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5, ...rise(0.6, heroOn) }}>
-            <Button component={RouterLink} href={paths.auth.jwt.signUp} variant="contained" sx={{ bgcolor: copper, color: onGold, borderRadius: 10, px: 3, minHeight: 48, boxShadow: 'none', '&:hover': { bgcolor: copperDeep, boxShadow: 'none' } }}>
-              Sign Up
-            </Button>
-            <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', borderRadius: 10, px: 3, minHeight: 48, border: '1px solid rgba(255,255,255,0.35)', textDecoration: 'none', '&:hover': { borderColor: '#FFFFFF', bgcolor: 'transparent', textDecoration: 'none' } }}>
-              Login
-            </Button>
-          </Stack>
-        </Box>
 
-        <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, minHeight: { md: '100%' } }}>
-          <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 28, right: { md: 0, lg: 28 }, bottom: 52, left: { md: 36, lg: 56 }, border: `1px solid ${copper}`, ...rise(0.2, heroOn) }} />
-          <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, height: { xs: 320, sm: 400, md: 'auto' }, overflow: { md: 'hidden' } }}>
-            <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: { xs: 'contain', md: 'cover' }, objectPosition: 'center', animation: { md: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none' }, '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
-          </Box>
-          <Box sx={{ position: { xs: 'relative', md: 'absolute' }, left: { md: 0 }, right: { md: 20, lg: 64 }, bottom: { md: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 0, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
-            <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: copper }}>Open drop · New York</Typography>
-            <Typography sx={{ mt: 0.75, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.5rem, 2vw, 2rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-              Styling for a fall lookbook
+          <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: { xs: 5, md: 8 }, pr: { lg: 3 } }}>
+            <Typography sx={{ fontFamily: mono, fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper, ...rise(0.05, heroOn) }}>
+              For people who trade the work
             </Typography>
-            <Typography sx={{ mt: 1, fontFamily: mono, fontSize: '13px', color: muted }}>Half a day of portraits</Typography>
+
+            <Box
+              component="h1"
+              sx={{
+                m: 0,
+                pt: { xs: 2, md: 2.5 },
+                fontFamily: 'Impact, sans-serif',
+                fontWeight: 400,
+                fontSize: { xs: 'clamp(2.7rem, 15vw, 4rem)', sm: 'clamp(3.5rem, 11vw, 5.6rem)', md: 'clamp(3.6rem, 6.2vw, 6.4rem)', lg: 'clamp(3.8rem, 7vw, 8.8rem)' },
+                lineHeight: 1,
+                letterSpacing: '0.02em',
+                textTransform: 'uppercase',
+              }}
+            >
+              <Box component="span" sx={{ display: 'block', color: '#f3efe6', ...rise(0.12, heroOn) }}>
+                Trade
+              </Box>
+              <Box component="span" sx={{ display: 'block', color: copper, ...rise(0.24, heroOn) }}>
+                Your
+              </Box>
+              <Box component="span" sx={{ display: 'block', color: 'transparent', WebkitTextStroke: '0.035em #6d645e', ...rise(0.36, heroOn) }}>
+                Craft.
+              </Box>
+            </Box>
+
+            <Typography sx={{ maxWidth: 520, mt: { xs: 3, md: 4 }, color: muted, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, ...rise(0.48, heroOn) }}>
+              A photographer needs styling. A designer needs the still. Post both sides, agree once, and keep the client. No fee.
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5, ...rise(0.6, heroOn) }}>
+              <Button component={RouterLink} href={paths.auth.jwt.signUp} variant="contained" sx={{ bgcolor: copper, color: onGold, borderRadius: 10, px: 3, minHeight: 48, boxShadow: 'none', '&:hover': { bgcolor: copperDeep, boxShadow: 'none' } }}>
+                Sign Up
+              </Button>
+              <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', borderRadius: 10, px: 3, minHeight: 48, border: '1px solid rgba(255,255,255,0.35)', textDecoration: 'none', '&:hover': { borderColor: '#FFFFFF', bgcolor: 'transparent', textDecoration: 'none' } }}>
+                Login
+              </Button>
+            </Stack>
           </Box>
-        </Box>
+
+          <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, minHeight: { md: '100%' } }}>
+            <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 28, right: { md: 0, lg: 28 }, bottom: 52, left: { md: 36, lg: 56 }, border: `8px solid ${copper}`, ...rise(0.2, heroOn) }} />
+            <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, height: { xs: 320, sm: 400, md: 'auto' }, overflow: { md: 'hidden' } }}>
+              <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: { xs: 'contain', md: 'cover' }, objectPosition: 'center', animation: { md: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none' }, '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
+            </Box>
+            <Box sx={{ position: { xs: 'relative', md: 'absolute' }, left: { md: 0 }, right: { md: 20, lg: 64 }, bottom: { md: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 0, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
+              <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: copper }}>Open drop · New York</Typography>
+              <Typography sx={{ mt: 0.75, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.5rem, 2vw, 2rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                Styling for a fall lookbook
+              </Typography>
+              <Typography sx={{ mt: 1, fontFamily: mono, fontSize: '13px', color: muted }}>Half a day of portraits</Typography>
+            </Box>
+          </Box>
         </Box>
       </Box>
 
@@ -909,12 +909,12 @@ export function LandingView() {
               }}
             />
             <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            {QUESTIONS.map((item, index) => (
-              <Reveal key={item.q} delay={(index % 2) * 80} sx={{ position: 'relative', zIndex: 1, p: 3, borderRadius: 3, border: `1px solid ${line}`, transition: 'border-color 0.4s ease, transform 0.45s ease', '&:hover': { borderColor: copper, transform: 'translateY(-6px)' } }}>
-                <Typography sx={{ fontFamily: poster, fontSize: 26, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{item.q}</Typography>
-                <Typography sx={{ mt: 1, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7 }}>{item.a}</Typography>
-              </Reveal>
-            ))}
+              {QUESTIONS.map((item, index) => (
+                <Reveal key={item.q} delay={(index % 2) * 80} sx={{ position: 'relative', zIndex: 1, p: 3, borderRadius: 3, border: `1px solid ${line}`, transition: 'border-color 0.4s ease, transform 0.45s ease', '&:hover': { borderColor: copper, transform: 'translateY(-6px)' } }}>
+                  <Typography sx={{ fontFamily: poster, fontSize: 26, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{item.q}</Typography>
+                  <Typography sx={{ mt: 1, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7 }}>{item.a}</Typography>
+                </Reveal>
+              ))}
             </Box>
           </Box>
         </Box>
@@ -975,14 +975,14 @@ export function LandingView() {
 
       <Box component="footer" sx={{ py: 3 }}>
         <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr auto 1fr' }, justifyItems: { xs: 'center', sm: 'stretch' }, alignItems: 'center', rowGap: 1.5, columnGap: 2 }}>
-        <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', justifySelf: { xs: 'center', sm: 'start' } }}>
-          <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 32, md: 40 }, width: 'auto', mixBlendMode: 'screen' }} />
-        </Box>
-        <Typography sx={{ fontFamily: mono, fontSize: { xs: '11px', md: '12px' }, color: faint, textAlign: 'center' }}>© 2026 TradeDrop. All rights reserved.</Typography>
-        <Stack direction="row" spacing={2} sx={{ justifySelf: { xs: 'center', sm: 'end' } }}>
-          <Box component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Login</Box>
-          <Box component={RouterLink} href={paths.auth.jwt.signUp} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Sign up</Box>
-        </Stack>
+          <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', justifySelf: { xs: 'center', sm: 'start' } }}>
+            <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 32, md: 40 }, width: 'auto', mixBlendMode: 'screen' }} />
+          </Box>
+          <Typography sx={{ fontFamily: mono, fontSize: { xs: '11px', md: '12px' }, color: faint, textAlign: 'center' }}>© 2026 TradeDrop. All rights reserved.</Typography>
+          <Stack direction="row" spacing={2} sx={{ justifySelf: { xs: 'center', sm: 'end' } }}>
+            <Box component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Login</Box>
+            <Box component={RouterLink} href={paths.auth.jwt.signUp} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Sign up</Box>
+          </Stack>
         </Box>
       </Box>
     </Box>
