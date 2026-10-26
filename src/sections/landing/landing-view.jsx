@@ -478,8 +478,8 @@ export function LandingView() {
 
         <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, minHeight: { md: '100%' } }}>
           <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 28, right: { md: 0, lg: 28 }, bottom: 52, left: { md: 36, lg: 56 }, border: `1px solid ${copper}`, ...rise(0.2, heroOn) }} />
-          <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, height: { xs: 320, sm: 440, md: 'auto' }, overflow: 'hidden' }}>
-            <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', animation: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
+          <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, height: { xs: 320, sm: 400, md: 'auto' }, overflow: { md: 'hidden' } }}>
+            <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: { xs: 'contain', md: 'cover' }, objectPosition: 'center', animation: { md: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none' }, '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
           </Box>
           <Box sx={{ position: { xs: 'relative', md: 'absolute' }, left: { md: 0 }, right: { md: 20, lg: 64 }, bottom: { md: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 0, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
             <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: copper }}>Open drop · New York</Typography>
