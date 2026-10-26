@@ -299,14 +299,14 @@ function Header() {
         <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', mr: 'auto' }}>
           <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 34, sm: 44 }, width: 'auto', mixBlendMode: 'screen' }} />
         </Box>
-        <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', md: 'flex' }, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+        <Stack direction="row" spacing={2.5} sx={{ display: { xs: 'none', md: 'flex' }, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           {NAV.map((item) => (
             <Box
               key={item.id}
               component="button"
               type="button"
               onClick={() => go(item.id)}
-              sx={{ border: 0, p: 0, bgcolor: 'transparent', color: muted, cursor: 'pointer', fontSize: 14, '&:hover': { color: ink } }}
+              sx={{ border: 0, p: 0, bgcolor: 'transparent', color: muted, cursor: 'pointer', fontSize: 17, '&:hover': { color: ink } }}
             >
               {item.label}
             </Box>
@@ -325,7 +325,7 @@ function Header() {
       {open && (
         <Stack spacing={1.5} sx={{ ...wrap, position: 'relative', zIndex: 1, pb: 2, display: { md: 'none' } }}>
           {NAV.map((item) => (
-            <Box key={item.id} component="button" type="button" onClick={() => go(item.id)} sx={{ border: 0, p: 0, textAlign: 'left', bgcolor: 'transparent', color: ink, fontSize: 16, cursor: 'pointer' }}>
+            <Box key={item.id} component="button" type="button" onClick={() => go(item.id)} sx={{ border: 0, p: 0, textAlign: 'left', bgcolor: 'transparent', color: ink, fontSize: 18, cursor: 'pointer' }}>
               {item.label}
             </Box>
           ))}
