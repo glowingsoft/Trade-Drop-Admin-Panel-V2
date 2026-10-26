@@ -33,6 +33,7 @@ const bg = '#0C0C0C';
 const raised = '#161616';
 const onGold = '#FFFFFF';
 const poster = 'Anton, "Arial Black", sans-serif !important';
+const headingTrack = '0.06em';
 const mono = '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
 const NAV = [
@@ -204,7 +205,7 @@ function ToneWords({ children }) {
 
 function Title({ children, sx }) {
   return (
-    <Typography sx={{ fontFamily: poster, fontWeight: 400, fontSize: { xs: 44, md: 68 }, lineHeight: 0.86, letterSpacing: '0.01em', textTransform: 'uppercase', ...sx }}>
+    <Typography sx={{ fontFamily: poster, fontWeight: 400, fontSize: { xs: 34, sm: 46, md: 60, lg: 68 }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', ...sx }}>
       <ToneWords>{children}</ToneWords>
     </Typography>
   );
@@ -280,7 +281,7 @@ function Header() {
     <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 30, bgcolor: 'rgba(12,12,12,0.92)', backdropFilter: 'blur(16px)' }}>
       <Stack direction="row" alignItems="center" sx={{ ...wrap, position: 'relative', height: 72, gap: 2 }}>
         <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', mr: 'auto' }}>
-          <Box component="img" alt="TradeDrop" src={logo} sx={{ height: 44, width: 'auto', mixBlendMode: 'screen' }} />
+          <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 34, sm: 44 }, width: 'auto', mixBlendMode: 'screen' }} />
         </Box>
         <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', md: 'flex' }, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           {NAV.map((item) => (
@@ -366,6 +367,7 @@ export function LandingView() {
         bgcolor: bg,
         color: ink,
         minHeight: '100vh',
+        overflowX: 'hidden',
         '@keyframes riseLine': {
           from: { opacity: 0, transform: 'translateY(40px)' },
           to: { opacity: 1, transform: 'none' },
@@ -401,9 +403,9 @@ export function LandingView() {
             position: 'relative',
             zIndex: 1,
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.25fr) minmax(280px, 0.9fr)' },
+            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.15fr) minmax(220px, 0.85fr)' },
             alignItems: 'stretch',
-            minHeight: { lg: '82vh' },
+            minHeight: { md: 620, lg: '82vh' },
           }}
         >
         <Typography
@@ -444,8 +446,8 @@ export function LandingView() {
               pt: { xs: 2, md: 2.5 },
               fontFamily: 'Impact, sans-serif',
               fontWeight: 400,
-              fontSize: 'clamp(3.8rem, 8.4vw, 8.8rem)',
-              lineHeight: 0.85,
+              fontSize: { xs: 'clamp(2.7rem, 15vw, 4rem)', sm: 'clamp(3.5rem, 11vw, 5.6rem)', md: 'clamp(3.6rem, 6.2vw, 6.4rem)', lg: 'clamp(3.8rem, 7vw, 8.8rem)' },
+              lineHeight: 1,
               letterSpacing: '0.02em',
               textTransform: 'uppercase',
             }}
@@ -474,14 +476,14 @@ export function LandingView() {
           </Stack>
         </Box>
 
-        <Box sx={{ position: 'relative', zIndex: 1, minHeight: { xs: 520, lg: '100%' } }}>
-          <Box sx={{ display: { xs: 'none', lg: 'block' }, position: 'absolute', top: 36, right: 28, bottom: 64, left: 56, border: `1px solid ${copper}`, ...rise(0.2, heroOn) }} />
-          <Box sx={{ position: 'absolute', top: { xs: 16, lg: 56 }, right: { xs: 16, lg: 48 }, bottom: { xs: 150, lg: 120 }, left: { xs: 16, lg: 0 }, overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, minHeight: { md: '100%' } }}>
+          <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 28, right: { md: 0, lg: 28 }, bottom: 52, left: { md: 36, lg: 56 }, border: `1px solid ${copper}`, ...rise(0.2, heroOn) }} />
+          <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, height: { xs: 320, sm: 440, md: 'auto' }, overflow: 'hidden' }}>
             <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', animation: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
           </Box>
-          <Box sx={{ position: 'absolute', left: { xs: 16, lg: 0 }, right: { xs: 28, lg: 64 }, bottom: { xs: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 2, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
+          <Box sx={{ position: { xs: 'relative', md: 'absolute' }, left: { md: 0 }, right: { md: 20, lg: 64 }, bottom: { md: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 0, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
             <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: copper }}>Open drop · New York</Typography>
-            <Typography sx={{ mt: 0.75, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.5rem, 2vw, 2rem)', lineHeight: 0.9, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+            <Typography sx={{ mt: 0.75, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.5rem, 2vw, 2rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
               Styling for a fall lookbook
             </Typography>
             <Typography sx={{ mt: 1, fontFamily: mono, fontSize: '13px', color: muted }}>Half a day of portraits</Typography>
@@ -513,7 +515,7 @@ export function LandingView() {
             sx={{
               mt: 5,
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1.35fr 1fr 1fr' },
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1.35fr 1fr 1fr' },
               gridAutoRows: { md: 'minmax(250px, auto)' },
               columnGap: { xs: 3, md: 6 },
               rowGap: { xs: 3, md: 4 },
@@ -524,12 +526,13 @@ export function LandingView() {
                 key={item.title}
                 delay={index * 90}
                 sx={{
-                  gridColumn: { md: item.wide ? '1 / 2' : 'auto' },
-                  gridRow: { md: item.wide ? '1 / span 2' : 'auto' },
+                  gridColumn: { md: item.wide ? '1 / -1' : 'auto', lg: item.wide ? '1 / 2' : 'auto' },
+                  gridRow: { lg: item.wide ? '1 / span 2' : 'auto' },
                   position: 'relative',
                   overflow: 'hidden',
                   borderRadius: '22px',
-                  minHeight: { xs: item.wide ? 340 : 210, md: item.wide ? '100%' : 250 },
+                  height: { xs: item.wide ? 300 : 200, md: item.wide ? 420 : 230, lg: 'auto' },
+                  minHeight: { lg: item.wide ? '100%' : 250 },
                   border: `1px solid ${line}`,
                   color: ink,
                   transition: 'transform 0.5s ease',
@@ -579,7 +582,7 @@ export function LandingView() {
                   {item.image && (
                     <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: '#F5E8C8' }}>0{index + 1}</Typography>
                   )}
-                  <Typography sx={{ mt: item.image ? 1 : 0, fontFamily: poster, fontSize: item.wide ? '48px' : '30px', lineHeight: 0.9, textTransform: 'uppercase', color: ink }}>{item.title}</Typography>
+                  <Typography sx={{ mt: item.image ? 1 : 0, fontFamily: poster, fontSize: item.wide ? { xs: '34px', sm: '42px', lg: '48px' } : { xs: '26px', md: '30px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{item.title}</Typography>
                   <Typography sx={{ mt: 1.25, color: 'rgba(244,240,230,0.86)', fontFamily: mono, fontSize: '13px', lineHeight: 1.65, maxWidth: 420 }}>{item.text}</Typography>
                 </Box>
               </Reveal>
@@ -594,7 +597,7 @@ export function LandingView() {
             <Kicker>Who it is for</Kicker>
             <Title>If the work is the currency.</Title>
           </Reveal>
-          <Box sx={{ mt: 5, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+          <Box sx={{ mt: 5, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
             {ROLES.map((role, index) => (
               <Reveal
                 key={role.name}
@@ -617,7 +620,7 @@ export function LandingView() {
               >
                 <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, #F5E8C8, ${copper}, transparent)` }} />
                 <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: '#F5E8C8' }}>0{index + 1}</Typography>
-                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: '28px', lineHeight: 0.92, textTransform: 'uppercase', color: ink }}>{role.name}</Typography>
+                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: '28px', lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{role.name}</Typography>
                 <Typography sx={{ mt: 1.5, color: 'rgba(244,240,230,0.82)', fontFamily: mono, fontSize: '13px', lineHeight: 1.65 }}>{role.line}</Typography>
               </Reveal>
             ))}
@@ -649,10 +652,10 @@ export function LandingView() {
               }}
             />
             {TRADES.map((trade, index) => (
-              <Reveal key={trade.name} delay={index * 50} sx={{ position: 'relative', display: 'flex', alignItems: 'baseline', gap: { xs: 1.5, md: 2.5 }, py: { xs: 1.75, md: 2 }, borderBottom: `1px solid ${line}`, transition: 'transform 0.45s ease', '&:hover': { transform: 'translateX(8px)' } }}>
-                <Typography sx={{ fontFamily: poster, fontSize: { xs: '22px', md: '28px' }, lineHeight: 1, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{trade.name}</Typography>
-                <Box sx={{ flex: 1, borderBottom: '1px dashed rgba(184,146,61,0.55)', minWidth: 24 }} />
-                <Typography sx={{ fontFamily: mono, fontSize: { xs: '12px', md: '14px' }, letterSpacing: '0.04em', color: muted, textAlign: 'right', whiteSpace: 'nowrap' }}>
+              <Reveal key={trade.name} delay={index * 50} sx={{ position: 'relative', display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: { xs: 'center', md: 'baseline' }, gap: { xs: 1, md: 2.5 }, py: { xs: 1.75, md: 2 }, borderBottom: `1px solid ${line}`, transition: 'transform 0.45s ease', '&:hover': { transform: { md: 'translateX(8px)' } } }}>
+                <Typography sx={{ fontFamily: poster, fontSize: { xs: '20px', sm: '24px', md: '28px' }, lineHeight: 1, letterSpacing: headingTrack, textTransform: 'uppercase', minWidth: 0 }}>{trade.name}</Typography>
+                <Box sx={{ display: { xs: 'none', md: 'block' }, flex: 1, borderBottom: '1px dashed rgba(184,146,61,0.55)', minWidth: 24 }} />
+                <Typography sx={{ width: { xs: '100%', md: 'auto' }, fontFamily: mono, fontSize: { xs: '12px', md: '14px' }, letterSpacing: '0.04em', color: muted, textAlign: { xs: 'left', md: 'right' } }}>
                   needs: <Box component="span" sx={{ color: '#F5E8C8' }}>{trade.needs}</Box>
                 </Typography>
               </Reveal>
@@ -675,14 +678,14 @@ export function LandingView() {
             </Stack>
           </Reveal>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.25fr 0.75fr' }, gap: { xs: 3, lg: 3 }, alignItems: 'stretch' }}>
-            <Reveal sx={{ position: 'relative', minHeight: { xs: 480, md: 620 }, overflow: 'hidden' }}>
+            <Reveal sx={{ position: 'relative', height: { xs: 380, sm: 460, lg: 620 }, overflow: 'hidden' }}>
               <Box component="img" src={DROPS[0].image} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%', animation: 'slowZoom 18s ease-in-out infinite alternate', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
               <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(12,12,12,0.05) 20%, rgba(12,12,12,0.2) 48%, rgba(12,12,12,0.92) 100%)' }} />
               <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 0, p: { xs: 2.5, md: 4 } }}>
-                <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#F5E8C8' }}>
+                <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F5E8C8', overflowWrap: 'anywhere' }}>
                   01  ·  {DROPS[0].role}  ·  {DROPS[0].city}  ·  {DROPS[0].status}
                 </Typography>
-                <Typography sx={{ mt: 1.5, maxWidth: 560, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(2.2rem, 4vw, 3.6rem)', lineHeight: 0.88, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                <Typography sx={{ mt: 1.5, maxWidth: 560, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(2.2rem, 4vw, 3.6rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                   <ToneWords>{DROPS[0].ask}</ToneWords>
                 </Typography>
                 <Typography sx={{ mt: 2, maxWidth: 420, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'rgba(244,240,230,0.86)' }}>
@@ -693,15 +696,15 @@ export function LandingView() {
 
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               {DROPS.slice(1).map((drop, index) => (
-                <Reveal key={drop.role} delay={index * 100} sx={{ display: 'grid', gridTemplateColumns: { xs: '104px 1fr', sm: '128px 1fr' }, gap: { xs: 2, md: 2.5 }, alignItems: 'center', py: { xs: 2, lg: 0 }, borderTop: index ? `1px solid ${line}` : 'none', '&:hover img': { transform: 'scale(1.08)' } }}>
-                  <Box sx={{ position: 'relative', height: { xs: 104, sm: 128 }, overflow: 'hidden' }}>
+                <Reveal key={drop.role} delay={index * 100} sx={{ display: 'grid', gridTemplateColumns: { xs: '92px 1fr', sm: '128px 1fr' }, gap: { xs: 1.5, md: 2.5 }, alignItems: 'center', py: { xs: 2, lg: 0 }, borderTop: index ? `1px solid ${line}` : 'none', minWidth: 0, '&:hover img': { transform: 'scale(1.08)' } }}>
+                  <Box sx={{ position: 'relative', height: { xs: 92, sm: 128 }, overflow: 'hidden' }}>
                     <Box component="img" src={drop.image} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s ease' }} />
                   </Box>
-                  <Box sx={{ py: { lg: 2 } }}>
+                  <Box sx={{ py: { lg: 2 }, minWidth: 0 }}>
                     <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: copper }}>
                       0{index + 2}  ·  {drop.city}  ·  {drop.status}
                     </Typography>
-                    <Typography sx={{ mt: 0.75, fontFamily: poster, fontSize: '26px', lineHeight: 0.95, textTransform: 'uppercase' }}>{drop.role}</Typography>
+                    <Typography sx={{ mt: 0.75, fontFamily: poster, fontSize: '26px', lineHeight: 1, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{drop.role}</Typography>
                     <Typography sx={{ mt: 1, color: ink, fontFamily: mono, fontSize: '13px', lineHeight: 1.6 }}>{drop.ask}</Typography>
                     <Typography sx={{ mt: 0.75, color: muted, fontFamily: mono, fontSize: '13px', lineHeight: 1.6 }}>{drop.give}</Typography>
                   </Box>
@@ -720,7 +723,7 @@ export function LandingView() {
           </Reveal>
           <Stack spacing={0} sx={{ borderTop: `1px solid ${line}` }}>
             {COMPARE.map((row, index) => (
-              <Reveal key={row.label} delay={index * 70} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '140px 1fr 1fr' }, gap: { xs: 0.5, sm: 2 }, py: 2.25, borderBottom: `1px solid ${line}` }}>
+              <Reveal key={row.label} delay={index * 70} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '140px 1fr 1fr' }, gap: { xs: 0.5, sm: 2 }, py: 2.25, borderBottom: `1px solid ${line}`, minWidth: 0 }}>
                 <Typography sx={{ color: faint, fontSize: 13 }}>{row.label}</Typography>
                 <Typography sx={{ color: muted, fontFamily: mono, fontSize: 14 }}>{row.theirs}</Typography>
                 <Typography sx={{ fontFamily: mono, fontSize: 14 }}>{row.ours}</Typography>
@@ -743,7 +746,7 @@ export function LandingView() {
                 delay={index * 90}
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: { xs: '1fr auto', md: '140px 120px 1.4fr 1fr' },
+                  gridTemplateColumns: { xs: '1fr auto', lg: '140px 120px 1.4fr 1fr' },
                   columnGap: { xs: 2, md: 4 },
                   rowGap: 1,
                   alignItems: 'center',
@@ -756,12 +759,12 @@ export function LandingView() {
                 }}
               >
                 <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper }}>{circle.access}</Typography>
-                <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: { xs: '42px', md: '64px' }, lineHeight: 0.8, letterSpacing: '0.02em', color: circle.access === 'Private' ? copper : 'transparent', WebkitTextStroke: circle.access === 'Private' ? '0' : '1.5px rgba(244,240,230,0.8)', textAlign: { xs: 'right', md: 'left' } }}>{circle.count}</Typography>
-                <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-                  <Typography sx={{ fontFamily: poster, fontSize: { xs: '28px', md: '34px' }, lineHeight: 0.92, textTransform: 'uppercase' }}>{circle.name}</Typography>
+                <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: { xs: '42px', lg: '64px' }, lineHeight: 0.8, letterSpacing: '0.02em', color: circle.access === 'Private' ? copper : 'transparent', WebkitTextStroke: circle.access === 'Private' ? '0' : '1.5px rgba(244,240,230,0.8)', textAlign: { xs: 'right', lg: 'left' } }}>{circle.count}</Typography>
+                <Box sx={{ gridColumn: { xs: '1 / -1', lg: 'auto' }, minWidth: 0 }}>
+                  <Typography sx={{ fontFamily: poster, fontSize: { xs: '26px', sm: '30px', lg: '34px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{circle.name}</Typography>
                   <Typography sx={{ mt: 0.75, fontFamily: mono, fontSize: '13px', color: muted }}>{circle.place}</Typography>
                 </Box>
-                <Typography sx={{ gridColumn: { xs: '1 / -1', md: 'auto' }, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'rgba(244,240,230,0.82)' }}>{circle.note}</Typography>
+                <Typography sx={{ gridColumn: { xs: '1 / -1', lg: 'auto' }, minWidth: 0, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'rgba(244,240,230,0.82)' }}>{circle.note}</Typography>
               </Reveal>
             ))}
           </Box>
@@ -798,7 +801,7 @@ export function LandingView() {
                 <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: copper }}>
                   {event.mon}  ·  {event.city}  ·  {event.seats}
                 </Typography>
-                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '28px', md: '32px' }, lineHeight: 0.92, textTransform: 'uppercase' }}>{event.name}</Typography>
+                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '28px', md: '32px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{event.name}</Typography>
                 <Typography sx={{ mt: 1.25, fontFamily: mono, fontSize: '13px', lineHeight: 1.6, color: muted }}>{event.host}</Typography>
               </Reveal>
             ))}
@@ -828,9 +831,9 @@ export function LandingView() {
             >
               <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: index ? `linear-gradient(90deg, #F5E8C8, ${copper}, transparent)` : 'linear-gradient(90deg, rgba(255,255,255,0.7), transparent)' }} />
               <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: '48px', lineHeight: 0.7, color: index ? copper : 'rgba(255,255,255,0.7)' }}>&ldquo;</Typography>
-              <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '26px', md: '32px' }, lineHeight: 1.08, color: 'inherit' }}>{note.quote}</Typography>
+              <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '26px', md: '32px' }, lineHeight: 1.2, color: 'inherit' }}>{note.quote}</Typography>
               <Box sx={{ mt: 3, pt: 2, borderTop: index ? `1px solid ${line}` : '1px solid rgba(255,255,255,0.35)' }}>
-                <Typography sx={{ fontFamily: poster, fontSize: '18px', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'inherit' }}>{note.name}</Typography>
+                <Typography sx={{ fontFamily: poster, fontSize: '18px', letterSpacing: headingTrack, textTransform: 'uppercase', color: 'inherit' }}>{note.name}</Typography>
                 <Typography sx={{ mt: 0.5, fontFamily: mono, fontSize: '13px', letterSpacing: '0.06em', color: index ? muted : 'rgba(255,255,255,0.82)' }}>{note.role}</Typography>
               </Box>
             </Reveal>
@@ -864,7 +867,7 @@ export function LandingView() {
             <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             {QUESTIONS.map((item, index) => (
               <Reveal key={item.q} delay={(index % 2) * 80} sx={{ position: 'relative', zIndex: 1, p: 3, borderRadius: 3, border: `1px solid ${line}`, transition: 'border-color 0.4s ease, transform 0.45s ease', '&:hover': { borderColor: copper, transform: 'translateY(-6px)' } }}>
-                <Typography sx={{ fontFamily: poster, fontSize: 26, lineHeight: 1, textTransform: 'uppercase' }}>{item.q}</Typography>
+                <Typography sx={{ fontFamily: poster, fontSize: 26, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{item.q}</Typography>
                 <Typography sx={{ mt: 1, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7 }}>{item.a}</Typography>
               </Reveal>
             ))}
@@ -909,7 +912,7 @@ export function LandingView() {
           Trade
         </Typography>
         <Reveal sx={{ ...wrap, position: 'relative', zIndex: 1 }}>
-          <Typography sx={{ fontFamily: poster, fontSize: { xs: '48px', md: '80px' }, lineHeight: 0.86, textTransform: 'uppercase', maxWidth: 860, color: '#F5E8C8' }}>
+          <Typography sx={{ fontFamily: poster, fontSize: { xs: '36px', sm: '48px', md: '68px', lg: '80px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', maxWidth: 860, color: '#F5E8C8' }}>
             Post the need. Name the offer.
           </Typography>
           <Typography sx={{ mt: 2, maxWidth: 520, color: 'rgba(245,232,200,0.88)', fontFamily: mono, fontSize: '14px', lineHeight: 1.7 }}>
@@ -927,12 +930,12 @@ export function LandingView() {
       </Box>
 
       <Box component="footer" sx={{ py: 3 }}>
-        <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', columnGap: 2 }}>
-        <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', justifySelf: 'start' }}>
+        <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr auto 1fr' }, justifyItems: { xs: 'center', sm: 'stretch' }, alignItems: 'center', rowGap: 1.5, columnGap: 2 }}>
+        <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', justifySelf: { xs: 'center', sm: 'start' } }}>
           <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 32, md: 40 }, width: 'auto', mixBlendMode: 'screen' }} />
         </Box>
-        <Typography sx={{ fontFamily: mono, fontSize: { xs: '11px', md: '12px' }, color: faint, whiteSpace: 'nowrap', textAlign: 'center' }}>© 2026 TradeDrop. All rights reserved.</Typography>
-        <Stack direction="row" spacing={2} sx={{ justifySelf: 'end' }}>
+        <Typography sx={{ fontFamily: mono, fontSize: { xs: '11px', md: '12px' }, color: faint, textAlign: 'center' }}>© 2026 TradeDrop. All rights reserved.</Typography>
+        <Stack direction="row" spacing={2} sx={{ justifySelf: { xs: 'center', sm: 'end' } }}>
           <Box component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Login</Box>
           <Box component={RouterLink} href={paths.auth.jwt.signUp} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Sign up</Box>
         </Stack>
