@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
 
-import { CirclesListView } from 'src/sections/active-sections/circles-view/view/circles-list-view';
+import { SectionComingSoon } from 'src/sections/active-sections/coming-soon-view';
 
 const metadata = { title: `Circles - ${CONFIG.site.name}` };
 
@@ -13,7 +13,7 @@ export default function Page() {
         <title> {metadata.title}</title>
       </Helmet>
 
-      <CirclesListView />
+      <SectionComingSoon title="Circles" />
     </>
   );
 }

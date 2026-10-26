@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
 
-import { EventsListView } from 'src/sections/active-sections/events-view/view/events-list-view';
+import { SectionComingSoon } from 'src/sections/active-sections/coming-soon-view';
 
 const metadata = { title: `Events - ${CONFIG.site.name}` };
 
@@ -13,7 +13,7 @@ export default function Page() {
         <title> {metadata.title}</title>
       </Helmet>
 
-      <EventsListView />
+      <SectionComingSoon title="Events" />
     </>
   );
 }
