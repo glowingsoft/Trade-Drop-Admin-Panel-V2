@@ -7,6 +7,8 @@ const MuiCard = {
   styleOverrides: {
     root: ({ theme }) => ({
       position: 'relative',
+      minWidth: 0,
+      maxWidth: '100%',
       boxShadow: theme.customShadows.card,
       borderRadius: theme.shape.borderRadius * 2,
       zIndex: 0, // Fix Safari overflow: hidden with border radius
@@ -46,4 +48,18 @@ const MuiCardContent = {
 
 // ----------------------------------------------------------------------
 
+const MuiGrid = {
+  styleOverrides: {
+    item: { minWidth: 0 },
+  },
+};
+
+const MuiGrid2 = {
+  styleOverrides: {
+    root: { minWidth: 0 },
+  },
+};
+
 export const card = { MuiCard, MuiCardHeader, MuiCardContent };
+
+export const grid = { MuiGrid, MuiGrid2 };

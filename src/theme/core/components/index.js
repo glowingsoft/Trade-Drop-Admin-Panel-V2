@@ -1,5 +1,5 @@
 import { list } from './list';
-import { card } from './card';
+import { card, grid } from './card';
 import { menu } from './menu';
 import { chip } from './chip';
 import { link } from './link';
@@ -47,6 +47,7 @@ import { datePicker } from './mui-x-date-picker';
 export const components = {
   ...fab,
   ...card,
+  ...grid,
   ...link,
   ...form,
   ...tabs,

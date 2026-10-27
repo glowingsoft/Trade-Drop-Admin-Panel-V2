@@ -251,7 +251,7 @@ export function DisputesListView() {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid container spacing={2} sx={{ mb: 3, width: '100%', minWidth: 0 }}>
         {disputeStats.map((stat) => (
           <Grid key={stat.key} item xs={12} sm={6} md={4}>
             <DisputeStatCard

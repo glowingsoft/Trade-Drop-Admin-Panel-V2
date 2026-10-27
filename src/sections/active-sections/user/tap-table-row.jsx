@@ -14,7 +14,6 @@ import { paths } from 'src/routes/paths';
 import { getTapStatusOption } from './tap-status';
 
 export function TapTableRow({ row, selected, serialNumber }) {
-  console.log("row", row);
   const router = useRouter();
   const detailsPath = row.ownerId ? paths.adminDashboard.users.details(row.ownerId) : '';
   const statusOption = getTapStatusOption(row.status);

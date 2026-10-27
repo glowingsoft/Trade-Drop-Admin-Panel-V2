@@ -30,14 +30,12 @@ import { useLoginMutation } from 'src/store/Reducer/auth';
 import { setUser } from 'src/store/slices/userSlice';
 import { handleApiError } from 'src/utils/errorHandler';
 
-// ----------------------------------------------------------------------
 
 export const SignInSchema = zod.object({
   email: zod.string().min(1, { message: 'Email is required!' }).email({ message: 'Email must be a valid email address!' }),
   password: zod.string().min(1, { message: 'Password is required!' }).min(6, { message: 'Password must be at least 6 characters!' }),
 });
 
-// ----------------------------------------------------------------------
 
 export function JwtSignInView() {
   const router = useRouter();
@@ -92,8 +90,6 @@ export function JwtSignInView() {
     try {
       const response = await login(payload).unwrap();
 
-      console.log('Login Response:', response);
-
       if (!response.data) {
         toast.error('Login failed: No user data received');
         router.push('/');
@@ -119,13 +115,10 @@ export function JwtSignInView() {
         permission,
       };
 
-      console.log('Updated User Data', UpdatedUserData);
-
       dispatch(setUser(UpdatedUserData));
       goTo(user_type);
 
       reset();
-      // toast.success('Login successful!');
     } catch (error) {
       setErrorMsg(typeof error === 'string' ? error : error.message);
       handleApiError(error);
@@ -135,7 +128,7 @@ export function JwtSignInView() {
   const renderHead = (
     <Stack spacing={1} sx={{ mb: 4 }}>
       <Stack direction="row" spacing={1.25} alignItems="center">
-        <Logo disableLink width={26} height={28} />
+        <Logo disableLink width={52} height={54} />
 
         <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
           {CONFIG.site.name}

@@ -17,6 +17,10 @@ export function Main({ children, isNavHorizontal, sx, ...other }) {
         display: 'flex',
         flex: '1 1 auto',
         flexDirection: 'column',
+        minWidth: 0,
+        maxWidth: '100%',
+        overflowX: 'clip',
+        '& > *': { minWidth: 0, maxWidth: '100%' },
         ...(isNavHorizontal && {
           '--layout-dashboard-content-pt': '40px',
         }),
@@ -46,6 +50,8 @@ export function DashboardContent({ sx, children, disablePadding, maxWidth = 'lg'
         display: 'flex',
         flex: '1 1 auto',
         flexDirection: 'column',
+        minWidth: 0,
+        width: '100%',
         pt: 'var(--layout-dashboard-content-pt)',
         pb: 'var(--layout-dashboard-content-pb)',
         [theme.breakpoints.up(layoutQuery)]: {

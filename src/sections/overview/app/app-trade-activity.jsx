@@ -71,7 +71,7 @@ export function AppTradeActivity({ title, chart, mostTraded, sx, ...other }) {
         }}
       >
         {chart.series.map((item, index) => (
-          <Stack key={item.label} spacing={0.5}>
+          <Stack key={item.label} spacing={0.5} sx={{ minWidth: 0 }}>
             <Stack direction="row" alignItems="center" spacing={0.75}>
               <Box
                 sx={{
@@ -95,6 +95,7 @@ export function AppTradeActivity({ title, chart, mostTraded, sx, ...other }) {
                 letterSpacing: 0.4,
                 color: 'text.secondary',
                 textTransform: 'uppercase',
+                overflowWrap: 'anywhere',
               }}
             >
               {item.label}

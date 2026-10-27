@@ -6,7 +6,6 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 
 import { BreadcrumbsLink } from './breadcrumb-link';
 
-// ----------------------------------------------------------------------
 
 export function CustomBreadcrumbs({
   links,
@@ -39,7 +38,9 @@ export function CustomBreadcrumbs({
     </Breadcrumbs>
   );
 
-  const renderAction = <Box sx={{ flexShrink: 0, ...slotProps?.action }}> {action} </Box>;
+  const renderAction = (
+    <Box sx={{ flexShrink: 0, width: { xs: 1, sm: 'auto' }, ...slotProps?.action }}>{action}</Box>
+  );
 
   const renderMoreLink = (
     <Box component="ul">
@@ -55,8 +56,12 @@ export function CustomBreadcrumbs({
 
   return (
     <Stack spacing={2} sx={sx}>
-      <Stack direction="row" alignItems="center">
-        <Box sx={{ flexGrow: 1 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={2}
+      >
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           {heading && renderHeading}
 
           {!!links.length && renderLinks}
@@ -70,7 +75,6 @@ export function CustomBreadcrumbs({
   );
 }
 
-// ----------------------------------------------------------------------
 
 function Separator() {
   return (

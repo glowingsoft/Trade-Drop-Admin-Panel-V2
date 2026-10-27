@@ -9,7 +9,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Iconify } from 'src/components/iconify';
 import { FILTER_FIELD_TYPES } from './table-filter-fields';
 
-// Filter Field Component (same as before, but add search handler)
 const FilterField = memo(({ field, value, onChange, onSearchChange, size = 'medium' }) => {
     const compact = size === 'small';
 
@@ -133,18 +132,15 @@ FilterField.propTypes = {
     size: PropTypes.oneOf(['small', 'medium']),
 };
 
-/**
- * Flexible Table Toolbar with dynamic filter fields
- */
+
 export const FlexibleTableToolbar = memo(({
     filterFields = [],
     filterValues = {},
     onFilterChange,
-    onSearchChange, // ✅ New prop for custom search handler
+    onSearchChange,
     slots = {},
     size = 'medium',
 }) => {
-    // Separate search from other filters
     const searchField = filterFields.find((f) => f.type === FILTER_FIELD_TYPES.SEARCH);
     const otherFields = filterFields.filter((f) => f.type !== FILTER_FIELD_TYPES.SEARCH);
     const compact = size === 'small';
@@ -152,7 +148,6 @@ export const FlexibleTableToolbar = memo(({
 
     return (
         <Stack spacing={gap} sx={{ p: compact ? 1.5 : 2.5 }}>
-            {/* First Row: Search + Custom Slots */}
             {(searchField || slots.beforeFilters || slots.afterFilters) && (
                 <Stack
                     direction={{ xs: 'column', md: 'row' }}
@@ -167,7 +162,7 @@ export const FlexibleTableToolbar = memo(({
                                 field={searchField}
                                 value={filterValues[searchField.key]}
                                 onChange={onFilterChange}
-                                onSearchChange={onSearchChange} // ✅ Pass custom search handler
+                                onSearchChange={onSearchChange}
                                 size={size}
                             />
                         </Box>
@@ -177,7 +172,6 @@ export const FlexibleTableToolbar = memo(({
                 </Stack>
             )}
 
-            {/* Second Row: Additional Filters */}
             {otherFields.length > 0 && (
                 <Stack
                     direction={{ xs: 'column', sm: 'row' }}
@@ -189,7 +183,9 @@ export const FlexibleTableToolbar = memo(({
                         <Box
                             key={field.key}
                             sx={{
-                                minWidth: field.minWidth || 200,
+                                width: { xs: 1, sm: 'auto' },
+                                minWidth: { xs: 0, sm: field.minWidth || 200 },
+                                maxWidth: 1,
                                 flexGrow: field.flexGrow || 0,
                                 flexBasis: field.flexBasis || 'auto',
                             }}

@@ -51,10 +51,12 @@ const SectionHeading = ({ icon, title, action }) => (
     alignItems="center"
     justifyContent="space-between"
     spacing={1}
+    flexWrap="wrap"
+    useFlexGap
     sx={{ px: 2.5, py: 1.75 }}
   >
-    <Stack direction="row" alignItems="center" spacing={1}>
-      <Iconify icon={icon} width={20} />
+    <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+      <Iconify icon={icon} width={20} sx={{ flexShrink: 0 }} />
       <Typography variant="subtitle1">{title}</Typography>
     </Stack>
     {action}
@@ -85,7 +87,7 @@ const PartyCard = ({ party, statement, evidence, tone = 'primary' }) => {
             {party.initials}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="subtitle1" noWrap>
+            <Typography variant="subtitle1" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {party.name}
             </Typography>
             <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -93,7 +95,7 @@ const PartyCard = ({ party, statement, evidence, tone = 'primary' }) => {
                 {party.role}
               </Label>
               {party.email ? (
-                <Typography variant="caption" color="text.secondary" noWrap>
+                <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
                   {party.email}
                 </Typography>
               ) : null}

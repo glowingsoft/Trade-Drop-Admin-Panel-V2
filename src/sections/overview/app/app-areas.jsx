@@ -20,7 +20,6 @@ import { TableHeadCustom } from 'src/components/table';
 
 import { DashboardNoData } from './dashboard-no-data';
 
-// ----------------------------------------------------------------------
 
 const AREA_COLORS = ['primary', 'info', 'success', 'warning', 'error', 'secondary'];
 
@@ -54,7 +53,12 @@ export function AppAreas({ title, subheader, tableData, headLabel, onClick, ...o
             </Button>
           )
         }
-        sx={{ mb: 1 }}
+        sx={{
+          mb: 1,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          '& .MuiCardHeader-action': { m: 0, alignSelf: { xs: 'flex-start', sm: 'center' } },
+        }}
       />
 
       {isEmpty ? (

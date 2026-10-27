@@ -70,7 +70,7 @@ export function AppTradesReport({
         }}
       >
         {STATS.map((item) => (
-          <Stack key={item.key} spacing={0.5}>
+          <Stack key={item.key} spacing={0.5} sx={{ minWidth: 0 }}>
             <Typography variant="h5">
               {item.isPercent ? fPercent(stats[item.key] || 0) : fNumber(stats[item.key] || 0)}
             </Typography>
@@ -82,6 +82,7 @@ export function AppTradesReport({
                 letterSpacing: 0.4,
                 color: 'text.secondary',
                 textTransform: 'uppercase',
+                overflowWrap: 'anywhere',
               }}
             >
               {item.label}

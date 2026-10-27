@@ -20,7 +20,6 @@ import { TableHeadCustom } from 'src/components/table';
 
 import { DashboardNoData } from './dashboard-no-data';
 
-// ----------------------------------------------------------------------
 
 const CATEGORY_STYLES = {
   photography: { icon: 'solar:camera-bold', color: 'info' },
@@ -72,7 +71,12 @@ export function AppCategories({ title, subheader, tableData, headLabel, onClick,
             </Button>
           )
         }
-        sx={{ mb: 1 }}
+        sx={{
+          mb: 1,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          '& .MuiCardHeader-action': { m: 0, alignSelf: { xs: 'flex-start', sm: 'center' } },
+        }}
       />
 
       {isEmpty ? (

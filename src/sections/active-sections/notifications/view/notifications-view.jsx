@@ -28,7 +28,13 @@ const NotificationsView = () => {
                 sx={{ mb: { xs: 3, md: 5 } }}
             />
 
-            <Tabs value={tabs.value} onChange={tabs.onChange}>
+            <Tabs
+                value={tabs.value}
+                onChange={tabs.onChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+            >
                 {TABS.map((tab) => (
                     <Tab
                         key={tab.value}
