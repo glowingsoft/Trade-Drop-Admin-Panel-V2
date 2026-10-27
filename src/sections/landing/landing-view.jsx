@@ -23,24 +23,108 @@ import logo from 'src/assets/logo/light-mode-logo.png';
 
 import { Iconify } from 'src/components/iconify';
 
-const ink = '#F4F0E6';
-const muted = '#A39B90';
-const faint = '#6F675F';
-const line = 'rgba(244, 240, 230, 0.14)';
+const ink = 'var(--land-ink)';
+const muted = 'var(--land-muted)';
+const faint = 'var(--land-faint)';
+const line = 'var(--land-line)';
 const copper = '#B8923D';
 const copperDeep = '#8A6B25';
-const bg = '#0C0C0C';
+const bg = 'var(--land-bg)';
 const raised = '#161616';
+const landDark = {
+  '--land-bg': '#0C0C0C',
+  '--land-section': '#080808',
+  '--land-ink': '#F4F0E6',
+  '--land-cream': '#f3efe6',
+  '--land-muted': '#A39B90',
+  '--land-faint': '#6F675F',
+  '--land-line': 'rgba(244, 240, 230, 0.14)',
+  '--land-header': 'rgba(12,12,12,0.92)',
+  '--land-soft': 'rgba(244,240,230,0.86)',
+  '--land-soft-2': 'rgba(244,240,230,0.82)',
+  '--land-stroke': 'rgba(244,240,230,0.7)',
+  '--land-stroke-strong': 'rgba(244,240,230,0.8)',
+  '--land-highlight': '#F5E8C8',
+  '--land-on-photo': '#F4F0E6',
+  '--land-on-photo-soft': 'rgba(244,240,230,0.86)',
+  '--land-on-photo-mark': '#F5E8C8',
+  '--land-ghost': '#F5E8C8',
+  '--land-ghost-line': 'rgba(245,232,200,0.45)',
+  '--land-end-a': '#141414',
+  '--land-end-b': '#121212',
+  '--land-end-c': '#161616',
+  '--land-end-d': '#101010',
+  '--land-end-e': '#141210',
+  '--land-end-f': '#2A2416',
+  '--land-role-a': '#1A1712',
+  '--land-role-b': '#161412',
+  '--land-role-c': '#1C1A16',
+  '--land-role-d': '#3A3120',
+};
+const landLight = {
+  '--land-bg': '#FFFFFF',
+  '--land-section': '#FFFFFF',
+  '--land-ink': '#1A1408',
+  '--land-cream': '#1A1408',
+  '--land-muted': '#5C564E',
+  '--land-faint': '#6F675F',
+  '--land-line': 'rgba(26,20,8,0.12)',
+  '--land-header': 'rgba(255,255,255,0.92)',
+  '--land-soft': 'rgba(26,20,8,0.78)',
+  '--land-soft-2': 'rgba(26,20,8,0.72)',
+  '--land-stroke': 'rgba(26,20,8,0.45)',
+  '--land-stroke-strong': 'rgba(26,20,8,0.55)',
+  '--land-highlight': '#8A6B25',
+  '--land-on-photo': '#FFFFFF',
+  '--land-on-photo-soft': 'rgba(255,255,255,0.88)',
+  '--land-on-photo-mark': '#F5E8C8',
+  '--land-ghost': '#8A6B25',
+  '--land-ghost-line': 'rgba(138,107,37,0.45)',
+  '--land-end-a': '#F7F4EE',
+  '--land-end-b': '#F7F4EE',
+  '--land-end-c': '#F4F0E6',
+  '--land-end-d': '#F7F4EE',
+  '--land-end-e': '#F7F4EE',
+  '--land-end-f': '#EFE6D4',
+  '--land-role-a': '#F7F4EE',
+  '--land-role-b': '#F4F0E6',
+  '--land-role-c': '#F7F4EE',
+  '--land-role-d': '#EFE6D4',
+};
 const onGold = '#FFFFFF';
 const poster = 'Anton, "Arial Black", sans-serif !important';
 const headingTrack = '0.02em';
 const mono = '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+const loginButtonSx = {
+  color: '#1A1408',
+  backgroundImage: 'linear-gradient(135deg, #F5E8C8 0%, #E8D08A 28%, #C6A04A 62%, #8A6B25 100%)',
+  border: '1px solid rgba(245,232,200,0.75)',
+  borderRadius: 999,
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  textTransform: 'none',
+  textDecoration: 'none',
+  '&:hover': {
+    color: '#1A1408',
+    bgcolor: 'transparent',
+    backgroundImage: 'linear-gradient(135deg, #F5E8C8 0%, #E8D08A 28%, #C6A04A 62%, #8A6B25 100%)',
+    filter: 'brightness(1.06)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
+    textDecoration: 'none',
+  },
+};
 
 const NAV = [
   { label: 'Product', id: 'product' },
   { label: 'Drops', id: 'drops' },
   { label: 'Circles', id: 'circles' },
   { label: 'Events', id: 'events' },
+];
+
+const STORES = [
+  { id: 'ios', kicker: 'Download on the', name: 'App Store', href: 'https://apps.apple.com' },
+  { id: 'android', kicker: 'Get it on', name: 'Google Play', href: 'https://play.google.com/store' },
 ];
 
 const FACTS = [
@@ -191,7 +275,7 @@ function toneWord(index) {
   const step = index % 3;
   if (step === 1) return { color: copper };
   if (step === 2) return { color: 'transparent', WebkitTextStroke: '0.035em #6d645e' };
-  return { color: '#f3efe6' };
+  return { color: 'var(--land-cream)' };
 }
 
 function ToneWords({ children }) {
@@ -205,7 +289,7 @@ function ToneWords({ children }) {
 
 function Title({ children, sx }) {
   return (
-    <Typography sx={{ fontFamily: poster, fontWeight: 400, fontSize: { xs: 34, sm: 46, md: 60, lg: 68 }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', ...sx }}>
+    <Typography sx={{ fontFamily: poster, fontWeight: 400, fontSize: { xs: 28, sm: 46, md: 60, lg: 68 }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', ...sx }}>
       <ToneWords>{children}</ToneWords>
     </Typography>
   );
@@ -270,7 +354,52 @@ function Reveal({ delay = 0, sx, children, ...rest }) {
   );
 }
 
-function Header() {
+function StoreGlyph({ type }) {
+  if (type === 'ios') {
+    return (
+      <Box component="svg" viewBox="0 0 24 24" aria-hidden sx={{ width: 30, height: 30, flexShrink: 0, fill: '#1A1408' }}>
+        <path d="M16.37 12.72c.03 2.52 2.21 3.36 2.24 3.37-.02.06-.35 1.2-1.15 2.37-.69 1.02-1.42 2.03-2.55 2.05-1.12.02-1.48-.66-2.76-.66s-1.68.64-2.74.68c-1.1.04-1.94-1.1-2.64-2.11-1.44-2.08-2.54-5.88-1.06-8.44.73-1.27 2.04-2.08 3.46-2.1 1.08-.02 2.1.73 2.76.73.66 0 1.9-.9 3.2-.77.54.02 2.07.22 3.05 1.66-.08.05-1.82 1.06-1.8 3.22zM14.7 6.3c.58-.7.97-1.68.86-2.65-.83.03-1.84.55-2.44 1.25-.53.62-1 1.61-.87 2.56.93.07 1.88-.47 2.45-1.16z" />
+      </Box>
+    );
+  }
+
+  return (
+    <Box component="svg" viewBox="0 0 24 24" aria-hidden sx={{ width: 28, height: 28, flexShrink: 0 }}>
+      <path fill="#1A1408" d="M4.2 3.1c-.3.2-.5.6-.5 1.1v15.6c0 .5.2.9.5 1.1l.1.1 8.7-8.7v-.2L4.3 3z" />
+      <path fill="#F5E8C8" d="M16.8 13.6 13.5 12l3.3-1.6.1.1 3.9 2.2c1.1.6 1.1 1.6 0 2.2l-3.9 2.2-.1.1z" />
+      <path fill="#8A6B25" d="M16.9 13.5 13.5 12 4.2 21.1c.4.4 1 .4 1.7.1l11-7.7z" />
+      <path fill="#3d2e10" d="M16.9 10.5 5.9 2.8c-.7-.4-1.3-.3-1.7.1L13.5 12l3.4-1.5z" />
+    </Box>
+  );
+}
+
+function BrandLogo({ light, height, width }) {
+  if (!light) {
+    return <Box component="img" alt="TradeDrop" src={logo} sx={{ height, width: 'auto', mixBlendMode: 'screen' }} />;
+  }
+
+  return (
+    <Box
+      role="img"
+      aria-label="TradeDrop"
+      sx={{
+        height,
+        width,
+        bgcolor: '#B8923D',
+        WebkitMaskImage: `url(${logo})`,
+        maskImage: `url(${logo})`,
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+      }}
+    />
+  );
+}
+
+function Header({ light, onToggle }) {
   const [open, setOpen] = useState(false);
   const go = (id) => {
     setOpen(false);
@@ -278,7 +407,7 @@ function Header() {
   };
 
   return (
-    <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 30, overflow: 'hidden', bgcolor: 'rgba(12,12,12,0.92)', backdropFilter: 'blur(16px)' }}>
+    <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 40, overflow: 'hidden', bgcolor: 'var(--land-header)', backdropFilter: 'blur(16px)' }}>
       <Box
         sx={{
           position: 'absolute',
@@ -297,7 +426,7 @@ function Header() {
       />
       <Stack direction="row" alignItems="center" sx={{ ...wrap, position: 'relative', zIndex: 1, height: 72, gap: 2 }}>
         <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', mr: 'auto' }}>
-          <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 34, sm: 44 }, width: 'auto', mixBlendMode: 'screen' }} />
+          <BrandLogo light={light} height={{ xs: 34, sm: 44 }} width={{ xs: 46, sm: 59 }} />
         </Box>
         <Stack direction="row" spacing={2.5} sx={{ display: { xs: 'none', md: 'flex' }, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           {NAV.map((item) => (
@@ -312,11 +441,11 @@ function Header() {
             </Box>
           ))}
         </Stack>
-        <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: ink, minWidth: 0, px: 1.25, display: { xs: 'none', sm: 'inline-flex' }, '&:hover': { bgcolor: 'transparent', color: copper } }}>
+        <IconButton aria-label={light ? 'Switch to dark mode' : 'Switch to light mode'} onClick={onToggle} sx={{ color: ink }}>
+          <Iconify icon={light ? 'solar:sun-2-bold' : 'ion:moon-sharp'} width={22} />
+        </IconButton>
+        <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ ...loginButtonSx, minWidth: 0, px: 2, minHeight: 36, display: { xs: 'none', sm: 'inline-flex' } }}>
           Login
-        </Button>
-        <Button component={RouterLink} href={paths.auth.jwt.signUp} variant="contained" sx={{ bgcolor: copper, color: onGold, borderRadius: 10, px: 2.25, boxShadow: 'none', '&:hover': { bgcolor: copperDeep, boxShadow: 'none' } }}>
-          Sign up
         </Button>
         <IconButton aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen((v) => !v)} sx={{ color: ink, display: { md: 'none' } }}>
           <Iconify icon={open ? 'mingcute:close-line' : 'mingcute:menu-line'} />
@@ -329,7 +458,7 @@ function Header() {
               {item.label}
             </Box>
           ))}
-          <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: ink, justifyContent: 'flex-start', px: 0 }}>
+          <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ ...loginButtonSx, alignSelf: 'flex-start', px: 2.5, minHeight: 44 }}>
             Login
           </Button>
         </Stack>
@@ -342,14 +471,19 @@ function Header() {
 export function LandingView() {
   const heroRef = useRef(null);
   const [heroOn, setHeroOn] = useState(false);
+  const [light, setLight] = useState(false);
+
+  const toggleTheme = () => {
+    setLight((value) => !value);
+  };
 
   useEffect(() => {
     const previous = document.body.style.backgroundColor;
-    document.body.style.backgroundColor = bg;
+    document.body.style.backgroundColor = light ? '#FFFFFF' : '#0C0C0C';
     return () => {
       document.body.style.backgroundColor = previous;
     };
-  }, []);
+  }, [light]);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -380,10 +514,10 @@ export function LandingView() {
   return (
     <Box
       sx={{
+        ...(light ? landLight : landDark),
         bgcolor: bg,
         color: ink,
         minHeight: '100vh',
-        overflowX: 'hidden',
         '@keyframes riseLine': {
           from: { opacity: 0, transform: 'translateY(40px)' },
           to: { opacity: 1, transform: 'none' },
@@ -410,588 +544,682 @@ export function LandingView() {
         },
       }}
     >
-      <Header />
+      <Header light={light} onToggle={toggleTheme} />
 
-      <Box ref={heroRef} sx={{ position: 'relative', overflow: 'hidden', bgcolor: bg }}>
+      <Box sx={{ overflowX: 'clip' }}>
+        <Box ref={heroRef} sx={{ position: 'relative', overflow: 'hidden', bgcolor: bg }}>
+          <Box
+            sx={{
+              ...wrap,
+              position: 'relative',
+              zIndex: 1,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.15fr) minmax(220px, 0.85fr)' },
+              alignItems: 'stretch',
+              minHeight: { md: 620, lg: '82vh' },
+            }}
+          >
+            <Typography
+              aria-hidden
+              sx={{
+                display: { xs: 'none', lg: 'block' },
+                position: 'absolute',
+                left: '28%',
+                top: '46%',
+                transform: 'translateY(-50%)',
+                m: 0,
+                fontFamily: 'Impact, sans-serif',
+                fontSize: 'clamp(8rem, 16vw, 14rem)',
+                lineHeight: 0.8,
+                letterSpacing: '0.02em',
+                textTransform: 'uppercase',
+                color: 'transparent',
+                WebkitTextStroke: '1px rgba(184,146,61,0.28)',
+                pointerEvents: 'none',
+                userSelect: 'none',
+                zIndex: 0,
+                animation: 'strokePulse 7s ease-in-out infinite',
+                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+              }}
+            >
+              Drop
+            </Typography>
+
+            <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: { xs: 5, md: 8 }, pr: { lg: 3 } }}>
+              <Typography sx={{ fontFamily: mono, fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper, ...rise(0.05, heroOn) }}>
+                For people who trade the work
+              </Typography>
+
+              <Box
+                component="h1"
+                sx={{
+                  m: 0,
+                  pt: { xs: 2, md: 2.5 },
+                  fontFamily: 'Impact, sans-serif',
+                  fontWeight: 400,
+                  fontSize: { xs: 'clamp(2.15rem, 11.5vw, 3.1rem)', sm: 'clamp(2.5rem, 6.2vw, 3.5rem)', md: 'clamp(3.6rem, 6.2vw, 6.4rem)', lg: 'clamp(3.8rem, 7vw, 8.8rem)' },
+                  lineHeight: 1,
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                <Box component="span" sx={{ display: 'block', color: 'var(--land-cream)', ...rise(0.12, heroOn) }}>
+                  Trade
+                </Box>
+                <Box component="span" sx={{ display: 'block', color: copper, ...rise(0.24, heroOn) }}>
+                  Your
+                </Box>
+                <Box component="span" sx={{ display: 'block', color: 'transparent', WebkitTextStroke: '0.035em #6d645e', ...rise(0.36, heroOn) }}>
+                  Craft.
+                </Box>
+              </Box>
+
+              <Typography sx={{ maxWidth: 520, mt: { xs: 3, md: 4 }, color: muted, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, ...rise(0.48, heroOn) }}>
+                A photographer needs styling. A designer needs the still. Post both sides, agree once, and keep the client. No fee.
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5, ...rise(0.6, heroOn) }}>
+                <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ ...loginButtonSx, px: 3, minHeight: 48 }}>
+                  Login
+                </Button>
+                <Button
+                  onClick={() => scrollToSection('drops')}
+                  sx={{
+                    color: ink,
+                    borderRadius: 999,
+                    px: 3,
+                    minHeight: 48,
+                    border: '1px solid var(--land-ghost-line)',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    '&:hover': { bgcolor: 'transparent', borderColor: 'var(--land-ghost)', color: 'var(--land-ghost)' },
+                  }}
+                >
+                  See a drop
+                </Button>
+              </Stack>
+            </Box>
+
+            <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, minHeight: { md: '100%' } }}>
+              <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 28, right: { md: 0, lg: 28 }, bottom: 52, left: { md: 36, lg: 56 }, border: `8px solid ${copper}`, ...rise(0.2, heroOn) }} />
+              <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, width: { xs: 240, sm: 300, md: 'auto' }, height: { xs: 320, sm: 400, md: 'auto' }, mx: { xs: 'auto', md: 0 }, overflow: { md: 'hidden' } }}>
+                <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: { xs: 'contain', md: 'cover' }, objectPosition: 'center', animation: { md: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none' }, '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
+              </Box>
+              <Box sx={{ position: { xs: 'relative', md: 'absolute' }, left: { md: 0 }, right: { md: 20, lg: 64 }, bottom: { md: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 0, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
+                <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: copper }}>Open drop · New York</Typography>
+                <Typography sx={{ mt: 0.75, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.5rem, 2vw, 2rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                  Styling for a fall lookbook
+                </Typography>
+                <Typography sx={{ mt: 1, fontFamily: mono, fontSize: '13px', color: muted }}>Half a day of portraits</Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={{ overflow: 'hidden', borderTop: `1px solid ${line}`, borderBottom: `1px solid ${line}`, py: { xs: 5.5, md: 8 }, '@keyframes slideFacts': { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } } }}>
+          <Box sx={{ display: 'flex', width: 'max-content', animation: 'slideFacts 32s linear infinite', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }}>
+            {[...FACTS, ...FACTS].map((fact, index) => (
+              <Box key={`${fact}-${index}`} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <Typography sx={{ px: { xs: 3, md: 4 }, fontFamily: 'Impact, sans-serif', fontSize: { xs: '22px', md: '40px' }, lineHeight: 1, letterSpacing: '0.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: index % 2 ? copper : 'var(--land-cream)' }}>
+                  {fact}
+                </Typography>
+                <Box sx={{ width: '7px', height: '7px', bgcolor: copper, transform: 'rotate(45deg)', flexShrink: 0 }} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        <Box id="product" sx={{ ...pad }}>
+          <Box sx={wrap}>
+            <Reveal>
+              <Kicker>The product</Kicker>
+              <Title>Five pieces. One desk.</Title>
+            </Reveal>
+            <Box
+              sx={{
+                mt: 5,
+                display: 'grid',
+                width: '100%',
+                minWidth: 0,
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1.35fr 1fr 1fr' },
+                gridAutoRows: { md: 'minmax(250px, auto)' },
+                columnGap: { md: 6 },
+                rowGap: { xs: 2.5, md: 4 },
+              }}
+            >
+              {PRODUCT.map((item, index) => (
+                <Reveal
+                  key={item.title}
+                  delay={index * 90}
+                  sx={{
+                    gridColumn: { md: item.wide ? '1 / -1' : 'auto', lg: item.wide ? '1 / 2' : 'auto' },
+                    gridRow: { lg: item.wide ? '1 / span 2' : 'auto' },
+                    position: 'relative',
+                    overflow: 'hidden',
+                    minWidth: 0,
+                    maxWidth: '100%',
+                    borderRadius: '22px',
+                    height: { xs: 'auto', md: item.wide ? 420 : 230, lg: 'auto' },
+                    minHeight: { xs: item.wide ? 280 : 0, lg: item.wide ? '100%' : 250 },
+                    border: `1px solid ${line}`,
+                    color: ink,
+                    transition: 'transform 0.5s ease',
+                    '&:hover': { transform: 'translateY(-8px)' },
+                    background: item.image
+                      ? 'transparent'
+                      : [
+                        'linear-gradient(165deg, rgba(217,185,106,0.72) 0%, rgba(138,107,37,0.28) 34%, var(--land-end-a) 68%)',
+                        'linear-gradient(205deg, rgba(184,146,61,0.78) 0%, rgba(92,70,24,0.35) 36%, var(--land-end-b) 70%)',
+                        'linear-gradient(150deg, rgba(245,232,200,0.42) 0%, rgba(184,146,61,0.22) 32%, var(--land-end-c) 66%)',
+                        'linear-gradient(188deg, rgba(138,107,37,0.9) 0%, rgba(184,146,61,0.25) 40%, var(--land-end-d) 72%)',
+                      ][index - 1],
+                    '&:hover img': { transform: 'scale(1.08)' },
+                  }}
+                >
+                  {item.image && (
+                    <Box
+                      component="img"
+                      src={item.image}
+                      alt=""
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.6s ease',
+                      }}
+                    />
+                  )}
+                  {item.image && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(180deg, rgba(12,12,12,0.05) 0%, rgba(12,12,12,0.08) 32%, rgba(138,107,37,0.55) 70%, rgba(12,12,12,0.94) 100%)',
+                      }}
+                    />
+                  )}
+                  <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${copper}, transparent)` }} />
+                  {!item.image && (
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 18, left: 24, zIndex: 1, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(4.6rem, 6vw, 7rem)', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px var(--land-stroke)', pointerEvents: 'none' }}>
+                      0{index + 1}
+                    </Typography>
+                  )}
+                  <Box sx={{ position: 'relative', zIndex: 1, height: { md: '100%' }, minHeight: { md: 'inherit' }, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', p: { xs: 2, md: 3 }, ...(item.image && { '--land-ink': 'var(--land-on-photo)', '--land-soft': 'var(--land-on-photo-soft)', '--land-highlight': 'var(--land-on-photo-mark)' }) }}>
+                    {!item.image && (
+                      <Typography sx={{ display: { md: 'none' }, mb: 1, fontFamily: 'Impact, sans-serif', fontSize: '2.4rem', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px var(--land-stroke)' }}>
+                        0{index + 1}
+                      </Typography>
+                    )}
+                    {item.image && (
+                      <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: 'var(--land-highlight)' }}>0{index + 1}</Typography>
+                    )}
+                    <Typography sx={{ mt: item.image ? 1 : 0, maxWidth: '100%', fontFamily: poster, fontSize: item.wide ? { xs: '24px', sm: '42px', lg: '48px' } : { xs: '20px', md: '30px' }, lineHeight: 1.15, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{item.title}</Typography>
+                    <Typography sx={{ mt: 1.25, maxWidth: '100%', color: 'var(--land-soft)', fontFamily: mono, fontSize: { xs: '12px', md: '13px' }, lineHeight: 1.65 }}>{item.text}</Typography>
+                  </Box>
+                </Reveal>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={{ ...pad, pt: 0 }}>
+          <Box sx={wrap}>
+            <Reveal>
+              <Kicker>Who it is for</Kicker>
+              <Title>If the work is the currency.</Title>
+            </Reveal>
+            <Box sx={{ mt: 5, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+              {ROLES.map((role, index) => (
+                <Reveal
+                  key={role.name}
+                  delay={index * 90}
+                  sx={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    p: 2.5,
+                    borderRadius: '20px',
+                    border: `1px solid rgba(184,146,61,0.35)`,
+                    transition: 'transform 0.5s ease',
+                    '&:hover': { transform: 'translateY(-8px)' },
+                    background: [
+                      'linear-gradient(155deg, rgba(217,185,106,0.62) 0%, var(--land-role-a) 58%)',
+                      'linear-gradient(205deg, #A6853A 0%, var(--land-end-f) 46%, var(--land-end-e) 100%)',
+                      'linear-gradient(165deg, rgba(184,146,61,0.48) 0%, var(--land-role-b) 62%)',
+                      'linear-gradient(145deg, var(--land-role-c) 0%, var(--land-role-d) 100%)',
+                    ][index],
+                  }}
+                >
+                  <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, #F5E8C8, ${copper}, transparent)` }} />
+                  <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: 'var(--land-highlight)' }}>0{index + 1}</Typography>
+                  <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '22px', md: '28px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{role.name}</Typography>
+                  <Typography sx={{ mt: 1.5, color: 'var(--land-soft-2)', fontFamily: mono, fontSize: '13px', lineHeight: 1.65 }}>{role.line}</Typography>
+                </Reveal>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box id="crafts" sx={{ ...pad, bgcolor: 'var(--land-section)' }}>
+          <Box sx={wrap}>
+            <Reveal>
+              <Kicker>The wider room</Kicker>
+              <Title>Every craft needs another.</Title>
+            </Reveal>
+            <Box sx={{ position: 'relative', mt: { xs: 4, md: 6 } }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: { xs: '92%', md: '62%' },
+                  height: { xs: '42%', md: '58%' },
+                  transform: 'translate(-50%, -50%)',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(ellipse at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.34) 22%, rgba(184,146,61,0.22) 46%, rgba(138,107,37,0.08) 68%, transparent 78%)',
+                  filter: 'blur(10px)',
+                  pointerEvents: 'none',
+                  animation: 'glowBreath 8s ease-in-out infinite',
+                  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                }}
+              />
+              {TRADES.map((trade, index) => (
+                <Reveal key={trade.name} delay={index * 50} sx={{ position: 'relative', display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: { xs: 'center', md: 'baseline' }, gap: { xs: 1, md: 2.5 }, py: { xs: 1.75, md: 2 }, borderBottom: `1px solid ${line}`, transition: 'transform 0.45s ease', '&:hover': { transform: { md: 'translateX(8px)' } } }}>
+                  <Typography sx={{ fontFamily: poster, fontSize: { xs: '20px', sm: '24px', md: '28px' }, lineHeight: 1, letterSpacing: headingTrack, textTransform: 'uppercase', minWidth: 0 }}>{trade.name}</Typography>
+                  <Box sx={{ display: { xs: 'none', md: 'block' }, flex: 1, borderBottom: '1px dashed rgba(184,146,61,0.55)', minWidth: 24 }} />
+                  <Typography sx={{ width: { xs: '100%', md: 'auto' }, fontFamily: mono, fontSize: { xs: '12px', md: '14px' }, letterSpacing: '0.04em', color: muted, textAlign: { xs: 'left', md: 'right' } }}>
+                    needs: <Box component="span" sx={{ color: 'var(--land-highlight)' }}>{trade.needs}</Box>
+                  </Typography>
+                </Reveal>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box id="drops" sx={{ ...pad, bgcolor: 'var(--land-section)' }}>
+          <Box sx={wrap}>
+            <Reveal>
+              <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2} sx={{ mb: 5 }}>
+                <Box>
+                  <Kicker>The board</Kicker>
+                  <Title>Drops that are actually specific.</Title>
+                </Box>
+                <Typography sx={{ maxWidth: 360, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7, alignSelf: { md: 'end' } }}>
+                  A useful drop can be answered in one tap. Vague posts do not survive here.
+                </Typography>
+              </Stack>
+            </Reveal>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.25fr 0.75fr' }, gap: { xs: 3, lg: 3 }, alignItems: 'stretch' }}>
+              <Reveal sx={{ position: 'relative', height: { xs: 380, sm: 460, lg: 620 }, overflow: 'hidden' }}>
+                <Box component="img" src={DROPS[0].image} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%', animation: 'slowZoom 18s ease-in-out infinite alternate', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
+                <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(12,12,12,0.05) 20%, rgba(12,12,12,0.2) 48%, rgba(12,12,12,0.92) 100%)' }} />
+                <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 0, p: { xs: 2.5, md: 4 }, '--land-cream': 'var(--land-on-photo)', '--land-soft': 'var(--land-on-photo-soft)', '--land-highlight': 'var(--land-on-photo-mark)' }}>
+                  <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--land-highlight)', overflowWrap: 'anywhere' }}>
+                    01  ·  {DROPS[0].role}  ·  {DROPS[0].city}  ·  {DROPS[0].status}
+                  </Typography>
+                  <Typography sx={{ mt: 1.5, maxWidth: 560, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.65rem, 7vw, 3.6rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                    <ToneWords>{DROPS[0].ask}</ToneWords>
+                  </Typography>
+                  <Typography sx={{ mt: 2, maxWidth: 420, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'var(--land-soft)' }}>
+                    {DROPS[0].give}
+                  </Typography>
+                </Box>
+              </Reveal>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                {DROPS.slice(1).map((drop, index) => (
+                  <Reveal key={drop.role} delay={index * 100} sx={{ display: 'grid', gridTemplateColumns: { xs: '92px 1fr', sm: '128px 1fr' }, gap: { xs: 1.5, md: 2.5 }, alignItems: 'center', py: { xs: 2, lg: 0 }, borderTop: index ? `1px solid ${line}` : 'none', minWidth: 0, '&:hover img': { transform: 'scale(1.08)' } }}>
+                    <Box sx={{ position: 'relative', height: { xs: 92, sm: 128 }, overflow: 'hidden' }}>
+                      <Box component="img" src={drop.image} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s ease' }} />
+                    </Box>
+                    <Box sx={{ py: { lg: 2 }, minWidth: 0 }}>
+                      <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: copper }}>
+                        0{index + 2}  ·  {drop.city}  ·  {drop.status}
+                      </Typography>
+                      <Typography sx={{ mt: 0.75, fontFamily: poster, fontSize: { xs: '20px', sm: '26px' }, lineHeight: 1, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{drop.role}</Typography>
+                      <Typography sx={{ mt: 1, color: ink, fontFamily: mono, fontSize: '13px', lineHeight: 1.6 }}>{drop.ask}</Typography>
+                      <Typography sx={{ mt: 0.75, color: muted, fontFamily: mono, fontSize: '13px', lineHeight: 1.6 }}>{drop.give}</Typography>
+                    </Box>
+                  </Reveal>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={pad}>
+          <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.2fr' }, gap: { xs: 4, md: 8 }, alignItems: 'start' }}>
+            <Reveal>
+              <Kicker>Against the other options</Kicker>
+              <Title>Not a marketplace. Not a favor.</Title>
+            </Reveal>
+            <Stack spacing={0} sx={{ borderTop: `1px solid ${line}` }}>
+              {COMPARE.map((row, index) => (
+                <Reveal key={row.label} delay={index * 70} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '140px 1fr 1fr' }, gap: { xs: 0.5, sm: 2 }, py: 2.25, borderBottom: `1px solid ${line}`, minWidth: 0 }}>
+                  <Typography sx={{ color: faint, fontSize: 13 }}>{row.label}</Typography>
+                  <Typography sx={{ color: muted, fontFamily: mono, fontSize: 14 }}>{row.theirs}</Typography>
+                  <Typography sx={{ fontFamily: mono, fontSize: 14 }}>{row.ours}</Typography>
+                </Reveal>
+              ))}
+            </Stack>
+          </Box>
+        </Box>
+
+        <Box
+          id="circles"
+          sx={{
+            ...pad,
+            position: 'relative',
+            overflow: 'hidden',
+            bgcolor: 'var(--land-section)',
+            '@keyframes glowCorner': {
+              '0%, 100%': { transform: 'translate(22%, 0) scale(1)', opacity: 0.75 },
+              '50%': { transform: 'translate(22%, 0) scale(1.08)', opacity: 1 },
+            },
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: { xs: 96, md: 140 },
+              right: 0,
+              width: { xs: 280, md: 460 },
+              height: { xs: 280, md: 460 },
+              borderRadius: '50%',
+              background: 'radial-gradient(circle at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.32) 24%, rgba(184,146,61,0.18) 48%, rgba(138,107,37,0.06) 70%, transparent 78%)',
+              filter: 'blur(10px)',
+              pointerEvents: 'none',
+              animation: 'glowCorner 8s ease-in-out infinite',
+              '@media (prefers-reduced-motion: reduce)': { animation: 'none', transform: 'translate(22%, 0)' },
+            }}
+          />
+          <Box sx={{ ...wrap, position: 'relative', zIndex: 1 }}>
+            <Reveal>
+              <Kicker>Membership</Kicker>
+              <Title>Circles with a door policy.</Title>
+            </Reveal>
+            <Box sx={{ mt: 2 }}>
+              {CIRCLES.map((circle, index) => (
+                <Reveal
+                  key={circle.name}
+                  delay={index * 90}
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr auto', lg: '140px 120px 1.4fr 1fr' },
+                    columnGap: { xs: 2, md: 4 },
+                    rowGap: 1,
+                    alignItems: 'center',
+                    py: { xs: 3, md: 4 },
+                    px: { xs: 2, md: 3 },
+                    borderTop: `1px solid ${line}`,
+                    borderBottom: index === CIRCLES.length - 1 ? `1px solid ${line}` : 'none',
+                    background: circle.access === 'Private' ? 'linear-gradient(90deg, rgba(184,146,61,0.16), transparent 55%)' : 'transparent',
+                    transition: 'background 0.45s ease',
+                    '&:hover': { background: 'linear-gradient(90deg, rgba(184,146,61,0.22), transparent 70%)' },
+                  }}
+                >
+                  <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper }}>{circle.access}</Typography>
+                  <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: { xs: '32px', lg: '64px' }, lineHeight: 0.8, letterSpacing: '0.02em', color: circle.access === 'Private' ? copper : 'transparent', WebkitTextStroke: circle.access === 'Private' ? '0' : '1.5px var(--land-stroke-strong)', textAlign: { xs: 'right', lg: 'left' } }}>{circle.count}</Typography>
+                  <Box sx={{ gridColumn: { xs: '1 / -1', lg: 'auto' }, minWidth: 0 }}>
+                    <Typography sx={{ fontFamily: poster, fontSize: { xs: '22px', sm: '30px', lg: '34px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{circle.name}</Typography>
+                    <Typography sx={{ mt: 0.75, fontFamily: mono, fontSize: '13px', color: muted }}>{circle.place}</Typography>
+                  </Box>
+                  <Typography sx={{ gridColumn: { xs: '1 / -1', lg: 'auto' }, minWidth: 0, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'var(--land-soft-2)' }}>{circle.note}</Typography>
+                </Reveal>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box id="events" sx={pad}>
+          <Box sx={wrap}>
+            <Reveal>
+              <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'end' }} spacing={2}>
+                <Box>
+                  <Kicker>Off the screen</Kicker>
+                  <Title>A short calendar.</Title>
+                </Box>
+                <Typography sx={{ maxWidth: 320, color: muted, fontFamily: mono, fontSize: '14px', lineHeight: 1.7 }}>
+                  A city, a host, and a list that actually ends.
+                </Typography>
+              </Stack>
+            </Reveal>
+
+            <Box sx={{ mt: { xs: 4, md: 5 }, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
+              {EVENTS.map((event, index) => (
+                <Reveal
+                  key={event.name}
+                  delay={index * 100}
+                  sx={{
+                    py: { xs: 3, md: 0 },
+                    pl: { md: index ? 4 : 0 },
+                    pr: { md: 3 },
+                    borderTop: { xs: index ? `1px solid ${line}` : 'none', md: 'none' },
+                    borderLeft: { md: index ? `1px solid ${line}` : 'none' },
+                  }}
+                >
+                  <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: copper }}>
+                    {event.mon}  ·  {event.city}  ·  {event.seats}
+                  </Typography>
+                  <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '22px', md: '32px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{event.name}</Typography>
+                  <Typography sx={{ mt: 1.25, fontFamily: mono, fontSize: '13px', lineHeight: 1.6, color: muted }}>{event.host}</Typography>
+                </Reveal>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={{ ...pad, pt: 0 }}>
+          <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            {NOTES.map((note, index) => (
+              <Reveal
+                key={note.name}
+                delay={index * 120}
+                sx={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  p: { xs: 3, md: 4 },
+                  borderRadius: '22px',
+                  color: index ? ink : onGold,
+                  border: index ? '1px solid rgba(184,146,61,0.4)' : 'none',
+                  background: index
+                    ? 'linear-gradient(205deg, rgba(217,185,106,0.34) 0%, var(--land-end-e) 48%)'
+                    : `linear-gradient(145deg, ${copperDeep} 0%, ${copper} 46%, #D9B96A 100%)`,
+                  transition: 'transform 0.5s ease',
+                  '&:hover': { transform: 'translateY(-8px)' },
+                }}
+              >
+                <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: index ? `linear-gradient(90deg, #F5E8C8, ${copper}, transparent)` : 'linear-gradient(90deg, rgba(255,255,255,0.7), transparent)' }} />
+                <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: { xs: '36px', md: '48px' }, lineHeight: 0.7, color: index ? copper : 'rgba(255,255,255,0.7)' }}>&ldquo;</Typography>
+                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '22px', md: '32px' }, lineHeight: 1.2, color: 'inherit' }}>{note.quote}</Typography>
+                <Box sx={{ mt: 3, pt: 2, borderTop: index ? `1px solid ${line}` : '1px solid rgba(255,255,255,0.35)' }}>
+                  <Typography sx={{ fontFamily: poster, fontSize: '18px', letterSpacing: headingTrack, textTransform: 'uppercase', color: 'inherit' }}>{note.name}</Typography>
+                  <Typography sx={{ mt: 0.5, fontFamily: mono, fontSize: '13px', letterSpacing: '0.06em', color: index ? muted : 'rgba(255,255,255,0.82)' }}>{note.role}</Typography>
+                </Box>
+              </Reveal>
+            ))}
+          </Box>
+        </Box>
+
+        <Box sx={{ ...pad, pb: 0, bgcolor: 'var(--land-section)' }}>
+          <Box sx={wrap}>
+            <Reveal>
+              <Kicker>Practical</Kicker>
+              <Title>Before the first drop.</Title>
+            </Reveal>
+            <Box sx={{ position: 'relative', mt: 5 }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: { xs: '88%', md: '70%' },
+                  height: { xs: '46%', md: '72%' },
+                  transform: 'translate(-50%, -50%)',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(ellipse at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.34) 22%, rgba(184,146,61,0.22) 46%, rgba(138,107,37,0.08) 68%, transparent 78%)',
+                  filter: 'blur(10px)',
+                  pointerEvents: 'none',
+                  animation: 'glowBreath 8s ease-in-out infinite',
+                  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                }}
+              />
+              <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                {QUESTIONS.map((item, index) => (
+                  <Reveal key={item.q} delay={(index % 2) * 80} sx={{ position: 'relative', zIndex: 1, p: 3, borderRadius: 3, border: `1px solid ${line}`, transition: 'border-color 0.4s ease, transform 0.45s ease', '&:hover': { borderColor: copper, transform: 'translateY(-6px)' } }}>
+                    <Typography sx={{ fontFamily: poster, fontSize: { xs: 20, md: 26 }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{item.q}</Typography>
+                    <Typography sx={{ mt: 1, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7 }}>{item.a}</Typography>
+                  </Reveal>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box id="app" sx={{ pt: { xs: 4, md: 5 }, pb: { xs: 7, md: 14 }, position: 'relative', overflow: 'hidden', bgcolor: 'var(--land-section)' }}>
+          <Box sx={{ ...wrap, position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.05fr auto' }, gap: { xs: 4, lg: 8 }, alignItems: 'center' }}>
+            <Reveal>
+              <Kicker>On the phone</Kicker>
+              <Title sx={{ maxWidth: 640 }}>The trade, in your pocket.</Title>
+              <Typography sx={{ mt: 2, maxWidth: 460, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7 }}>
+                Same drop. Same circle. Open it on iOS or Android.
+              </Typography>
+            </Reveal>
+            <Box sx={{ position: 'relative' }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: { xs: 260, md: 380 },
+                  height: { xs: 260, md: 380 },
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.3) 28%, rgba(184,146,61,0.16) 52%, transparent 72%)',
+                  filter: 'blur(8px)',
+                  pointerEvents: 'none',
+                  animation: 'glowBreath 8s ease-in-out infinite',
+                  '@media (prefers-reduced-motion: reduce)': { animation: 'none', transform: 'translate(-50%, -50%)' },
+                }}
+              />
+              <Stack direction={{ xs: 'column', sm: 'row' }} flexWrap="wrap" useFlexGap spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
+                {STORES.map((store, index) => (
+                  <Reveal
+                    key={store.id}
+                    delay={180 + index * 140}
+                    component="a"
+                    href={store.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      width: { xs: '100%', sm: 268, md: 280 },
+                      maxWidth: '100%',
+                      minHeight: 86,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.75,
+                      px: 2.5,
+                      py: 1.75,
+                      color: '#1A1408',
+                      textDecoration: 'none',
+                      borderRadius: '18px',
+                      background: 'linear-gradient(135deg, #F5E8C8 0%, #E8D08A 28%, #C6A04A 62%, #8A6B25 100%)',
+                      border: '1px solid rgba(245,232,200,0.7)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45)',
+                      transition: 'transform 0.45s ease, filter 0.45s ease',
+                      '&:hover': { transform: 'translateY(-6px)', filter: 'brightness(1.06)' },
+                    }}
+                  >
+                    <StoreGlyph type={store.id} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontFamily: mono, fontSize: 11, lineHeight: 1.2, color: 'rgba(26,20,8,0.72)' }}>{store.kicker}</Typography>
+                      <Typography sx={{ fontFamily: poster, fontSize: { xs: 20, sm: 26 }, lineHeight: 1.15, letterSpacing: headingTrack, textTransform: 'uppercase', color: '#1A1408' }}>{store.name}</Typography>
+                    </Box>
+                  </Reveal>
+                ))}
+              </Stack>
+            </Box>
+          </Box>
+        </Box>
+
         <Box
           sx={{
-            ...wrap,
             position: 'relative',
-            zIndex: 1,
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.15fr) minmax(220px, 0.85fr)' },
-            alignItems: 'stretch',
-            minHeight: { md: 620, lg: '82vh' },
+            overflow: 'hidden',
+            py: { xs: 8, md: 12 },
+            color: '#1A1408',
+            background: 'linear-gradient(105deg, #3d2e10 0%, #5C4618 16%, #8A6B25 38%, #B8923D 58%, #D9B96A 78%, #F5E8C8 100%)',
           }}
         >
           <Typography
             aria-hidden
             sx={{
-              display: { xs: 'none', lg: 'block' },
+              display: { xs: 'none', md: 'block' },
               position: 'absolute',
-              left: '28%',
-              top: '46%',
-              transform: 'translateY(-50%)',
+              right: { md: '-2%', lg: '2%' },
+              top: '50%',
+              transform: 'translateY(-54%)',
               m: 0,
               fontFamily: 'Impact, sans-serif',
-              fontSize: 'clamp(8rem, 16vw, 14rem)',
+              fontWeight: 400,
+              fontSize: 'clamp(9rem, 18vw, 16rem)',
               lineHeight: 0.8,
               letterSpacing: '0.02em',
               textTransform: 'uppercase',
-              color: 'transparent',
-              WebkitTextStroke: '1px rgba(184,146,61,0.28)',
+              color: 'rgba(61,46,16,0.28)',
               pointerEvents: 'none',
               userSelect: 'none',
-              zIndex: 0,
-              animation: 'strokePulse 7s ease-in-out infinite',
+              WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, #000 32%, #000 72%, transparent 100%)',
+              maskImage: 'linear-gradient(90deg, transparent 0%, #000 32%, #000 72%, transparent 100%)',
+              animation: 'tradeDrift 9s ease-in-out infinite',
               '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
             }}
           >
-            Drop
+            Trade
           </Typography>
-
-          <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: { xs: 5, md: 8 }, pr: { lg: 3 } }}>
-            <Typography sx={{ fontFamily: mono, fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper, ...rise(0.05, heroOn) }}>
-              For people who trade the work
+          <Reveal sx={{ ...wrap, position: 'relative', zIndex: 1 }}>
+            <Typography sx={{ fontFamily: poster, fontSize: { xs: '28px', sm: '48px', md: '68px', lg: '80px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', maxWidth: 860, color: '#F5E8C8' }}>
+              Post the need. Name the offer.
             </Typography>
-
-            <Box
-              component="h1"
-              sx={{
-                m: 0,
-                pt: { xs: 2, md: 2.5 },
-                fontFamily: 'Impact, sans-serif',
-                fontWeight: 400,
-                fontSize: { xs: 'clamp(2.7rem, 15vw, 4rem)', sm: 'clamp(3.5rem, 11vw, 5.6rem)', md: 'clamp(3.6rem, 6.2vw, 6.4rem)', lg: 'clamp(3.8rem, 7vw, 8.8rem)' },
-                lineHeight: 1,
-                letterSpacing: '0.02em',
-                textTransform: 'uppercase',
-              }}
-            >
-              <Box component="span" sx={{ display: 'block', color: '#f3efe6', ...rise(0.12, heroOn) }}>
-                Trade
-              </Box>
-              <Box component="span" sx={{ display: 'block', color: copper, ...rise(0.24, heroOn) }}>
-                Your
-              </Box>
-              <Box component="span" sx={{ display: 'block', color: 'transparent', WebkitTextStroke: '0.035em #6d645e', ...rise(0.36, heroOn) }}>
-                Craft.
-              </Box>
-            </Box>
-
-            <Typography sx={{ maxWidth: 520, mt: { xs: 3, md: 4 }, color: muted, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, ...rise(0.48, heroOn) }}>
-              A photographer needs styling. A designer needs the still. Post both sides, agree once, and keep the client. No fee.
+            <Typography sx={{ mt: 2, maxWidth: 520, color: 'rgba(245,232,200,0.88)', fontFamily: mono, fontSize: '14px', lineHeight: 1.7 }}>
+              A drop is both halves. A tap is the yes. Circles and events are where the work meets.
             </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5, ...rise(0.6, heroOn) }}>
-              <Button component={RouterLink} href={paths.auth.jwt.signUp} variant="contained" sx={{ bgcolor: copper, color: onGold, borderRadius: 10, px: 3, minHeight: 48, boxShadow: 'none', '&:hover': { bgcolor: copperDeep, boxShadow: 'none' } }}>
-                Sign Up
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 4 }}>
+              <Button
+                component={RouterLink}
+                href={paths.auth.jwt.signIn}
+                sx={{
+                  ...loginButtonSx,
+                  px: 3,
+                  minHeight: 48,
+                  color: '#F5E8C8',
+                  backgroundImage: 'linear-gradient(135deg, #1A1408 0%, #3d2e10 46%, #8A6B25 100%)',
+                  border: '1px solid rgba(245,232,200,0.55)',
+                  '&:hover': {
+                    ...loginButtonSx['&:hover'],
+                    color: '#F5E8C8',
+                    backgroundImage: 'linear-gradient(135deg, #1A1408 0%, #3d2e10 46%, #8A6B25 100%)',
+                  },
+                }}
+              >
+                Login
               </Button>
-              <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', borderRadius: 10, px: 3, minHeight: 48, border: '1px solid rgba(255,255,255,0.35)', textDecoration: 'none', '&:hover': { borderColor: '#FFFFFF', bgcolor: 'transparent', textDecoration: 'none' } }}>
+            </Stack>
+          </Reveal>
+        </Box>
+
+        <Box component="footer" sx={{ py: 3 }}>
+          <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr auto 1fr' }, justifyItems: { xs: 'center', sm: 'stretch' }, alignItems: 'center', rowGap: 1.5, columnGap: 2 }}>
+            <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', justifySelf: { xs: 'center', sm: 'start' } }}>
+              <BrandLogo light={light} height={{ xs: 32, md: 40 }} width={{ xs: 43, md: 53 }} />
+            </Box>
+            <Typography sx={{ fontFamily: mono, fontSize: { xs: '11px', md: '12px' }, color: faint, textAlign: 'center' }}>© 2026 TradeDrop. All rights reserved.</Typography>
+            <Stack direction="row" spacing={2} sx={{ justifySelf: { xs: 'center', sm: 'end' } }}>
+              <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ ...loginButtonSx, minHeight: 34, px: 1.75, fontSize: 13, fontFamily: mono }}>
                 Login
               </Button>
             </Stack>
           </Box>
-
-          <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0, minHeight: { md: '100%' } }}>
-            <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 28, right: { md: 0, lg: 28 }, bottom: 52, left: { md: 36, lg: 56 }, border: `8px solid ${copper}`, ...rise(0.2, heroOn) }} />
-            <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 48, lg: 56 }, right: { md: 12, lg: 48 }, bottom: { md: 128, lg: 120 }, left: { md: 0 }, height: { xs: 320, sm: 400, md: 'auto' }, overflow: { md: 'hidden' } }}>
-              <Box component="img" src={heroLookbook} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: { xs: 'contain', md: 'cover' }, objectPosition: 'center', animation: { md: heroOn ? 'driftPhoto 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' : 'none' }, '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
-            </Box>
-            <Box sx={{ position: { xs: 'relative', md: 'absolute' }, left: { md: 0 }, right: { md: 20, lg: 64 }, bottom: { md: 16, lg: 36 }, bgcolor: bg, borderTop: `2px solid ${copper}`, px: { xs: 0, md: 2.5 }, py: 2, ...rise(0.4, heroOn) }}>
-              <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: copper }}>Open drop · New York</Typography>
-              <Typography sx={{ mt: 0.75, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(1.5rem, 2vw, 2rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                Styling for a fall lookbook
-              </Typography>
-              <Typography sx={{ mt: 1, fontFamily: mono, fontSize: '13px', color: muted }}>Half a day of portraits</Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      <Box sx={{ overflow: 'hidden', borderTop: `1px solid ${line}`, borderBottom: `1px solid ${line}`, py: { xs: 5.5, md: 8 }, '@keyframes slideFacts': { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } } }}>
-        <Box sx={{ display: 'flex', width: 'max-content', animation: 'slideFacts 32s linear infinite', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }}>
-          {[...FACTS, ...FACTS].map((fact, index) => (
-            <Box key={`${fact}-${index}`} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-              <Typography sx={{ px: { xs: 3, md: 4 }, fontFamily: 'Impact, sans-serif', fontSize: { xs: '28px', md: '40px' }, lineHeight: 1, letterSpacing: '0.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: index % 2 ? copper : '#f3efe6' }}>
-                {fact}
-              </Typography>
-              <Box sx={{ width: '7px', height: '7px', bgcolor: copper, transform: 'rotate(45deg)', flexShrink: 0 }} />
-            </Box>
-          ))}
-        </Box>
-      </Box>
-
-      <Box id="product" sx={{ ...pad }}>
-        <Box sx={wrap}>
-          <Reveal>
-            <Kicker>The product</Kicker>
-            <Title>Five pieces. One desk.</Title>
-          </Reveal>
-          <Box
-            sx={{
-              mt: 5,
-              display: 'grid',
-              width: '100%',
-              minWidth: 0,
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1.35fr 1fr 1fr' },
-              gridAutoRows: { md: 'minmax(250px, auto)' },
-              columnGap: { md: 6 },
-              rowGap: { xs: 2.5, md: 4 },
-            }}
-          >
-            {PRODUCT.map((item, index) => (
-              <Reveal
-                key={item.title}
-                delay={index * 90}
-                sx={{
-                  gridColumn: { md: item.wide ? '1 / -1' : 'auto', lg: item.wide ? '1 / 2' : 'auto' },
-                  gridRow: { lg: item.wide ? '1 / span 2' : 'auto' },
-                  position: 'relative',
-                  overflow: 'hidden',
-                  minWidth: 0,
-                  maxWidth: '100%',
-                  borderRadius: '22px',
-                  height: { xs: 'auto', md: item.wide ? 420 : 230, lg: 'auto' },
-                  minHeight: { xs: item.wide ? 280 : 0, lg: item.wide ? '100%' : 250 },
-                  border: `1px solid ${line}`,
-                  color: ink,
-                  transition: 'transform 0.5s ease',
-                  '&:hover': { transform: 'translateY(-8px)' },
-                  background: item.image
-                    ? 'transparent'
-                    : [
-                      'linear-gradient(165deg, rgba(217,185,106,0.72) 0%, rgba(138,107,37,0.28) 34%, #141414 68%)',
-                      'linear-gradient(205deg, rgba(184,146,61,0.78) 0%, rgba(92,70,24,0.35) 36%, #121212 70%)',
-                      'linear-gradient(150deg, rgba(245,232,200,0.42) 0%, rgba(184,146,61,0.22) 32%, #161616 66%)',
-                      'linear-gradient(188deg, rgba(138,107,37,0.9) 0%, rgba(184,146,61,0.25) 40%, #101010 72%)',
-                    ][index - 1],
-                  '&:hover img': { transform: 'scale(1.08)' },
-                }}
-              >
-                {item.image && (
-                  <Box
-                    component="img"
-                    src={item.image}
-                    alt=""
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      transition: 'transform 0.6s ease',
-                    }}
-                  />
-                )}
-                {item.image && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(180deg, rgba(12,12,12,0.05) 0%, rgba(12,12,12,0.08) 32%, rgba(138,107,37,0.55) 70%, rgba(12,12,12,0.94) 100%)',
-                    }}
-                  />
-                )}
-                <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${copper}, transparent)` }} />
-                {!item.image && (
-                  <Typography sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: 18, left: 24, zIndex: 1, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(4.6rem, 6vw, 7rem)', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px rgba(244,240,230,0.7)', pointerEvents: 'none' }}>
-                    0{index + 1}
-                  </Typography>
-                )}
-                <Box sx={{ position: 'relative', zIndex: 1, height: { md: '100%' }, minHeight: { md: 'inherit' }, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', p: { xs: 2, md: 3 } }}>
-                  {!item.image && (
-                    <Typography sx={{ display: { md: 'none' }, mb: 1, fontFamily: 'Impact, sans-serif', fontSize: '2.4rem', lineHeight: 0.8, letterSpacing: '0.02em', color: 'transparent', WebkitTextStroke: '1.5px rgba(244,240,230,0.7)' }}>
-                      0{index + 1}
-                    </Typography>
-                  )}
-                  {item.image && (
-                    <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: '#F5E8C8' }}>0{index + 1}</Typography>
-                  )}
-                  <Typography sx={{ mt: item.image ? 1 : 0, maxWidth: '100%', fontFamily: poster, fontSize: item.wide ? { xs: '30px', sm: '42px', lg: '48px' } : { xs: '22px', md: '30px' }, lineHeight: 1.15, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{item.title}</Typography>
-                  <Typography sx={{ mt: 1.25, maxWidth: '100%', color: 'rgba(244,240,230,0.86)', fontFamily: mono, fontSize: { xs: '12px', md: '13px' }, lineHeight: 1.65 }}>{item.text}</Typography>
-                </Box>
-              </Reveal>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      <Box sx={{ ...pad, pt: 0 }}>
-        <Box sx={wrap}>
-          <Reveal>
-            <Kicker>Who it is for</Kicker>
-            <Title>If the work is the currency.</Title>
-          </Reveal>
-          <Box sx={{ mt: 5, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
-            {ROLES.map((role, index) => (
-              <Reveal
-                key={role.name}
-                delay={index * 90}
-                sx={{
-                  position: 'relative',
-                  overflow: 'hidden',
-                  p: 2.5,
-                  borderRadius: '20px',
-                  border: `1px solid rgba(184,146,61,0.35)`,
-                  transition: 'transform 0.5s ease',
-                  '&:hover': { transform: 'translateY(-8px)' },
-                  background: [
-                    'linear-gradient(155deg, rgba(217,185,106,0.62) 0%, #1A1712 58%)',
-                    'linear-gradient(205deg, #A6853A 0%, #2A2416 46%, #141210 100%)',
-                    'linear-gradient(165deg, rgba(184,146,61,0.48) 0%, #161412 62%)',
-                    'linear-gradient(145deg, #1C1A16 0%, #3A3120 100%)',
-                  ][index],
-                }}
-              >
-                <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, #F5E8C8, ${copper}, transparent)` }} />
-                <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', color: '#F5E8C8' }}>0{index + 1}</Typography>
-                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: '28px', lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', color: ink }}>{role.name}</Typography>
-                <Typography sx={{ mt: 1.5, color: 'rgba(244,240,230,0.82)', fontFamily: mono, fontSize: '13px', lineHeight: 1.65 }}>{role.line}</Typography>
-              </Reveal>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      <Box id="crafts" sx={{ ...pad, bgcolor: '#080808' }}>
-        <Box sx={wrap}>
-          <Reveal>
-            <Kicker>The wider room</Kicker>
-            <Title>Every craft needs another.</Title>
-          </Reveal>
-          <Box sx={{ position: 'relative', mt: { xs: 4, md: 6 } }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                width: { xs: '92%', md: '62%' },
-                height: { xs: '42%', md: '58%' },
-                transform: 'translate(-50%, -50%)',
-                borderRadius: '50%',
-                background: 'radial-gradient(ellipse at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.34) 22%, rgba(184,146,61,0.22) 46%, rgba(138,107,37,0.08) 68%, transparent 78%)',
-                filter: 'blur(10px)',
-                pointerEvents: 'none',
-                animation: 'glowBreath 8s ease-in-out infinite',
-                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-              }}
-            />
-            {TRADES.map((trade, index) => (
-              <Reveal key={trade.name} delay={index * 50} sx={{ position: 'relative', display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: { xs: 'center', md: 'baseline' }, gap: { xs: 1, md: 2.5 }, py: { xs: 1.75, md: 2 }, borderBottom: `1px solid ${line}`, transition: 'transform 0.45s ease', '&:hover': { transform: { md: 'translateX(8px)' } } }}>
-                <Typography sx={{ fontFamily: poster, fontSize: { xs: '20px', sm: '24px', md: '28px' }, lineHeight: 1, letterSpacing: headingTrack, textTransform: 'uppercase', minWidth: 0 }}>{trade.name}</Typography>
-                <Box sx={{ display: { xs: 'none', md: 'block' }, flex: 1, borderBottom: '1px dashed rgba(184,146,61,0.55)', minWidth: 24 }} />
-                <Typography sx={{ width: { xs: '100%', md: 'auto' }, fontFamily: mono, fontSize: { xs: '12px', md: '14px' }, letterSpacing: '0.04em', color: muted, textAlign: { xs: 'left', md: 'right' } }}>
-                  needs: <Box component="span" sx={{ color: '#F5E8C8' }}>{trade.needs}</Box>
-                </Typography>
-              </Reveal>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      <Box id="drops" sx={{ ...pad, bgcolor: '#080808' }}>
-        <Box sx={wrap}>
-          <Reveal>
-            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2} sx={{ mb: 5 }}>
-              <Box>
-                <Kicker>The board</Kicker>
-                <Title>Drops that are actually specific.</Title>
-              </Box>
-              <Typography sx={{ maxWidth: 360, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7, alignSelf: { md: 'end' } }}>
-                A useful drop can be answered in one tap. Vague posts do not survive here.
-              </Typography>
-            </Stack>
-          </Reveal>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.25fr 0.75fr' }, gap: { xs: 3, lg: 3 }, alignItems: 'stretch' }}>
-            <Reveal sx={{ position: 'relative', height: { xs: 380, sm: 460, lg: 620 }, overflow: 'hidden' }}>
-              <Box component="img" src={DROPS[0].image} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%', animation: 'slowZoom 18s ease-in-out infinite alternate', '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }} />
-              <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(12,12,12,0.05) 20%, rgba(12,12,12,0.2) 48%, rgba(12,12,12,0.92) 100%)' }} />
-              <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 0, p: { xs: 2.5, md: 4 } }}>
-                <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#F5E8C8', overflowWrap: 'anywhere' }}>
-                  01  ·  {DROPS[0].role}  ·  {DROPS[0].city}  ·  {DROPS[0].status}
-                </Typography>
-                <Typography sx={{ mt: 1.5, maxWidth: 560, fontFamily: 'Impact, sans-serif', fontSize: 'clamp(2.2rem, 4vw, 3.6rem)', lineHeight: 1.12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                  <ToneWords>{DROPS[0].ask}</ToneWords>
-                </Typography>
-                <Typography sx={{ mt: 2, maxWidth: 420, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'rgba(244,240,230,0.86)' }}>
-                  {DROPS[0].give}
-                </Typography>
-              </Box>
-            </Reveal>
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              {DROPS.slice(1).map((drop, index) => (
-                <Reveal key={drop.role} delay={index * 100} sx={{ display: 'grid', gridTemplateColumns: { xs: '92px 1fr', sm: '128px 1fr' }, gap: { xs: 1.5, md: 2.5 }, alignItems: 'center', py: { xs: 2, lg: 0 }, borderTop: index ? `1px solid ${line}` : 'none', minWidth: 0, '&:hover img': { transform: 'scale(1.08)' } }}>
-                  <Box sx={{ position: 'relative', height: { xs: 92, sm: 128 }, overflow: 'hidden' }}>
-                    <Box component="img" src={drop.image} alt="" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s ease' }} />
-                  </Box>
-                  <Box sx={{ py: { lg: 2 }, minWidth: 0 }}>
-                    <Typography sx={{ fontFamily: mono, fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: copper }}>
-                      0{index + 2}  ·  {drop.city}  ·  {drop.status}
-                    </Typography>
-                    <Typography sx={{ mt: 0.75, fontFamily: poster, fontSize: '26px', lineHeight: 1, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{drop.role}</Typography>
-                    <Typography sx={{ mt: 1, color: ink, fontFamily: mono, fontSize: '13px', lineHeight: 1.6 }}>{drop.ask}</Typography>
-                    <Typography sx={{ mt: 0.75, color: muted, fontFamily: mono, fontSize: '13px', lineHeight: 1.6 }}>{drop.give}</Typography>
-                  </Box>
-                </Reveal>
-              ))}
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      <Box sx={pad}>
-        <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.2fr' }, gap: { xs: 4, md: 8 }, alignItems: 'start' }}>
-          <Reveal>
-            <Kicker>Against the other options</Kicker>
-            <Title>Not a marketplace. Not a favor.</Title>
-          </Reveal>
-          <Stack spacing={0} sx={{ borderTop: `1px solid ${line}` }}>
-            {COMPARE.map((row, index) => (
-              <Reveal key={row.label} delay={index * 70} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '140px 1fr 1fr' }, gap: { xs: 0.5, sm: 2 }, py: 2.25, borderBottom: `1px solid ${line}`, minWidth: 0 }}>
-                <Typography sx={{ color: faint, fontSize: 13 }}>{row.label}</Typography>
-                <Typography sx={{ color: muted, fontFamily: mono, fontSize: 14 }}>{row.theirs}</Typography>
-                <Typography sx={{ fontFamily: mono, fontSize: 14 }}>{row.ours}</Typography>
-              </Reveal>
-            ))}
-          </Stack>
-        </Box>
-      </Box>
-
-      <Box
-        id="circles"
-        sx={{
-          ...pad,
-          position: 'relative',
-          overflow: 'hidden',
-          bgcolor: '#080808',
-          '@keyframes glowCorner': {
-            '0%, 100%': { transform: 'translate(22%, 0) scale(1)', opacity: 0.75 },
-            '50%': { transform: 'translate(22%, 0) scale(1.08)', opacity: 1 },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: { xs: 96, md: 140 },
-            right: 0,
-            width: { xs: 280, md: 460 },
-            height: { xs: 280, md: 460 },
-            borderRadius: '50%',
-            background: 'radial-gradient(circle at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.32) 24%, rgba(184,146,61,0.18) 48%, rgba(138,107,37,0.06) 70%, transparent 78%)',
-            filter: 'blur(10px)',
-            pointerEvents: 'none',
-            animation: 'glowCorner 8s ease-in-out infinite',
-            '@media (prefers-reduced-motion: reduce)': { animation: 'none', transform: 'translate(22%, 0)' },
-          }}
-        />
-        <Box sx={{ ...wrap, position: 'relative', zIndex: 1 }}>
-          <Reveal>
-            <Kicker>Membership</Kicker>
-            <Title>Circles with a door policy.</Title>
-          </Reveal>
-          <Box sx={{ mt: 2 }}>
-            {CIRCLES.map((circle, index) => (
-              <Reveal
-                key={circle.name}
-                delay={index * 90}
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr auto', lg: '140px 120px 1.4fr 1fr' },
-                  columnGap: { xs: 2, md: 4 },
-                  rowGap: 1,
-                  alignItems: 'center',
-                  py: { xs: 3, md: 4 },
-                  px: { xs: 2, md: 3 },
-                  borderTop: `1px solid ${line}`,
-                  borderBottom: index === CIRCLES.length - 1 ? `1px solid ${line}` : 'none',
-                  background: circle.access === 'Private' ? 'linear-gradient(90deg, rgba(184,146,61,0.16), transparent 55%)' : 'transparent',
-                  transition: 'background 0.45s ease',
-                  '&:hover': { background: 'linear-gradient(90deg, rgba(184,146,61,0.22), transparent 70%)' },
-                }}
-              >
-                <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: copper }}>{circle.access}</Typography>
-                <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: { xs: '42px', lg: '64px' }, lineHeight: 0.8, letterSpacing: '0.02em', color: circle.access === 'Private' ? copper : 'transparent', WebkitTextStroke: circle.access === 'Private' ? '0' : '1.5px rgba(244,240,230,0.8)', textAlign: { xs: 'right', lg: 'left' } }}>{circle.count}</Typography>
-                <Box sx={{ gridColumn: { xs: '1 / -1', lg: 'auto' }, minWidth: 0 }}>
-                  <Typography sx={{ fontFamily: poster, fontSize: { xs: '26px', sm: '30px', lg: '34px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{circle.name}</Typography>
-                  <Typography sx={{ mt: 0.75, fontFamily: mono, fontSize: '13px', color: muted }}>{circle.place}</Typography>
-                </Box>
-                <Typography sx={{ gridColumn: { xs: '1 / -1', lg: 'auto' }, minWidth: 0, fontFamily: mono, fontSize: '14px', lineHeight: 1.7, color: 'rgba(244,240,230,0.82)' }}>{circle.note}</Typography>
-              </Reveal>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      <Box id="events" sx={pad}>
-        <Box sx={wrap}>
-          <Reveal>
-            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'end' }} spacing={2}>
-              <Box>
-                <Kicker>Off the screen</Kicker>
-                <Title>A short calendar.</Title>
-              </Box>
-              <Typography sx={{ maxWidth: 320, color: muted, fontFamily: mono, fontSize: '14px', lineHeight: 1.7 }}>
-                A city, a host, and a list that actually ends.
-              </Typography>
-            </Stack>
-          </Reveal>
-
-          <Box sx={{ mt: { xs: 4, md: 5 }, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
-            {EVENTS.map((event, index) => (
-              <Reveal
-                key={event.name}
-                delay={index * 100}
-                sx={{
-                  py: { xs: 3, md: 0 },
-                  pl: { md: index ? 4 : 0 },
-                  pr: { md: 3 },
-                  borderTop: { xs: index ? `1px solid ${line}` : 'none', md: 'none' },
-                  borderLeft: { md: index ? `1px solid ${line}` : 'none' },
-                }}
-              >
-                <Typography sx={{ fontFamily: mono, fontSize: '12px', letterSpacing: '0.16em', textTransform: 'uppercase', color: copper }}>
-                  {event.mon}  ·  {event.city}  ·  {event.seats}
-                </Typography>
-                <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '28px', md: '32px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{event.name}</Typography>
-                <Typography sx={{ mt: 1.25, fontFamily: mono, fontSize: '13px', lineHeight: 1.6, color: muted }}>{event.host}</Typography>
-              </Reveal>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      <Box sx={{ ...pad, pt: 0 }}>
-        <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-          {NOTES.map((note, index) => (
-            <Reveal
-              key={note.name}
-              delay={index * 120}
-              sx={{
-                position: 'relative',
-                overflow: 'hidden',
-                p: { xs: 3, md: 4 },
-                borderRadius: '22px',
-                color: index ? ink : onGold,
-                border: index ? '1px solid rgba(184,146,61,0.4)' : 'none',
-                background: index
-                  ? 'linear-gradient(205deg, rgba(217,185,106,0.34) 0%, #141210 48%)'
-                  : `linear-gradient(145deg, ${copperDeep} 0%, ${copper} 46%, #D9B96A 100%)`,
-                transition: 'transform 0.5s ease',
-                '&:hover': { transform: 'translateY(-8px)' },
-              }}
-            >
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: index ? `linear-gradient(90deg, #F5E8C8, ${copper}, transparent)` : 'linear-gradient(90deg, rgba(255,255,255,0.7), transparent)' }} />
-              <Typography sx={{ fontFamily: 'Impact, sans-serif', fontSize: '48px', lineHeight: 0.7, color: index ? copper : 'rgba(255,255,255,0.7)' }}>&ldquo;</Typography>
-              <Typography sx={{ mt: 1.5, fontFamily: poster, fontSize: { xs: '26px', md: '32px' }, lineHeight: 1.2, color: 'inherit' }}>{note.quote}</Typography>
-              <Box sx={{ mt: 3, pt: 2, borderTop: index ? `1px solid ${line}` : '1px solid rgba(255,255,255,0.35)' }}>
-                <Typography sx={{ fontFamily: poster, fontSize: '18px', letterSpacing: headingTrack, textTransform: 'uppercase', color: 'inherit' }}>{note.name}</Typography>
-                <Typography sx={{ mt: 0.5, fontFamily: mono, fontSize: '13px', letterSpacing: '0.06em', color: index ? muted : 'rgba(255,255,255,0.82)' }}>{note.role}</Typography>
-              </Box>
-            </Reveal>
-          ))}
-        </Box>
-      </Box>
-
-      <Box sx={{ ...pad, bgcolor: '#080808' }}>
-        <Box sx={wrap}>
-          <Reveal>
-            <Kicker>Practical</Kicker>
-            <Title>Before the first drop.</Title>
-          </Reveal>
-          <Box sx={{ position: 'relative', mt: 5 }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                width: { xs: '88%', md: '70%' },
-                height: { xs: '46%', md: '72%' },
-                transform: 'translate(-50%, -50%)',
-                borderRadius: '50%',
-                background: 'radial-gradient(ellipse at center, rgba(245,232,200,0.42) 0%, rgba(217,185,106,0.34) 22%, rgba(184,146,61,0.22) 46%, rgba(138,107,37,0.08) 68%, transparent 78%)',
-                filter: 'blur(10px)',
-                pointerEvents: 'none',
-                animation: 'glowBreath 8s ease-in-out infinite',
-                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-              }}
-            />
-            <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-              {QUESTIONS.map((item, index) => (
-                <Reveal key={item.q} delay={(index % 2) * 80} sx={{ position: 'relative', zIndex: 1, p: 3, borderRadius: 3, border: `1px solid ${line}`, transition: 'border-color 0.4s ease, transform 0.45s ease', '&:hover': { borderColor: copper, transform: 'translateY(-6px)' } }}>
-                  <Typography sx={{ fontFamily: poster, fontSize: 26, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase' }}>{item.q}</Typography>
-                  <Typography sx={{ mt: 1, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7 }}>{item.a}</Typography>
-                </Reveal>
-              ))}
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      <Box
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          py: { xs: 8, md: 12 },
-          color: '#1A1408',
-          background: 'linear-gradient(105deg, #3d2e10 0%, #5C4618 16%, #8A6B25 38%, #B8923D 58%, #D9B96A 78%, #F5E8C8 100%)',
-        }}
-      >
-        <Typography
-          aria-hidden
-          sx={{
-            display: { xs: 'none', md: 'block' },
-            position: 'absolute',
-            right: { md: '-2%', lg: '2%' },
-            top: '50%',
-            transform: 'translateY(-54%)',
-            m: 0,
-            fontFamily: 'Impact, sans-serif',
-            fontWeight: 400,
-            fontSize: 'clamp(9rem, 18vw, 16rem)',
-            lineHeight: 0.8,
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-            color: 'rgba(61,46,16,0.28)',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, #000 32%, #000 72%, transparent 100%)',
-            maskImage: 'linear-gradient(90deg, transparent 0%, #000 32%, #000 72%, transparent 100%)',
-            animation: 'tradeDrift 9s ease-in-out infinite',
-            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-          }}
-        >
-          Trade
-        </Typography>
-        <Reveal sx={{ ...wrap, position: 'relative', zIndex: 1 }}>
-          <Typography sx={{ fontFamily: poster, fontSize: { xs: '36px', sm: '48px', md: '68px', lg: '80px' }, lineHeight: 1.18, letterSpacing: headingTrack, textTransform: 'uppercase', maxWidth: 860, color: '#F5E8C8' }}>
-            Post the need. Name the offer.
-          </Typography>
-          <Typography sx={{ mt: 2, maxWidth: 520, color: 'rgba(245,232,200,0.88)', fontFamily: mono, fontSize: '14px', lineHeight: 1.7 }}>
-            A drop is both halves. A tap is the yes. Circles and events are where the work meets.
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 4 }}>
-            <Button component={RouterLink} href={paths.auth.jwt.signUp} variant="contained" sx={{ bgcolor: '#F5E8C8', color: copperDeep, borderRadius: 10, px: 3, minHeight: 48, boxShadow: 'none', '&:hover': { bgcolor: '#fff', boxShadow: 'none' } }}>
-              Sign up
-            </Button>
-            <Button component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#F5E8C8', borderRadius: 10, px: 3, minHeight: 48, border: '1px solid rgba(245,232,200,0.55)', '&:hover': { bgcolor: 'transparent', borderColor: '#F5E8C8' } }}>
-              Login
-            </Button>
-          </Stack>
-        </Reveal>
-      </Box>
-
-      <Box component="footer" sx={{ py: 3 }}>
-        <Box sx={{ ...wrap, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr auto 1fr' }, justifyItems: { xs: 'center', sm: 'stretch' }, alignItems: 'center', rowGap: 1.5, columnGap: 2 }}>
-          <Box component={RouterLink} href="/" aria-label="TradeDrop" sx={{ display: 'inline-flex', justifySelf: { xs: 'center', sm: 'start' } }}>
-            <Box component="img" alt="TradeDrop" src={logo} sx={{ height: { xs: 32, md: 40 }, width: 'auto', mixBlendMode: 'screen' }} />
-          </Box>
-          <Typography sx={{ fontFamily: mono, fontSize: { xs: '11px', md: '12px' }, color: faint, textAlign: 'center' }}>© 2026 TradeDrop. All rights reserved.</Typography>
-          <Stack direction="row" spacing={2} sx={{ justifySelf: { xs: 'center', sm: 'end' } }}>
-            <Box component={RouterLink} href={paths.auth.jwt.signIn} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Login</Box>
-            <Box component={RouterLink} href={paths.auth.jwt.signUp} sx={{ color: '#FFFFFF', fontFamily: mono, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none', '&:hover': { color: '#FFFFFF', textDecoration: 'none' } }}>Sign up</Box>
-          </Stack>
         </Box>
       </Box>
     </Box>

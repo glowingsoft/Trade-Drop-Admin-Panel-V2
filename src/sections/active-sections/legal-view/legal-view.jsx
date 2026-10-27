@@ -41,8 +41,13 @@ const LegalSchema = zod.object({
 });
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
+  maxWidth: '100%',
+  overflow: 'hidden',
   boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(3),
+  },
 }));
 
 export default function LegalView({ type }) {
@@ -117,6 +122,8 @@ export default function LegalView({ type }) {
             sx={{
               '.ql-toolbar': {
                 borderColor: theme.palette.divider,
+                display: 'flex',
+                flexWrap: 'wrap',
                 ...(theme.palette.mode === 'dark' && {
                   backgroundColor: theme.palette.background.neutral,
                   '& .ql-stroke': { stroke: theme.palette.text.primary },

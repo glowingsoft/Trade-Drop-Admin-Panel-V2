@@ -16,6 +16,8 @@ export function Main({ sx, children, layoutQuery, ...other }) {
         display: 'flex',
         flex: '1 1 auto',
         flexDirection: 'column',
+        minWidth: 0,
+        maxWidth: '100%',
         [theme.breakpoints.up(layoutQuery)]: {
           flexDirection: 'row',
         },

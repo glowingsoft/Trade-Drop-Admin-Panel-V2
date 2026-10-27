@@ -19,22 +19,37 @@ function getAuthenticatedHref(permission) {
 }
 
 export const Logo = forwardRef(
-  ({ width = 40, height = 40, disableLink = false, className, href, sx, ...other }, ref) => {
+  ({ width = 40, height = 40, disableLink = false, className, href, color = '#B8923D', sx, ...other }, ref) => {
     const theme = useTheme();
     const user = useSelector(selectUser);
     const logoHref = href ?? (user ? getAuthenticatedHref(user.permission) : '/');
-    const logoSrc = theme.palette.mode === 'dark' ? darkModeLogo : lightModeLogo;
-
-    const logo = (
-      <Box
-        alt="logo"
-        component="img"
-        src={logoSrc}
-        width={width}
-        height={height}
-        sx={{ objectFit: 'contain' }}
-      />
-    );
+    const logo =
+      theme.palette.mode === 'dark' ? (
+        <Box
+          alt="logo"
+          component="img"
+          src={darkModeLogo}
+          sx={{ width: 1, height: 1, objectFit: 'contain' }}
+        />
+      ) : (
+        <Box
+          role="img"
+          aria-label="TradeDrop"
+          sx={{
+            width: 1,
+            height: 1,
+            bgcolor: color,
+            WebkitMaskImage: `url(${lightModeLogo})`,
+            maskImage: `url(${lightModeLogo})`,
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+          }}
+        />
+      );
 
     return (
       <NoSsr

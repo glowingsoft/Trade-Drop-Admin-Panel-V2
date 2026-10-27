@@ -207,7 +207,12 @@ export function UserListView() {
           { name: 'List' },
         ]}
         action={
-          <Stack direction={{ md: 'row', xs: 'column' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'stretch', md: 'center' }}
+            spacing={1.5}
+            sx={{ width: { xs: 1, md: 'auto' } }}
+          >
             <Button
               variant="outlined"
               startIcon={<Iconify icon="solar:export-bold" />}

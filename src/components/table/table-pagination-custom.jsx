@@ -3,7 +3,6 @@ import Switch from '@mui/material/Switch';
 import TablePagination from '@mui/material/TablePagination';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-// ----------------------------------------------------------------------
 
 export function TablePaginationCustom({
   sx,
@@ -18,7 +17,17 @@ export function TablePaginationCustom({
         rowsPerPageOptions={rowsPerPageOptions}
         component="div"
         {...other}
-        sx={{ borderTopColor: 'transparent' }}
+        sx={{
+          borderTopColor: 'transparent',
+          '& .MuiTablePagination-toolbar': {
+            flexWrap: 'wrap',
+            justifyContent: { xs: 'center', sm: 'flex-end' },
+            px: { xs: 1, sm: 2 },
+          },
+          '& .MuiTablePagination-spacer': {
+            display: { xs: 'none', sm: 'block' },
+          },
+        }}
       />
 
       {onChangeDense && (

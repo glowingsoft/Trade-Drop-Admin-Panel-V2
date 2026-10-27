@@ -4,38 +4,46 @@ import { outlinedInputClasses } from '@mui/material/OutlinedInput';
 
 import { varAlpha } from '../../styles';
 
-// ----------------------------------------------------------------------
 
 const MuiInputBase = {
-  /** **************************************
-   * STYLE
-   *************************************** */
   styleOverrides: {
     root: ({ theme }) => ({
       [`&.${inputBaseClasses.disabled}`]: {
         '& svg': { color: theme.vars.palette.text.disabled },
       },
     }),
-    input: ({ theme }) => ({
-      fontSize: theme.typography.pxToRem(15),
-      [theme.breakpoints.down('sm')]: {
-        // This will prevent zoom in Safari min font size ~ 16px
-        fontSize: theme.typography.pxToRem(16),
-      },
-      '&::placeholder': {
-        opacity: 1,
-        color: theme.vars.palette.text.disabled,
-      },
-    }),
+    input: ({ theme }) => {
+      const autofill = {
+        WebkitBoxShadow: `0 0 0 1000px ${theme.vars.palette.background.paper} inset !important`,
+        boxShadow: `0 0 0 1000px ${theme.vars.palette.background.paper} inset !important`,
+        WebkitTextFillColor: `${theme.vars.palette.text.primary} !important`,
+        caretColor: `${theme.vars.palette.text.primary} !important`,
+        backgroundColor: `${theme.vars.palette.background.paper} !important`,
+        backgroundImage: 'none !important',
+        borderRadius: 'inherit',
+        transition: 'background-color 9999s ease-out 0s',
+      };
+
+      return {
+        fontSize: theme.typography.pxToRem(15),
+        [theme.breakpoints.down('sm')]: {
+          fontSize: theme.typography.pxToRem(16),
+        },
+        '&::placeholder': {
+          opacity: 1,
+          color: theme.vars.palette.text.disabled,
+        },
+        '&:-webkit-autofill': autofill,
+        '&:-webkit-autofill:hover': autofill,
+        '&:-webkit-autofill:focus': autofill,
+        '&:-webkit-autofill:active': autofill,
+      };
+    },
   },
 };
 
-// ----------------------------------------------------------------------
 
 const MuiInput = {
-  /** **************************************
-   * STYLE
-   *************************************** */
   styleOverrides: {
     underline: ({ theme }) => ({
       '&::before': { borderBottomColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32) },
@@ -44,12 +52,8 @@ const MuiInput = {
   },
 };
 
-// ----------------------------------------------------------------------
 
 const MuiOutlinedInput = {
-  /** **************************************
-   * STYLE
-   *************************************** */
   styleOverrides: {
     root: ({ theme }) => ({
       [`&.${outlinedInputClasses.focused}`]: {
@@ -77,17 +81,11 @@ const MuiOutlinedInput = {
   },
 };
 
-// ----------------------------------------------------------------------
 
 const MuiFilledInput = {
-  /** **************************************
-   * DEFAULT PROPS
-   *************************************** */
+
   defaultProps: { disableUnderline: true },
 
-  /** **************************************
-   * STYLE
-   *************************************** */
   styleOverrides: {
     root: ({ theme }) => ({
       borderRadius: theme.shape.borderRadius,
@@ -109,7 +107,6 @@ const MuiFilledInput = {
   },
 };
 
-// ----------------------------------------------------------------------
 
 export const textfield = {
   MuiInput,

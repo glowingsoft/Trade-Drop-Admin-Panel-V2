@@ -233,7 +233,13 @@ export function AccountGeneral() {
         </Grid>
       </Grid>
 
-      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        justifyContent="flex-end"
+        spacing={1.5}
+        sx={{ mt: 3 }}
+      >
         <Button variant="outlined" color="inherit" onClick={() => reset(defaultValues)}>
           Cancel
         </Button>

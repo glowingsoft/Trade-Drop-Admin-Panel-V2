@@ -39,7 +39,7 @@ export function OverviewAppView() {
         refreshing={isFetching}
       />
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ width: '100%', minWidth: 0 }}>
         <Grid item xs={12} md={3}>
           <CourseWidgetSummary
             title="Users"

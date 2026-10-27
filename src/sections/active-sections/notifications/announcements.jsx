@@ -315,15 +315,15 @@ const Announcements = ({ title, icon, subheader }) => {
                             return (
                                 <Stack key={announcement._id}>
                                     <Stack
-                                        direction="row"
-                                        alignItems="center"
+                                        direction={{ xs: 'column', sm: 'row' }}
+                                        alignItems={{ xs: 'flex-start', sm: 'center' }}
                                         justifyContent="space-between"
-                                        spacing={2}
-                                        sx={{ px: 3, py: 2 }}
+                                        spacing={1.5}
+                                        sx={{ px: { xs: 2, sm: 3 }, py: 2, minWidth: 0 }}
                                     >
-                                        <Stack spacing={0.5} sx={{ minWidth: 0 }}>
-                                            <Stack direction="row" alignItems="center" spacing={1}>
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                        <Stack spacing={0.5} sx={{ minWidth: 0, width: { xs: 1, sm: 'auto' } }}>
+                                            <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap sx={{ minWidth: 0 }}>
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 600, minWidth: 0, overflowWrap: 'anywhere' }}>
                                                     {announcement.title}
                                                 </Typography>
                                                 <Chip
@@ -334,7 +334,7 @@ const Announcements = ({ title, icon, subheader }) => {
                                                 />
                                             </Stack>
 
-                                            <Typography variant="body2" color="text.secondary">
+                                            <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
                                                 {announcement.description}
                                             </Typography>
 
@@ -342,7 +342,9 @@ const Announcements = ({ title, icon, subheader }) => {
                                                 direction="row"
                                                 alignItems="center"
                                                 spacing={0.5}
-                                                sx={{ color: 'text.disabled', mt: 0.5 }}
+                                                flexWrap="wrap"
+                                                useFlexGap
+                                                sx={{ color: 'text.disabled', mt: 0.5, minWidth: 0 }}
                                             >
                                                 <Iconify icon="solar:users-group-rounded-bold" width={14} />
                                                 <Typography variant="caption">

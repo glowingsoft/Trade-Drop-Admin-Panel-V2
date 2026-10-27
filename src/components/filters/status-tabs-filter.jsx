@@ -8,15 +8,18 @@ import { varAlpha } from 'src/theme/styles';
 
 import { Label } from 'src/components/label';
 
-// ----------------------------------------------------------------------
 
 function StatusTabsFilter({ value, options, onChange, getCount, sx }) {
     return (
         <Tabs
             value={value}
             onChange={onChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
                 px: 2.5,
+                maxWidth: 1,
                 boxShadow: (theme) =>
                     `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
                 ...sx,

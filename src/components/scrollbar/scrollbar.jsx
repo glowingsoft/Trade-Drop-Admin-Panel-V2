@@ -16,6 +16,9 @@ export const Scrollbar = forwardRef(
       className={scrollbarClasses.root}
       sx={{
         minWidth: 0,
+        maxWidth: '100%',
+        width: '100%',
+        overflow: 'hidden',
         minHeight: 0,
         flexGrow: 1,
         display: 'flex',

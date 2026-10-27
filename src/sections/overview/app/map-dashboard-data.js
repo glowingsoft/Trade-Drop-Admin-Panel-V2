@@ -93,7 +93,7 @@ export function mapDashboardData(data) {
       categories: usersChart.map((item) => item.label),
       series: [
         { name: 'Active', data: usersChart.map((item) => item.activeUsers ?? 0) },
-        { name: 'Deactived', data: usersChart.map((item) => item.deactivatedUsers ?? 0) },
+        { name: 'Deactivated', data: usersChart.map((item) => item.deactivatedUsers ?? 0) },
       ],
     },
     categories: mapCategories(data?.topCategories),

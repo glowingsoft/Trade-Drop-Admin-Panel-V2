@@ -101,7 +101,7 @@ function UserProfileView() {
         sx={{ mb: { xs: 3, md: 3 } }}
       />
 
-      <Card sx={{ mb: 3, height: 320 }}>
+      <Card sx={{ mb: 3, height: { xs: 'auto', md: 320 }, position: 'relative' }}>
         <ProfileCover
           name={user?.kv?.name}
           avatarUrl={user?.kv?.image}
@@ -117,7 +117,7 @@ function UserProfileView() {
             width: 1,
             top: 20,
             zIndex: 9,
-            px: { md: 3 },
+            px: { xs: 2, md: 3 },
             position: 'absolute',
           }}
         >
@@ -145,12 +145,19 @@ function UserProfileView() {
             width: 1,
             bottom: 0,
             zIndex: 9,
-            px: { md: 3 },
-            position: 'absolute',
+            px: { xs: 0, md: 3 },
+            position: { xs: 'relative', md: 'absolute' },
             bgcolor: 'background.paper',
           }}
         >
-          <Tabs value={value} onChange={onChange}>
+          <Tabs
+            value={value}
+            onChange={onChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{ maxWidth: 1 }}
+          >
             {TABS.map((tab) => (
               <Tab
                 key={tab.value}

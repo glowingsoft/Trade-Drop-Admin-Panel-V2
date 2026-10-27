@@ -30,8 +30,8 @@ export function AppHeaderWelcome({ range, onRangeChange, onRefresh, refreshing, 
       sx={{ mb: { xs: 3, md: 4 }, ...sx }}
       {...other}
     >
-      <Box>
-        <Typography variant="h4" sx={{ mb: 0.5 }}>
+      <Box sx={{ minWidth: 0, maxWidth: 1 }}>
+        <Typography variant="h4" sx={{ mb: 0.5, overflowWrap: 'anywhere' }}>
           {`Hello, ${name}!`}
         </Typography>
 
@@ -40,7 +40,7 @@ export function AppHeaderWelcome({ range, onRangeChange, onRefresh, refreshing, 
         </Typography>
       </Box>
 
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap sx={{ maxWidth: 1 }}>
         <Button
           variant="outlined"
           color="inherit"

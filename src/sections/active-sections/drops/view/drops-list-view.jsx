@@ -10,6 +10,7 @@ import TableBody from '@mui/material/TableBody';
 import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { useDebounce } from 'src/hooks/use-debounce';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -117,6 +118,7 @@ export function DropsListView({ ownerId, embedded = false }) {
   const filters = useSetState(DEFAULT_FILTERS);
   const [currentDrop, setCurrentDrop] = useState(null);
   const openStatusChangeModal = useBoolean();
+  const keyword = useDebounce(filters.state.name, 500);
 
   const { data, isLoading, isFetching, error } = useGetDropsQuery(
     {
@@ -126,6 +128,7 @@ export function DropsListView({ ownerId, embedded = false }) {
       area: filters.state.areas === 'all' ? undefined : filters.state.areas,
       timingChip: filters.state.urgency === 'all' ? undefined : filters.state.urgency,
       status: filters.state.status === 'all' ? undefined : filters.state.status,
+      keyword: keyword.trim() || undefined,
       ownerId: ownerId || undefined,
     },
     { skip: embedded && !ownerId }
@@ -364,7 +367,12 @@ export function DropsListView({ ownerId, embedded = false }) {
         heading="Drops"
         links={[{ name: 'Dashboard', href: paths.adminDashboard.root }, { name: 'Drops' }]}
         action={
-          <Stack direction={{ md: 'row', xs: 'column' }} spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'stretch', md: 'center' }}
+            spacing={1.5}
+            sx={{ width: { xs: 1, md: 'auto' } }}
+          >
             <Button
               variant="outlined"
               startIcon={<Iconify icon="solar:export-bold" />}

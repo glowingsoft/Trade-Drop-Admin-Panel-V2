@@ -8,7 +8,6 @@ import { varAlpha } from 'src/theme/styles';
 
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
 
 export function ProfileCover({ name, avatarUrl, city, trustScore }) {
   const theme = useTheme();
@@ -20,7 +19,9 @@ export function ProfileCover({ name, avatarUrl, city, trustScore }) {
   return (
     <Box
       sx={{
-        height: 1,
+        height: { xs: 'auto', md: 1 },
+        minHeight: { xs: 220, md: 0 },
+        pb: { xs: 3, md: 0 },
         position: 'relative',
         overflow: 'hidden',
         color: 'common.white',
@@ -86,6 +87,8 @@ export function ProfileCover({ name, avatarUrl, city, trustScore }) {
           <Stack
             direction="row"
             spacing={1}
+            flexWrap="wrap"
+            useFlexGap
             alignItems="center"
             justifyContent={{ xs: 'center', md: 'flex-start' }}
             sx={{ mt: 1 }}

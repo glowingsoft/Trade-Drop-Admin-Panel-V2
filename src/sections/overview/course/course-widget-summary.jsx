@@ -9,14 +9,13 @@ import { varAlpha } from 'src/theme/styles';
 
 import { SvgColor } from 'src/components/svg-color';
 
-// ----------------------------------------------------------------------
 
 export function CourseWidgetSummary({ sx, icon, title, total, color = 'warning', ...other }) {
   const theme = useTheme();
 
 
   return (
-    <Card sx={{ py: 3, pl: 3, pr: 2.5, ...sx }} {...other}>
+    <Card sx={{ py: 3, pl: 3, pr: 2.5, position: 'relative', overflow: 'hidden', ...sx }} {...other}>
       <Box sx={{ flexGrow: 1 }}>
         <Box sx={{ typography: 'h4' }}>{fNumber(total)}</Box>
         <Typography noWrap variant="subtitle2" component="div" sx={{ color: 'text.secondary' }}>
