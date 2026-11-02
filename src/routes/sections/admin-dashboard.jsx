@@ -22,7 +22,9 @@ const SettingsPage = lazy(() => import('src/pages/dashboard/active-routes/settin
 const ProfilePage = lazy(() => import('src/pages/dashboard/active-routes/profile'));
 const DropsListPage = lazy(() => import('src/pages/dashboard/active-routes/drops'));
 const CirclesListPage = lazy(() => import('src/pages/dashboard/active-routes/circles'));
+const CircleDetailPage = lazy(() => import('src/pages/dashboard/active-routes/circles/detail'));
 const EventsListPage = lazy(() => import('src/pages/dashboard/active-routes/events'));
+const EventDetailPage = lazy(() => import('src/pages/dashboard/active-routes/events/detail'));
 const BadgesListPage = lazy(() => import('src/pages/dashboard/active-routes/badges'));
 const DisputesListPage = lazy(() => import('src/pages/dashboard/active-routes/disputes'));
 const DisputesDetailsPage = lazy(() => import('src/pages/dashboard/active-routes/disputes-detail'));
@@ -58,7 +60,9 @@ export const adminDashboardRoutes = [
       },
       { path: 'drops', element: <DropsListPage /> },
       { path: 'circles', element: <CirclesListPage /> },
+      { path: 'circles/:id', element: <CircleDetailPage /> },
       { path: 'events', element: <EventsListPage /> },
+      { path: 'events/:id', element: <EventDetailPage /> },
       { path: "categories", element: <CategoryListPage /> },
       { path: "timing-chips", element: <TimingChipsListPage /> },
       { path: "badges", element: <BadgesListPage /> },

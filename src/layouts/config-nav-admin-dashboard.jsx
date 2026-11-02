@@ -66,8 +66,8 @@ export const navDataAdmin = [
     items: [
       { title: 'Dashboard', path: paths.adminDashboard.root, icon: ICONS.dashboard },
       { title: "Users", path: paths.adminDashboard.users.root, icon: ICONS.users, deepMatch: true },
-      { title: "Circles", path: paths.adminDashboard.circles, icon: ICONS.chat },
-      { title: "Events", path: paths.adminDashboard.events, icon: ICONS.calendar },
+      { title: "Circles", path: paths.adminDashboard.circles, icon: ICONS.chat, deepMatch: true },
+      { title: "Events", path: paths.adminDashboard.events, icon: ICONS.calendar, deepMatch: true },
       { title: "Drops", path: paths.adminDashboard.drops, icon: ICONS.request },
       { title: "Category", path: paths.adminDashboard.categories, icon: ICONS.category },
       { title: "Timing chips", path: paths.adminDashboard.timingChips, icon: ICONS.timingChips },
