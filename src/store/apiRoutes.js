@@ -54,4 +54,9 @@ export const API_ROUTES = {
     DISPUTES: '/disputes',
     DISPUTES_BY_ID: (id) => `/disputes/${id}`,
     DISPUTES_RESOLVE: (id) => `/disputes/${id}/resolve`,
+
+    CIRCLES: '/circles',
+    CIRCLES_ALL: '/circles/all',
+    CIRCLES_BY_ID: (id) => `/circles/${id}`,
+    CIRCLES_MEMBERS: (id) => `/circles/${id}/members`,
 };

@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -31,6 +29,7 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { EmptyContent } from 'src/components/empty-content';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
+import { LoadingScreen } from 'src/components/loading-screen';
 import { Map, MapControl, MapMarker } from 'src/components/map';
 import { TableHeadCustom } from 'src/components/table';
 import { toast } from 'src/components/snackbar';
@@ -40,16 +39,15 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useTabs } from 'src/hooks/use-tabs';
 import { useParams, useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
+import { useGetCircleByIdQuery, useLazyGetCircleMembersQuery } from 'src/store/Reducer/circles-api';
 import { varAlpha } from 'src/theme/styles';
 import { exportToCsv } from 'src/utils/export-to-csv';
-import {
-  getGoogleMapsApiKey,
-  getGooglePlaceDetails,
-  searchGooglePlaces,
-} from 'src/utils/google-maps';
+import { handleApiError } from 'src/utils/errorHandler';
 
-import { getCircleJoiningOption, getCircleStatusOption } from '../circle-status';
-import { getCircleDetail } from '../mocks/detail';
+import { useLocation } from 'react-router-dom';
+
+import { getCirclePrivacyOption } from '../circle-status';
+import { mapCircleMemberApi, resolveCircleDetail } from '../map-circle-detail';
 
 import 'src/components/map/styles.css';
 
@@ -80,6 +78,7 @@ function PersonRow({ person, action }) {
     <Stack direction="row" alignItems="center" spacing={1.5} sx={{ py: 1.25 }}>
       <Avatar
         alt={person.name}
+        src={person.image ? getDisplayImage(person.image) : undefined}
         sx={{
           width: 40,
           height: 40,
@@ -386,108 +385,38 @@ function MapLocationCard({ circle, area }) {
     <SectionCard title="Map location">
       <CircleMapCanvas latitude={area.latitude} longitude={area.longitude} />
       <Typography variant="subtitle2" sx={{ mt: 1.5 }}>
-        {`Approximate area · ${area.homeArea || circle.location}`}
+        {`City · ${area.homeArea || circle.city || '—'}`}
       </Typography>
-      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-        Shown as an area, never an exact address. Global Circles have no map pin.
+      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+        {`Coordinates · ${circle.coordinatesLabel || '—'}`}
+      </Typography>
+      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+        {`Distance · ${circle.distanceLabel || '—'}`}
       </Typography>
     </SectionCard>
   );
 }
 
-function OverviewPanel({ circle, area, onUpdateCircle }) {
-  const addOrganizer = useBoolean();
-  const [organizerName, setOrganizerName] = useState('');
-  const health = circle.health || { messages: 0, newMembers: 0, eventsHeld: 0, openReports: 0 };
-  const stats = [
-    { label: 'Messages', value: health.messages },
-    { label: 'New members', value: `+${health.newMembers}` },
-    { label: 'Events held', value: health.eventsHeld },
-    { label: 'Open report', value: health.openReports },
-  ];
-  const settings = [
-    { key: 'joining', label: 'Joining', value: circle.settings?.joining },
-    { key: 'suggestEvents', label: 'Members can suggest events', value: circle.settings?.suggestEvents },
-    { key: 'discussion', label: 'Discussion', value: circle.settings?.discussion },
-  ];
-
-  const handleAddOrganizer = () => {
-    const name = organizerName.trim();
-    if (!name) {
-      toast.error('Organizer name is required');
-      return;
-    }
-    onUpdateCircle((prev) => ({
-      ...prev,
-      organizers: [
-        ...prev.organizers,
-        {
-          id: `o-${Date.now()}`,
-          name,
-          craft: 'Member',
-          role: 'Organizer',
-          since: `Organizer since ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
-        },
-      ],
-    }));
-    setOrganizerName('');
-    addOrganizer.onFalse();
-    toast.success('Organizer added');
-  };
-
-  const handleOrganizerAction = (person) => {
-    if (person.role === 'Owner') {
-      const nextOwner = circle.organizers.find((item) => item.id !== person.id);
-      if (!nextOwner) {
-        toast.error('Add another organizer before transferring ownership');
-        return;
-      }
-      onUpdateCircle((prev) => ({
-        ...prev,
-        organizers: prev.organizers.map((item) => {
-          if (item.id === nextOwner.id) return { ...item, role: 'Owner', since: `Owner since transfer` };
-          if (item.id === person.id) return { ...item, role: 'Organizer', since: `Organizer after transfer` };
-          return item;
-        }),
-      }));
-      toast.success(`Ownership transferred to ${nextOwner.name}`);
-      return;
-    }
-
-    onUpdateCircle((prev) => ({
-      ...prev,
-      organizers: prev.organizers.filter((item) => item.id !== person.id),
-    }));
-    toast.success(`${person.name} removed as organizer`);
-  };
-
-  const handleSettingChange = (key) => {
-    const nextValues = {
-      joining:
-        circle.settings?.joining === 'Open · anyone can join'
-          ? 'Request · organizers approve'
-          : 'Open · anyone can join',
-      suggestEvents: circle.settings?.suggestEvents === 'On' ? 'Off' : 'On',
-      discussion:
-        circle.settings?.discussion?.includes('threaded replies on')
-          ? 'Members only · threaded replies off'
-          : 'Members only · threaded replies on',
-    };
-
-    onUpdateCircle((prev) => ({
-      ...prev,
-      settings: { ...prev.settings, [key]: nextValues[key] },
-    }));
-    toast.success('Setting updated');
-  };
-
+function OverviewPanel({ circle, area }) {
+  const privacyOption = getCirclePrivacyOption(circle.privacy);
   const facts = [
-    { label: 'Category', value: circle.category },
-    { label: 'Home area', value: area?.homeArea || circle.homeArea || circle.location },
-    { label: 'Visibility', value: circle.visibilityDetail },
-    { label: 'Members', value: circle.members.toLocaleString() },
-    { label: 'Upcoming events', value: String(circle.upcomingEvents || 0) },
-    { label: 'Last activity', value: circle.lastActivity || '—' },
+    { label: 'Name', value: circle.name || '—' },
+    { label: 'Purpose', value: circle.purpose || circle.description || '—' },
+    { label: 'Category', value: circle.category || '—' },
+    { label: 'Cover image', value: circle.coverImage || circle.image || '—' },
+    { label: 'City', value: circle.city || area?.homeArea || '—' },
+    { label: 'Privacy', value: privacyOption?.label || circle.privacy || '—' },
+    { label: 'Location type', value: circle.locationRaw?.type || '—' },
+    { label: 'Coordinates', value: circle.coordinatesLabel || '—' },
+    { label: 'Member count', value: String(circle.memberCount ?? circle.members ?? 0) },
+    { label: 'Pending requests', value: String(circle.pendingRequestCount ?? 0) },
+    { label: 'Joined invitations', value: String(circle.joinedInvitationCount ?? 0) },
+    { label: 'Pending invitations', value: String(circle.pendingInvitationCount ?? 0) },
+    { label: 'Open drops', value: String(circle.openDrops?.length ?? circle.drops?.length ?? 0) },
+    { label: 'Polls', value: String(circle.polls?.length ?? 0) },
+    { label: 'Poll', value: circle.poll == null ? 'null' : String(circle.poll) },
+    { label: 'Created At', value: circle.createdAtFull || circle.createdAt || '—' },
+    { label: 'Updated At', value: circle.updatedAtFull || circle.updatedAt || '—' },
   ];
 
   return (
@@ -497,7 +426,7 @@ function OverviewPanel({ circle, area, onUpdateCircle }) {
           About
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
-          {circle.description}
+          {circle.purpose || circle.description || '—'}
         </Typography>
         <Box
           sx={{
@@ -511,111 +440,39 @@ function OverviewPanel({ circle, area, onUpdateCircle }) {
               <Typography variant="overline" sx={{ color: 'text.disabled' }}>
                 {fact.label}
               </Typography>
-              <Typography variant="subtitle2">{fact.value}</Typography>
+              <Typography variant="subtitle2" sx={{ wordBreak: 'break-word' }}>
+                {fact.value}
+              </Typography>
             </Box>
           ))}
         </Box>
       </Card>
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1.2fr 0.8fr' } }}>
-        <SectionCard
-          title="Organizers"
-          action={
-            <Button size="small" variant="outlined" color="inherit" startIcon={<Iconify icon="mingcute:add-line" />} onClick={addOrganizer.onTrue}>
-              Add organizer
-            </Button>
-          }
-        >
-          <Stack divider={<Box sx={{ borderBottom: (theme) => `dashed 1px ${theme.vars.palette.divider}` }} />}>
-            {circle.organizers.map((person) => (
-              <PersonRow
-                key={person.id}
-                person={person}
-                action={
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Label variant="soft" color={person.role === 'Owner' ? 'warning' : 'default'}>
-                      {person.role}
+        <SectionCard title="Creator">
+          {circle.organizers?.length ? (
+            <Stack divider={<Box sx={{ borderBottom: (theme) => `dashed 1px ${theme.vars.palette.divider}` }} />}>
+              {circle.organizers.map((person) => (
+                <PersonRow
+                  key={person.id}
+                  person={person}
+                  action={
+                    <Label variant="soft" color="warning">
+                      {person.role || 'Owner'}
                     </Label>
-                    <Button size="small" variant="outlined" color="inherit" onClick={() => handleOrganizerAction(person)}>
-                      {person.role === 'Owner' ? 'Transfer ownership' : 'Remove role'}
-                    </Button>
-                  </Stack>
-                }
-              />
-            ))}
-          </Stack>
-          <Box
-            sx={{
-              mt: 1.5,
-              px: 1.5,
-              py: 1.25,
-              borderRadius: 1,
-              bgcolor: (theme) => varAlpha(theme.vars.palette.warning.mainChannel, 0.08),
-            }}
-          >
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              A Circle must always have at least one organizer. If the owner leaves or is banned, ownership moves to the longest-serving organizer, or the Circle is archived.
+                  }
+                />
+              ))}
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              —
             </Typography>
-          </Box>
+          )}
         </SectionCard>
 
         <MapLocationCard circle={circle} area={area} />
       </Box>
-
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1.2fr 0.8fr' } }}>
-        <SectionCard title="Health (last 30 days)">
-          <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' } }}>
-            {stats.map((item) => (
-              <Box key={item.label} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'background.neutral' }}>
-                <Typography variant="h5">{item.value}</Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {item.label}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        </SectionCard>
-
-        <SectionCard title="Settings">
-          <Stack spacing={1.5}>
-            {settings.map((item) => (
-              <Stack key={item.key} direction="row" alignItems="center" spacing={2}>
-                <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
-                  <Typography variant="subtitle2">{item.label}</Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {item.value}
-                  </Typography>
-                </Box>
-                <Button size="small" variant="outlined" color="inherit" onClick={() => handleSettingChange(item.key)}>
-                  Change
-                </Button>
-              </Stack>
-            ))}
-          </Stack>
-        </SectionCard>
-      </Box>
-
-      <Dialog fullWidth maxWidth="xs" open={addOrganizer.value} onClose={addOrganizer.onFalse}>
-        <DialogTitle>Add organizer</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            autoFocus
-            label="Name"
-            value={organizerName}
-            onChange={(event) => setOrganizerName(event.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button variant="outlined" color="inherit" onClick={addOrganizer.onFalse}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={handleAddOrganizer}>
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Stack>
   );
 }
@@ -625,55 +482,109 @@ const STATUS_COLOR = { Active: 'success', Muted: 'warning', Published: 'success'
 
 const MEMBER_HEAD = [
   { id: 'member', label: 'Member', minWidth: 220 },
-  { id: 'discipline', label: 'Discipline', minWidth: 150 },
+  { id: 'handle', label: 'Handle', minWidth: 150 },
   { id: 'role', label: 'Role', width: 140 },
-  { id: 'joined', label: 'Joined', width: 140 },
-  { id: 'messages', label: 'Messages (30d)', width: 150, align: 'center' },
-  { id: 'reports', label: 'Reports against', width: 160, align: 'center' },
+  { id: 'joined', label: 'Joined', width: 160 },
   { id: 'status', label: 'Status', width: 130 },
+  { id: 'connection', label: 'Connection status', minWidth: 160 },
+  { id: 'canConnect', label: 'Can send request', width: 160, align: 'center' },
   { id: 'actions', label: '', width: 280 },
 ];
 
 const EVENT_HEAD = [
   { id: 'event', label: 'Event', minWidth: 260 },
   { id: 'date', label: 'Date', minWidth: 180 },
-  { id: 'going', label: 'Going / capacity', width: 160 },
-  { id: 'audience', label: 'Audience', width: 150 },
   { id: 'status', label: 'Status', width: 140 },
   { id: 'open', label: '', width: 56 },
 ];
 
-function MembersPanel({ people, onUpdateCircle }) {
+const DROP_HEAD = [
+  { id: 'title', label: 'Drop', minWidth: 280 },
+  { id: 'status', label: 'Status', width: 140 },
+  { id: 'date', label: 'Date', width: 160 },
+];
+
+function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [role, setRole] = useState('all');
   const [joined, setJoined] = useState('any');
   const [pendingRemove, setPendingRemove] = useState(null);
+  const [members, setMembers] = useState(people || []);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [expanded, setExpanded] = useState(false);
+  const [fetchMembers, { isFetching }] = useLazyGetCircleMembersQuery();
+
+  useEffect(() => {
+    if (!expanded) {
+      setMembers(people || []);
+      setPage(0);
+      setTotalPages(1);
+    }
+  }, [people, expanded]);
 
   const rows = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const cutoff = new Date('2026-10-03').getTime();
 
-    return people.filter((person) => {
-      const matchesQuery = !needle || person.name.toLowerCase().includes(needle) || (person.craft || '').toLowerCase().includes(needle);
+    return members.filter((person) => {
+      const matchesQuery =
+        !needle ||
+        person.name.toLowerCase().includes(needle) ||
+        (person.handle || '').toLowerCase().includes(needle) ||
+        (person.craft || '').toLowerCase().includes(needle);
       const matchesRole = role === 'all' || person.role === role;
       const joinedTime = person.joinedAt ? new Date(person.joinedAt).getTime() : 0;
-      const matchesJoined = joined === 'any' || (joined === 'year' && person.joinedAt?.startsWith('2026')) || (joined === '30' && joinedTime >= cutoff);
+      const matchesJoined =
+        joined === 'any' ||
+        (joined === 'year' && person.joinedAt?.startsWith('2026')) ||
+        (joined === '30' && joinedTime >= cutoff);
       return matchesQuery && matchesRole && matchesJoined;
     });
-  }, [people, query, role, joined]);
+  }, [members, query, role, joined]);
+
+  const previewCount = people?.length ?? 0;
+  const totalMemberCount = Number(memberCount) || 0;
+  const hasMoreThanPreview = totalMemberCount > previewCount;
+  const canViewMore =
+    Boolean(circleId) &&
+    ((!expanded && hasMoreThanPreview) || (expanded && page < totalPages));
+
+  const handleViewMore = async () => {
+    if (!circleId || isFetching) return;
+
+    const nextPage = expanded ? page + 1 : 1;
+
+    try {
+      const response = await fetchMembers({ id: circleId, page: nextPage, limit: 20 }).unwrap();
+      const mapped = (response.data || []).map(mapCircleMemberApi);
+
+      setMembers((prev) => {
+        if (!expanded || nextPage === 1) return mapped;
+        const existingIds = new Set(prev.map((item) => item.id));
+        return [...prev, ...mapped.filter((item) => !existingIds.has(item.id))];
+      });
+      setExpanded(true);
+      setPage(response.meta?.currentPage || nextPage);
+      setTotalPages(response.meta?.totalPages || 1);
+      if (response.message) toast.success(response.message);
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
 
   const handleExport = () => {
     exportToCsv({
       filename: 'circle-members',
       headers: [
         { key: 'name', label: 'Member' },
-        { key: 'craft', label: 'Discipline' },
+        { key: 'handle', label: 'Handle' },
         { key: 'role', label: 'Role' },
         { key: 'joined', label: 'Joined' },
-        { key: 'messages', label: 'Messages (30d)' },
-        { key: 'reportsAgainst', label: 'Reports against' },
         { key: 'status', label: 'Status' },
+        { key: 'connectionStatusLabel', label: 'Connection status' },
+        { key: 'canSendConnectionRequestLabel', label: 'Can send request' },
       ],
       rows,
     });
@@ -682,11 +593,19 @@ function MembersPanel({ people, onUpdateCircle }) {
 
   const handleRemove = () => {
     if (!pendingRemove) return;
-    onUpdateCircle((prev) => ({
-      ...prev,
-      people: prev.people.filter((item) => item.id !== pendingRemove.id),
-      members: Math.max(0, (prev.members || 0) - 1),
-    }));
+    setMembers((prev) => prev.filter((item) => item.id !== pendingRemove.id));
+    onUpdateCircle((prev) => {
+      const nextPeople = (prev.people || []).filter((item) => item.id !== pendingRemove.id);
+      const nextLatest = (prev.latestMembers || []).filter((item) => item.id !== pendingRemove.id);
+      const nextCount = Math.max(0, (prev.memberCount ?? prev.members ?? 0) - 1);
+      return {
+        ...prev,
+        people: nextPeople,
+        latestMembers: nextLatest.length ? nextLatest : nextPeople,
+        members: nextCount,
+        memberCount: nextCount,
+      };
+    });
     toast.success(`${pendingRemove.name} removed`);
     setPendingRemove(null);
   };
@@ -733,7 +652,7 @@ function MembersPanel({ people, onUpdateCircle }) {
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        <Table size="medium" sx={{ minWidth: 1320, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}>
+        <Table size="medium" sx={{ minWidth: 1200, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}>
           <TableHeadCustom headLabel={MEMBER_HEAD} />
           <TableBody>
             {rows.length ? (
@@ -743,6 +662,7 @@ function MembersPanel({ people, onUpdateCircle }) {
                     <Stack direction="row" spacing={1.5} alignItems="center">
                       <Avatar
                         alt={person.name}
+                        src={person.image ? getDisplayImage(person.image) : undefined}
                         sx={{ width: 36, height: 36, fontSize: 12, fontWeight: 700, color: 'text.primary', bgcolor: AVATAR_COLORS[person.name.length % AVATAR_COLORS.length] }}
                       >
                         {person.name.startsWith('user') ? '??' : initials(person.name)}
@@ -750,27 +670,23 @@ function MembersPanel({ people, onUpdateCircle }) {
                       <Typography variant="subtitle2">{person.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{person.craft || '—'}</TableCell>
+                  <TableCell>{person.handle ? `@${person.handle}` : '—'}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>
                     <Label variant="soft" color={ROLE_COLOR[person.role] || 'default'} sx={{ px: 1.25, height: 28 }}>
                       {person.role}
                     </Label>
                   </TableCell>
                   <TableCell>{person.joined || '—'}</TableCell>
-                  <TableCell align="center">{person.messages ?? '—'}</TableCell>
-                  <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
-                    {person.reportsAgainst ? (
-                      <Label variant="soft" color="error" sx={{ px: 1.25, height: 28, minWidth: 28 }}>
-                        {person.reportsAgainst}
-                      </Label>
-                    ) : (
-                      0
-                    )}
-                  </TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    <Label variant="soft" color={STATUS_COLOR[person.status] || 'default'} sx={{ px: 1.25, height: 28 }}>
+                    <Label variant="soft" color={STATUS_COLOR[person.status] || 'success'} sx={{ px: 1.25, height: 28 }}>
                       {person.status || 'Active'}
                     </Label>
+                  </TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    {person.connectionStatusLabel || '—'}
+                  </TableCell>
+                  <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+                    {person.canSendConnectionRequestLabel || '—'}
                   </TableCell>
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                     <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ flexWrap: 'nowrap' }}>
@@ -809,6 +725,14 @@ function MembersPanel({ people, onUpdateCircle }) {
           </TableBody>
         </Table>
       </Box>
+
+      {canViewMore ? (
+        <Stack alignItems="center" sx={{ p: 2, pt: 0 }}>
+          <Button variant="outlined" color="inherit" disabled={isFetching} onClick={handleViewMore}>
+            {isFetching ? 'Loading...' : 'View more'}
+          </Button>
+        </Stack>
+      ) : null}
 
       <ConfirmDialog
         open={Boolean(pendingRemove)}
@@ -915,7 +839,7 @@ function EventsPanel({ events }) {
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        <Table size="small" sx={{ minWidth: 980, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}>
+        <Table size="small" sx={{ minWidth: 720, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}>
           <TableHeadCustom headLabel={EVENT_HEAD} />
           <TableBody>
             {events.map((event) => (
@@ -941,23 +865,16 @@ function EventsPanel({ events }) {
                       }}
                     >
                       <Typography variant="caption" sx={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', lineHeight: 1.1 }}>
-                        {event.month.toUpperCase()}
+                        {String(event.month || '—').toUpperCase()}
                       </Typography>
                       <Typography variant="subtitle2" sx={{ lineHeight: 1.1 }}>
-                        {event.day}
+                        {event.day || '—'}
                       </Typography>
                     </Box>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="subtitle2">{event.title}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        {event.place}
-                      </Typography>
-                    </Box>
+                    <Typography variant="subtitle2">{event.title}</Typography>
                   </Stack>
                 </TableCell>
                 <TableCell>{event.dateLabel || event.time || '—'}</TableCell>
-                <TableCell>{event.going || '—'}</TableCell>
-                <TableCell>{event.audience || 'Public'}</TableCell>
                 <TableCell>
                   <Label variant="soft" color={STATUS_COLOR[event.status] || 'success'}>
                     {event.status || 'Published'}
@@ -974,6 +891,43 @@ function EventsPanel({ events }) {
                     <Iconify icon="eva:arrow-ios-forward-fill" width={18} />
                   </IconButton>
                 </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+    </Card>
+  );
+}
+
+function DropsPanel({ drops }) {
+  if (!drops.length) return <EmptyContent filled title="No open drops" sx={{ py: 10 }} />;
+
+  return (
+    <Card>
+      <Box
+        sx={{
+          width: 1,
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        <Table size="small" sx={{ minWidth: 640, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}>
+          <TableHeadCustom headLabel={DROP_HEAD} />
+          <TableBody>
+            {drops.map((drop) => (
+              <TableRow key={drop.id} hover>
+                <TableCell>
+                  <Typography variant="subtitle2">{drop.title}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Label variant="soft" color={String(drop.status).toLowerCase() === 'open' ? 'success' : 'default'}>
+                    {drop.status || '—'}
+                  </Label>
+                </TableCell>
+                <TableCell>{drop.date || '—'}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -1000,26 +954,32 @@ function PollsPanel({ polls, onUpdateCircle }) {
           </Stack>
 
           <Stack spacing={1.5} sx={{ mt: 2 }}>
-            {(poll.options || []).map((option) => (
-              <Stack key={option.label} direction="row" alignItems="center" spacing={2}>
-                <Typography variant="body2" sx={{ width: { xs: 120, sm: 200 }, flexShrink: 0 }}>
-                  {option.label}
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={option.percent}
-                  sx={{ flex: '1 1 auto', height: 8, borderRadius: 99, bgcolor: 'background.neutral' }}
-                />
-                <Typography variant="caption" sx={{ width: 36, textAlign: 'right', color: 'text.secondary' }}>
-                  {`${option.percent}%`}
-                </Typography>
-              </Stack>
-            ))}
+            {(poll.options || []).length ? (
+              poll.options.map((option) => (
+                <Stack key={option.label} direction="row" alignItems="center" spacing={2}>
+                  <Typography variant="body2" sx={{ width: { xs: 120, sm: 200 }, flexShrink: 0 }}>
+                    {option.label}
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={option.percent || 0}
+                    sx={{ flex: '1 1 auto', height: 8, borderRadius: 99, bgcolor: 'background.neutral' }}
+                  />
+                  <Typography variant="caption" sx={{ width: 36, textAlign: 'right', color: 'text.secondary' }}>
+                    {`${option.percent || 0}%`}
+                  </Typography>
+                </Stack>
+              ))
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                —
+              </Typography>
+            )}
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={1} sx={{ mt: 2.5 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {poll.createdBy ? `Created by ${poll.createdBy} · ${poll.votes} votes` : poll.meta}
+              {poll.createdBy ? `Created by ${poll.createdBy} · ${poll.votes || 0} votes` : poll.meta || null}
             </Typography>
             <Stack direction="row" spacing={1}>
               <Button
@@ -1139,8 +1099,17 @@ function ActivityPanel({ items }) {
 export function CircleDetailView() {
   const { id } = useParams();
   const router = useRouter();
+  const location = useLocation();
+  const circlePreview = location.state?.circlePreview;
   const { value, onChange } = useTabs('overview');
-  const [circle, setCircle] = useState(() => getCircleDetail(id));
+  const {
+    data: apiCircle,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetCircleByIdQuery(id, { skip: !id });
+
+  const [circle, setCircle] = useState(() => resolveCircleDetail(id, null, circlePreview));
   const editDetails = useBoolean();
   const suspend = useBoolean();
   const [editName, setEditName] = useState('');
@@ -1152,19 +1121,27 @@ export function CircleDetailView() {
   });
 
   useEffect(() => {
-    const detail = getCircleDetail(id);
+    if (error && !circlePreview) handleApiError(error);
+  }, [error, circlePreview]);
+
+  useEffect(() => {
+    const detail = resolveCircleDetail(id, apiCircle, circlePreview);
     setCircle(detail);
     if (!detail) return;
     setArea({
-      homeArea: detail.homeArea || detail.location,
+      homeArea: detail.city || detail.homeArea || detail.location,
       latitude: detail.latitude || 40.7233,
       longitude: detail.longitude || -74.003,
     });
-  }, [id]);
+  }, [id, apiCircle, circlePreview]);
 
   const updateCircle = (updater) => {
     setCircle((prev) => (typeof updater === 'function' ? updater(prev) : updater));
   };
+
+  if ((isLoading || isFetching) && !circle) {
+    return <LoadingScreen />;
+  }
 
   if (!circle) {
     return (
@@ -1183,14 +1160,16 @@ export function CircleDetailView() {
     );
   }
 
+  const privacyOption = getCirclePrivacyOption(circle.privacy);
   const tabs = [
     { value: 'overview', label: 'Overview' },
-    { value: 'members', label: `Members · ${circle.members}` },
-    { value: 'requests', label: `Join requests · ${circle.joinRequests.length}` },
-    { value: 'events', label: `Events · ${circle.events.length}` },
-    { value: 'polls', label: `Polls · ${circle.polls.length}` },
-    { value: 'reports', label: `Reports · ${circle.reports.length}` },
-    { value: 'activity', label: 'Activity log' },
+    { value: 'members', label: `Members · ${circle.memberCount ?? circle.members ?? circle.people?.length ?? 0}` },
+    { value: 'requests', label: `Join requests · ${circle.pendingRequestCount ?? circle.joinRequests?.length ?? 0}` },
+    { value: 'events', label: `Events · ${circle.events?.length ?? 0}` },
+    { value: 'drops', label: `Open drops · ${circle.openDrops?.length ?? circle.drops?.length ?? 0}` },
+    { value: 'polls', label: `Polls · ${circle.polls?.length ?? 0}` },
+    { value: 'reports', label: `Reports · ${circle.reports?.length ?? 0}` },
+    // { value: 'activity', label: 'Activity log' },
   ];
 
   return (
@@ -1208,32 +1187,13 @@ export function CircleDetailView() {
               variant="outlined"
               color="inherit"
               size="small"
-              onClick={() => toast.success(`Message started with ${circle.organizers.map((item) => item.name).join(', ')}`)}
-            >
-              Message organizers
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
               onClick={() => {
                 setEditName(circle.name);
-                setEditDescription(circle.description || '');
+                setEditDescription(circle.purpose || circle.description || '');
                 editDetails.onTrue();
               }}
             >
               Edit details
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              onClick={() => {
-                updateCircle((prev) => ({ ...prev, featured: !prev.featured }));
-                toast.success(circle.featured ? 'Removed from Radar' : 'Featured on Radar');
-              }}
-            >
-              {circle.featured ? 'Unfeature on Radar' : 'Feature on Radar'}
             </Button>
             <Button variant="outlined" color="error" size="small" onClick={suspend.onTrue}>
               Suspend Circle
@@ -1244,16 +1204,16 @@ export function CircleDetailView() {
       />
 
       <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-        {`Created ${circle.createdAt} by ${circle.createdBy} · ID ${circle.code}`}
+        {`Created ${circle.createdAtFull || circle.createdAt} · Updated ${circle.updatedAtFull || circle.updatedAt}`}
       </Typography>
 
       <Card sx={{ mb: 3, height: { xs: 'auto', md: 320 }, position: 'relative' }}>
         <CircleCover
           name={circle.name}
-          avatarUrl={getDisplayImage(circle.image)}
-          homeArea={area?.homeArea || circle.homeArea || circle.location}
-          statusLabel={getCircleStatusOption(circle.status)?.label || circle.status}
-          joiningLabel={getCircleJoiningOption(circle.joining)?.label || circle.joining}
+          avatarUrl={getDisplayImage(circle.coverImage || circle.image)}
+          homeArea={area?.homeArea || circle.city || circle.homeArea}
+          statusLabel={privacyOption?.label || circle.privacy || '—'}
+          joiningLabel={circle.category || null}
           featured={circle.featured}
         />
 
@@ -1317,19 +1277,25 @@ export function CircleDetailView() {
         </Box>
       </Card>
 
-      {value === 'overview' && (
-        <OverviewPanel
-          circle={circle}
-          area={area}
+      {value === 'overview' && <OverviewPanel circle={circle} area={area} />}
+      {value === 'members' && (
+        <MembersPanel
+          circleId={circle._id || circle.id}
+          people={circle.latestMembers || circle.people || []}
+          memberCount={circle.memberCount ?? circle.members ?? 0}
           onUpdateCircle={updateCircle}
         />
       )}
-      {value === 'members' && <MembersPanel people={circle.people} onUpdateCircle={updateCircle} />}
-      {value === 'requests' && <RequestsPanel requests={circle.joinRequests} onUpdateCircle={updateCircle} />}
-      {value === 'events' && <EventsPanel events={circle.events} />}
-      {value === 'polls' && <PollsPanel polls={circle.polls} onUpdateCircle={updateCircle} />}
-      {value === 'reports' && <ReportsPanel reports={circle.reports} onUpdateCircle={updateCircle} />}
-      {value === 'activity' && <ActivityPanel items={circle.activity} />}
+      {value === 'requests' && (
+        <RequestsPanel requests={circle.joinRequests || []} onUpdateCircle={updateCircle} />
+      )}
+      {value === 'events' && <EventsPanel events={circle.events || []} />}
+      {value === 'drops' && <DropsPanel drops={circle.openDrops || circle.drops || []} />}
+      {value === 'polls' && <PollsPanel polls={circle.polls || []} onUpdateCircle={updateCircle} />}
+      {value === 'reports' && (
+        <ReportsPanel reports={circle.reports || []} onUpdateCircle={updateCircle} />
+      )}
+      {/* {value === 'activity' && <ActivityPanel items={circle.activity || []} />} */}
 
       <Dialog fullWidth maxWidth="sm" open={editDetails.value} onClose={editDetails.onFalse}>
         <DialogTitle>Edit circle details</DialogTitle>
@@ -1340,7 +1306,7 @@ export function CircleDetailView() {
               fullWidth
               multiline
               minRows={3}
-              label="Description"
+              label="Purpose"
               value={editDescription}
               onChange={(event) => setEditDescription(event.target.value)}
             />
@@ -1360,6 +1326,7 @@ export function CircleDetailView() {
               updateCircle((prev) => ({
                 ...prev,
                 name: editName.trim(),
+                purpose: editDescription.trim(),
                 description: editDescription.trim(),
               }));
               editDetails.onFalse();
