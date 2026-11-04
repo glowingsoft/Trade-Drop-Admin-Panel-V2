@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,6 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 
 import { paths } from 'src/routes/paths';
 
+import { useDebounce } from 'src/hooks/use-debounce';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -19,51 +20,37 @@ import { FlexibleTableFiltersResult } from 'src/components/generic-table/table-f
 import { FlexibleTableToolbar } from 'src/components/generic-table/table-toolbar';
 import { Iconify } from 'src/components/iconify';
 import { TableHeadCustom, TableNoData, TablePaginationCustom, useTable } from 'src/components/table';
+import { useGetCirclesQuery } from 'src/store/Reducer/circles-api';
 import { varAlpha } from 'src/theme/styles';
+import { handleApiError } from 'src/utils/errorHandler';
 import { exportToCsv } from 'src/utils/export-to-csv';
 
+import UserLoadingSkeleton from '../../user/user-loading-skeleton';
 import { CircleStatCard } from '../circle-stat-card';
 import { CircleTableRow } from '../circle-table-row';
-import {
-  CIRCLE_JOINING_OPTIONS,
-  CIRCLE_STATUS_OPTIONS,
-  getCircleJoiningOption,
-  getCircleStatusOption,
-} from '../circle-status';
-import { CIRCLE_STATS, CIRCLES } from '../mocks/data';
+import { CIRCLE_PRIVACY_OPTIONS, getCirclePrivacyOption } from '../circle-status';
+import { mapCircleListRow } from '../map-circle-list';
 
 const TABLE_HEAD = [
   { id: 'sr', label: 'Sr#', width: 70, align: 'center' },
-  { id: 'name', label: 'Circle', minWidth: 240 },
-  { id: 'category', label: 'Category', minWidth: 150 },
-  { id: 'location', label: 'Home area', minWidth: 180 },
-  { id: 'joining', label: 'Joining', width: 120 },
-  { id: 'members', label: 'Members', width: 110, align: 'center' },
-  { id: 'organizer', label: 'Organizers', minWidth: 160 },
-  { id: 'events', label: 'Events', width: 100, align: 'center' },
-  { id: 'reports', label: 'Reports', width: 100, align: 'center' },
-  { id: 'createdAt', label: 'Created', width: 140 },
-  { id: 'status', label: 'Status', width: 120 },
-  { id: 'actions', label: '', width: 140 },
-];
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'members', label: 'Most members' },
-  { value: 'reports', label: 'Most reports' },
+  { id: 'name', label: 'Name', minWidth: 220 },
+  { id: 'purpose', label: 'Purpose', minWidth: 220 },
+  { id: 'category', label: 'Category', minWidth: 140 },
+  { id: 'city', label: 'City', minWidth: 120 },
+  { id: 'privacy', label: 'Privacy', width: 140 },
+  { id: 'organizer', label: 'Organizer', minWidth: 180 },
+  { id: 'createdAt', label: 'Created At', width: 140 },
+  { id: 'updatedAt', label: 'Updated At', width: 140 },
+  { id: 'actions', label: '', width: 100 },
 ];
 
 const DEFAULT_FILTERS = {
   name: '',
+  privacy: 'all',
   category: 'all',
-  joining: 'all',
-  location: 'all',
-  status: 'all',
-  sort: 'newest',
 };
 
-const PAGE_LIMIT = 10;
+const PAGE_LIMIT = 20;
 
 const ALL_OPTION = { value: 'all', label: 'All' };
 
@@ -73,39 +60,142 @@ const FILTER_WIDTH = {
   minWidth: 150,
 };
 
-const uniqueOptions = (rows, key) => [
-  ALL_OPTION,
-  ...[...new Set(rows.map((row) => row[key]))].map((value) => ({ value, label: value })),
+const EXPORT_HEADERS = [
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Name' },
+  { key: 'purpose', label: 'Purpose' },
+  { key: 'category', label: 'Category' },
+  { key: 'city', label: 'City' },
+  { key: 'privacy', label: 'Privacy' },
+  { key: 'organizer', label: 'Organizer' },
+  { key: 'createdAt', label: 'Created At' },
+  { key: 'updatedAt', label: 'Updated At' },
 ];
 
-const EXPORT_HEADERS = [
-  { key: 'code', label: 'Code' },
-  { key: 'name', label: 'Circle' },
-  { key: 'category', label: 'Category' },
-  { key: 'location', label: 'Home area' },
-  { key: 'joining', label: 'Joining' },
-  { key: 'members', label: 'Members' },
-  { key: 'organizer', label: 'Organizers' },
-  { key: 'events', label: 'Events' },
-  { key: 'reports', label: 'Reports' },
-  { key: 'createdAt', label: 'Created' },
-  { key: 'status', label: 'Status' },
-];
+const formatPrivacyLabel = (value) =>
+  getCirclePrivacyOption(value)?.label ||
+  String(value || '')
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('-');
 
 export function CirclesListView() {
   const table = useTable({ defaultRowsPerPage: PAGE_LIMIT, defaultDense: true });
   const filters = useSetState(DEFAULT_FILTERS);
   const [activeStat, setActiveStat] = useState(null);
+  const keyword = useDebounce(filters.state.name, 500);
 
-  const categoryOptions = useMemo(() => uniqueOptions(CIRCLES, 'category'), []);
-  const locationOptions = useMemo(() => uniqueOptions(CIRCLES, 'location'), []);
+  const { data, isLoading, isFetching, error } = useGetCirclesQuery({
+    page: table.page + 1,
+    limit: PAGE_LIMIT,
+    keyword: String(keyword || '').trim() || undefined,
+    privacy: filters.state.privacy === 'all' ? undefined : filters.state.privacy,
+    category: filters.state.category === 'all' ? undefined : filters.state.category,
+  });
+
+  useEffect(() => {
+    if (error) handleApiError(error);
+  }, [error]);
+
+  const tableData = useMemo(() => {
+    const list = Array.isArray(data?.data) ? data.data : [];
+    return list.map(mapCircleListRow);
+  }, [data?.data]);
+
+  const totalRecords = data?.total_length || 0;
+
+  useEffect(() => {
+    table.onResetPage();
+  }, [keyword]);
+
+  useEffect(() => {
+    const maxPage = Math.max(0, Math.ceil(totalRecords / PAGE_LIMIT) - 1);
+    if (table.page > maxPage) {
+      table.setPage(maxPage);
+    }
+  }, [totalRecords, table.page, table.setPage]);
+  const count = data?.count || {};
+
+  const displayStats = useMemo(
+    () => [
+      {
+        key: 'total',
+        title: 'Total Circles',
+        value: String(count.total ?? totalRecords ?? 0),
+        helper: data?.meta?.totalPages ? `${data.meta.totalPages} pages` : undefined,
+        icon: 'solar:users-group-rounded-bold',
+      },
+      {
+        key: 'members',
+        title: 'Members',
+        value: String(count.members ?? 0),
+        icon: 'solar:user-bold',
+      },
+      {
+        key: 'reports',
+        title: 'Reports',
+        value: String(count.reports ?? 0),
+        tone: count.reports > 0 ? 'error' : undefined,
+        icon: 'solar:danger-triangle-bold',
+      },
+      {
+        key: 'activePools',
+        title: 'Active pools',
+        value: String(count.activePools ?? 0),
+        icon: 'solar:chart-bold',
+      },
+    ],
+    [count, totalRecords, data?.meta?.totalPages]
+  );
+
+  const privacyOptions = useMemo(() => {
+    const fromApi = Array.isArray(data?.privacyOptions) ? data.privacyOptions : [];
+    const source = fromApi.length
+      ? fromApi
+      : CIRCLE_PRIVACY_OPTIONS.map((item) => item.value);
+
+    return [
+      ALL_OPTION,
+      ...source.map((item) => {
+        const value = typeof item === 'string' ? item : item?.value || item?.privacy || '';
+        const option = CIRCLE_PRIVACY_OPTIONS.find(
+          (entry) => entry.value === String(value || '').toLowerCase()
+        );
+        return {
+          value,
+          label:
+            (typeof item === 'object' && (item.label || item.name)) ||
+            option?.label ||
+            formatPrivacyLabel(value),
+        };
+      }).filter((item) => item.value),
+    ];
+  }, [data?.privacyOptions]);
+
+  const categoryOptions = useMemo(() => {
+    const fromApi = Array.isArray(data?.categories) ? data.categories : [];
+    return [
+      ALL_OPTION,
+      ...fromApi
+        .map((item) => {
+          if (typeof item === 'string') {
+            return { value: item, label: formatPrivacyLabel(item) };
+          }
+          return {
+            value: item._id || item.id || item.value || item.name || '',
+            label: item.name || item.label || item._id || '—',
+          };
+        })
+        .filter((item) => item.value),
+    ];
+  }, [data?.categories]);
 
   const filterFields = useMemo(
     () => [
       createFilterField.search({
         key: 'name',
         label: 'Keyword',
-        placeholder: 'Search by Circle name, organizer or city',
+        placeholder: 'Search by Circle name',
       }),
       createFilterField.select({
         key: 'category',
@@ -115,77 +205,14 @@ export function CirclesListView() {
         ...FILTER_WIDTH,
       }),
       createFilterField.select({
-        key: 'joining',
-        label: 'Joining',
-        options: [ALL_OPTION, ...CIRCLE_JOINING_OPTIONS],
+        key: 'privacy',
+        label: 'Privacy',
+        options: privacyOptions,
         defaultValue: 'all',
-        ...FILTER_WIDTH,
-      }),
-      createFilterField.select({
-        key: 'location',
-        label: 'City / country',
-        options: locationOptions,
-        defaultValue: 'all',
-        ...FILTER_WIDTH,
-      }),
-      createFilterField.select({
-        key: 'status',
-        label: 'Status',
-        options: [ALL_OPTION, ...CIRCLE_STATUS_OPTIONS.filter((option) => option.value !== 'reviewing')],
-        defaultValue: 'all',
-        ...FILTER_WIDTH,
-      }),
-      createFilterField.select({
-        key: 'sort',
-        label: 'Sort',
-        options: SORT_OPTIONS,
-        defaultValue: 'newest',
         ...FILTER_WIDTH,
       }),
     ],
-    [categoryOptions, locationOptions]
-  );
-
-  const filteredRows = useMemo(() => {
-    const keyword = filters.state.name.trim().toLowerCase();
-
-    const rows = CIRCLES.filter((row) => {
-      const matchesKeyword =
-        !keyword ||
-        row.name.toLowerCase().includes(keyword) ||
-        row.code.toLowerCase().includes(keyword) ||
-        (row.organizer || '').toLowerCase().includes(keyword) ||
-        (row.location || '').toLowerCase().includes(keyword);
-      const matchesCategory = filters.state.category === 'all' || row.category === filters.state.category;
-      const matchesJoining = filters.state.joining === 'all' || row.joining === filters.state.joining;
-      const matchesLocation = filters.state.location === 'all' || row.location === filters.state.location;
-      const matchesStatus = filters.state.status === 'all' || row.status === filters.state.status;
-
-      return matchesKeyword && matchesCategory && matchesJoining && matchesLocation && matchesStatus;
-    });
-
-    const sorted = [...rows];
-    switch (filters.state.sort) {
-      case 'oldest':
-        sorted.sort((a, b) => a.createdAtSort.localeCompare(b.createdAtSort));
-        break;
-      case 'members':
-        sorted.sort((a, b) => b.members - a.members);
-        break;
-      case 'reports':
-        sorted.sort((a, b) => b.reports - a.reports);
-        break;
-      default:
-        sorted.sort((a, b) => b.createdAtSort.localeCompare(a.createdAtSort));
-        break;
-    }
-
-    return sorted;
-  }, [filters.state]);
-
-  const tableData = useMemo(
-    () => filteredRows.slice(table.page * PAGE_LIMIT, table.page * PAGE_LIMIT + PAGE_LIMIT),
-    [filteredRows, table.page]
+    [categoryOptions, privacyOptions]
   );
 
   const activeFilters = useMemo(
@@ -206,17 +233,9 @@ export function CirclesListView() {
   const handleFilterChange = useCallback(
     (key, value) => {
       filters.setState({ [key]: value });
-      if (key === 'status' && value !== 'reported') setActiveStat((prev) => (prev === 'reported' ? null : prev));
-      if (key === 'joining' && value !== 'approval') setActiveStat((prev) => (prev === 'inviteOnly' ? null : prev));
-      if (key === 'sort' && value !== 'members') setActiveStat((prev) => (prev === 'members' ? null : prev));
-      table.onResetPage();
-    },
-    [filters, table]
-  );
-
-  const handleSearchChange = useCallback(
-    (event) => {
-      filters.setState({ name: event.target.value });
+      if (key === 'privacy' && value !== 'invite-only') {
+        setActiveStat((prev) => (prev === 'inviteOnly' ? null : prev));
+      }
       table.onResetPage();
     },
     [filters, table]
@@ -232,9 +251,7 @@ export function CirclesListView() {
     (key) => {
       const field = filterFields.find((item) => item.key === key);
       filters.setState({ [key]: field?.defaultValue ?? '' });
-      if (key === 'status') setActiveStat((prev) => (prev === 'reported' ? null : prev));
-      if (key === 'joining') setActiveStat((prev) => (prev === 'inviteOnly' ? null : prev));
-      if (key === 'sort') setActiveStat((prev) => (prev === 'members' ? null : prev));
+      if (key === 'privacy') setActiveStat((prev) => (prev === 'inviteOnly' ? null : prev));
       table.onResetPage();
     },
     [filterFields, filters, table]
@@ -245,16 +262,10 @@ export function CirclesListView() {
       const next = activeStat === key ? null : key;
       setActiveStat(next);
 
-      if (next === 'reported') {
-        filters.setState({ status: 'reported', joining: 'all', sort: 'newest' });
-      } else if (next === 'inviteOnly') {
-        filters.setState({ joining: 'approval', status: 'all', sort: 'newest' });
-      } else if (next === 'members') {
-        filters.setState({ sort: 'members', status: 'all', joining: 'all' });
-      } else if (next === 'inactive') {
-        filters.setState({ status: 'all', joining: 'all', sort: 'oldest' });
+      if (next === 'reports') {
+        filters.setState({ privacy: 'all', category: 'all' });
       } else {
-        filters.setState({ status: 'all', joining: 'all', sort: 'newest' });
+        filters.setState({ privacy: 'all' });
       }
 
       table.onResetPage();
@@ -266,14 +277,12 @@ export function CirclesListView() {
     exportToCsv({
       filename: 'circles',
       headers: EXPORT_HEADERS,
-      rows: filteredRows.map((row) => ({
+      rows: tableData.map((row) => ({
         ...row,
-        joining: getCircleJoiningOption(row.joining)?.label || row.joining,
-        organizer: row.organizer,
-        status: getCircleStatusOption(row.status)?.label || row.status,
+        privacy: getCirclePrivacyOption(row.privacy)?.label || row.privacy,
       })),
     });
-  }, [filteredRows]);
+  }, [tableData]);
 
   return (
     <DashboardContent maxWidth={false}>
@@ -296,11 +305,11 @@ export function CirclesListView() {
           gridTemplateColumns: {
             xs: '1fr',
             sm: 'repeat(2, minmax(0, 1fr))',
-            md: 'repeat(5, minmax(0, 1fr))',
+            md: 'repeat(4, minmax(0, 1fr))',
           },
         }}
       >
-        {CIRCLE_STATS.map((stat) => (
+        {displayStats.map((stat) => (
           <CircleStatCard
             key={stat.key}
             title={stat.title}
@@ -320,13 +329,12 @@ export function CirclesListView() {
           filterFields={filterFields}
           filterValues={filters.state}
           onFilterChange={handleFilterChange}
-          onSearchChange={handleSearchChange}
         />
 
         {activeFilters.length > 0 && (
           <FlexibleTableFiltersResult
             activeFilters={activeFilters}
-            totalResults={filteredRows.length}
+            totalResults={totalRecords}
             onResetFilters={handleReset}
             onRemoveFilter={handleRemoveFilter}
             sx={{ p: 2.5, pt: 0 }}
@@ -358,7 +366,9 @@ export function CirclesListView() {
             <TableHeadCustom order={table.order} orderBy={table.orderBy} headLabel={TABLE_HEAD} />
 
             <TableBody>
-              {tableData.length > 0 ? (
+              {isLoading || isFetching ? (
+                <UserLoadingSkeleton />
+              ) : tableData.length > 0 ? (
                 tableData.map((row, index) => (
                   <CircleTableRow
                     key={row.id}
@@ -376,7 +386,7 @@ export function CirclesListView() {
         <TablePaginationCustom
           page={table.page}
           dense={table.dense}
-          count={filteredRows.length}
+          count={totalRecords}
           rowsPerPage={PAGE_LIMIT}
           rowsPerPageOptions={[]}
           onPageChange={table.onChangePage}

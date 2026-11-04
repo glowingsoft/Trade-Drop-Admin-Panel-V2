@@ -16,6 +16,9 @@ import { dropsApi } from './Reducer/drops-api';
 import { tapInsApi } from './Reducer/tapins-api';
 import { badgesApi } from './Reducer/badges-api';
 import { disputesApi } from './Reducer/disputes-api';
+import { circlesApi } from './Reducer/circles-api';
+import { eventsApi } from './Reducer/events-api';
+import { reportsApi } from './Reducer/reports-api';
 
 const persistConfig = {
   key: 'root',
@@ -23,13 +26,10 @@ const persistConfig = {
   whitelist: ['user'],
 };
 
-// Action to reset all API caches
 export const resetApiState = createAction('api/resetApiState');
 
-// Create a persisted reducer for the user slice
 const persistedUserReducer = persistReducer(persistConfig, userReducer);
 
-// Create the Redux store with the persisted reducer for the user slice
 export const store = configureStore({
   reducer: {
     [categoriesApi.reducerPath]: categoriesApi.reducer,
@@ -45,6 +45,9 @@ export const store = configureStore({
     [tapInsApi.reducerPath]: tapInsApi.reducer,
     [badgesApi.reducerPath]: badgesApi.reducer,
     [disputesApi.reducerPath]: disputesApi.reducer,
+    [circlesApi.reducerPath]: circlesApi.reducer,
+    [eventsApi.reducerPath]: eventsApi.reducer,
+    [reportsApi.reducerPath]: reportsApi.reducer,
     user: persistedUserReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -65,57 +68,14 @@ export const store = configureStore({
       dropsApi.middleware,
       tapInsApi.middleware,
       badgesApi.middleware,
-      disputesApi.middleware
+      disputesApi.middleware,
+      circlesApi.middleware,
+      eventsApi.middleware,
+      reportsApi.middleware
     ),
 });
 
-// Initialize Redux Persist
 export const persistor = persistStore(store);
 
-// Setup listeners
 setupListeners(store.dispatch);
 
-// import { configureStore, createAction } from '@reduxjs/toolkit';
-// import { setupListeners } from '@reduxjs/toolkit/query';
-// import { persistReducer, persistStore } from 'redux-persist';
-// import storage from 'redux-persist/lib/storage';
-// import { authApi } from './Reducer/auth';
-// import userReducer from './slices/userSlice';
-// import { walletsApi } from './Reducer/wallets-api';
-// import { transactionsApi } from './Reducer/transactions-api';
-// import { categoriesApi } from './Reducer/categories-api';
-
-// const persistConfig = {
-//   key: 'root',
-//   storage,
-//   // whitelist: ['user'],
-// };
-
-// export const resetStore = createAction('RESET_STORE');
-
-// // Create a persisted reducer for the user slice
-// const persistedUserReducer = persistReducer(persistConfig, userReducer);
-
-// // Create the Redux store with the persisted reducer for the user slice
-// export const store = configureStore({
-//   reducer: {
-//     [categoriesApi.reducerPath]: categoriesApi.reducer,
-//     [transactionsApi.reducerPath]: transactionsApi.reducer,
-//     [walletsApi.reducerPath]: walletsApi.reducer,
-//     [authApi.reducerPath]: authApi.reducer,
-//     user: persistedUserReducer,
-//   },
-//   middleware: (getDefaultMiddleware) =>
-//     getDefaultMiddleware({
-//       serializableCheck: {
-//         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER'],
-//       },
-//     }).concat(authApi.middleware,
-//       walletsApi.middleware, transactionsApi.middleware, categoriesApi.middleware),
-// });
-
-// // Initialize Redux Persist
-// export const persistor = persistStore(store);
-
-// // Setup listeners
-// setupListeners(store.dispatch);

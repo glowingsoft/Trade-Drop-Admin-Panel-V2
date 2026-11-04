@@ -95,7 +95,7 @@ const FilterField = memo(({ field, value, onChange, onSearchChange, size = 'medi
                     fullWidth
                     size={size}
                     label={field.label}
-                    value={value}
+                    value={value ?? field.defaultValue ?? ''}
                     onChange={(e) => onChange(field.key, e.target.value)}
                     placeholder={field.placeholder}
                 >

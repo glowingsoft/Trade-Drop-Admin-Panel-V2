@@ -1,16 +1,20 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
+import TextField from '@mui/material/TextField';
+
+import { useNavigate } from 'react-router-dom';
 
 import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
 
+import { useDebounce } from 'src/hooks/use-debounce';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -21,177 +25,193 @@ import { FlexibleTableFiltersResult } from 'src/components/generic-table/table-f
 import { FlexibleTableToolbar } from 'src/components/generic-table/table-toolbar';
 import { Iconify } from 'src/components/iconify';
 import { TableHeadCustom, TableNoData, TablePaginationCustom, useTable } from 'src/components/table';
+import { useGetEventsQuery } from 'src/store/Reducer/events-api';
 import { varAlpha } from 'src/theme/styles';
 import { exportToCsv } from 'src/utils/export-to-csv';
+import { handleApiError } from 'src/utils/errorHandler';
 
-import { EVENT_AUDIENCE_OPTIONS, EVENT_STATUS_OPTIONS, getEventStatusOption } from '../event-status';
+import UserLoadingSkeleton from '../../user/user-loading-skeleton';
+import { EVENT_STATUS_OPTIONS, getEventStatusOption } from '../event-status';
 import { EventStatCard } from '../event-stat-card';
 import { EventTableRow } from '../event-table-row';
-import { EVENT_STATS, EVENTS } from '../mocks/data';
+import { mapEventListRow } from '../map-event-list';
 import { EventsCalendarPanel } from './events-calendar-view';
 
 const TABLE_HEAD = [
   { id: 'sr', label: 'Sr#', width: 70, align: 'center' },
   { id: 'name', label: 'Event', minWidth: 240 },
-  { id: 'host', label: 'Hosting Circle', minWidth: 180 },
-  { id: 'organizer', label: 'Organizer', minWidth: 140 },
-  { id: 'dateTime', label: 'Date & time', minWidth: 200 },
-  { id: 'location', label: 'Public area', minWidth: 160 },
-  { id: 'audience', label: 'Audience · Joining', minWidth: 160 },
-  { id: 'going', label: 'Going / cap', width: 130, minWidth: 130, align: 'center' },
-  { id: 'waitlist', label: 'Waitlist', width: 100, align: 'center' },
-  { id: 'reports', label: 'Reports', width: 100, align: 'center' },
+  { id: 'purpose', label: 'Purpose', minWidth: 220 },
+  { id: 'circleName', label: 'Hosting Circle', minWidth: 180 },
+  { id: 'organizer', label: 'Organizer', minWidth: 160 },
+  { id: 'date', label: 'Date', minWidth: 120 },
+  { id: 'time', label: 'Time', minWidth: 140 },
+  { id: 'publicArea', label: 'Public area', minWidth: 160 },
+  { id: 'exactMeetingPoint', label: 'Meeting point', minWidth: 180 },
+  { id: 'locationType', label: 'Location type', width: 120 },
+  { id: 'audience', label: 'Audience', width: 120 },
+  { id: 'joining', label: 'Joining', width: 120 },
+  { id: 'rsvpCount', label: 'RSVP', width: 90, align: 'center' },
+  { id: 'capacity', label: 'Capacity', width: 100, align: 'center' },
   { id: 'status', label: 'Status', width: 120 },
+  { id: 'createdAt', label: 'Created At', width: 140 },
+  { id: 'updatedAt', label: 'Updated At', width: 140 },
   { id: 'actions', label: '', width: 140 },
 ];
 
 const DEFAULT_FILTERS = {
   name: '',
-  host: 'all',
-  location: 'all',
-  audience: 'all',
   status: 'all',
 };
 
-const PAGE_LIMIT = 10;
+const PAGE_LIMIT = 20;
 
 const ALL_OPTION = { value: 'all', label: 'All' };
 
-const FILTER_WIDTH = {
-  flexGrow: 1,
-  flexBasis: 0,
-  minWidth: 150,
-};
-
-const LIST_STATUS_OPTIONS = EVENT_STATUS_OPTIONS.filter((option) =>
-  ['published', 'full', 'reported', 'cancelled'].includes(option.value)
-);
-
-const uniqueOptions = (rows, key) => [
+const LIST_STATUS_OPTIONS = [
   ALL_OPTION,
-  ...[...new Set(rows.map((row) => row[key]))].map((value) => ({ value, label: value })),
+  ...EVENT_STATUS_OPTIONS.filter((option) =>
+    ['published', 'upcoming', 'ongoing', 'cancelled', 'reported'].includes(option.value)
+  ),
 ];
 
 const EXPORT_HEADERS = [
-  { key: 'code', label: 'Code' },
   { key: 'name', label: 'Event' },
-  { key: 'host', label: 'Hosting Circle' },
+  { key: 'purpose', label: 'Purpose' },
+  { key: 'circleName', label: 'Hosting Circle' },
   { key: 'organizer', label: 'Organizer' },
-  { key: 'dateTime', label: 'Date & time' },
-  { key: 'location', label: 'Public area' },
-  { key: 'audience', label: 'Audience' },
-  { key: 'joining', label: 'Joining' },
-  { key: 'goingCap', label: 'Going / cap' },
-  { key: 'waitlist', label: 'Waitlist' },
-  { key: 'reports', label: 'Reports' },
-  { key: 'status', label: 'Status' },
+  { key: 'organizerHandle', label: 'Organizer handle' },
+  { key: 'date', label: 'Date' },
+  { key: 'time', label: 'Time' },
+  { key: 'publicArea', label: 'Public area' },
+  { key: 'exactMeetingPoint', label: 'Meeting point' },
+  { key: 'locationType', label: 'Location type' },
+  { key: 'audienceLabel', label: 'Audience' },
+  { key: 'joiningLabel', label: 'Joining' },
+  { key: 'rsvpCount', label: 'RSVP' },
+  { key: 'capacity', label: 'Capacity' },
+  { key: 'statusLabel', label: 'Status' },
+  { key: 'createdAt', label: 'Created At' },
+  { key: 'updatedAt', label: 'Updated At' },
 ];
 
 export function EventsListView() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const table = useTable({ defaultRowsPerPage: PAGE_LIMIT, defaultDense: true });
   const filters = useSetState(DEFAULT_FILTERS);
   const [activeStat, setActiveStat] = useState(null);
   const [viewMode, setViewMode] = useState('list');
+  const keyword = useDebounce(filters.state.name, 500);
 
-  const hostOptions = useMemo(() => uniqueOptions(EVENTS, 'host'), []);
-  const locationOptions = useMemo(() => uniqueOptions(EVENTS, 'location'), []);
+  const { data, isLoading, isFetching, error } = useGetEventsQuery({
+    page: table.page + 1,
+    limit: PAGE_LIMIT,
+    keyword: String(keyword || '').trim() || undefined,
+    status: filters.state.status === 'all' ? undefined : filters.state.status,
+  });
+
+  useEffect(() => {
+    if (error) handleApiError(error);
+  }, [error]);
+
+  const tableData = useMemo(() => {
+    const list = Array.isArray(data?.data) ? data.data : [];
+    return list.map(mapEventListRow);
+  }, [data?.data]);
+
+  const totalRecords = data?.total_length || 0;
+
+  useEffect(() => {
+    table.onResetPage();
+  }, [keyword]);
+
+  useEffect(() => {
+    const maxPage = Math.max(0, Math.ceil(totalRecords / PAGE_LIMIT) - 1);
+    if (table.page > maxPage) {
+      table.setPage(maxPage);
+    }
+  }, [totalRecords, table.page, table.setPage]);
+  const count = data?.count || {};
+
+  const displayStats = useMemo(
+    () => [
+      {
+        key: 'total',
+        title: 'Total Events',
+        value: String(count.total ?? totalRecords ?? 0),
+        icon: 'solar:calendar-bold',
+      },
+      {
+        key: 'upcoming',
+        title: 'Upcoming',
+        value: String(count.upcoming ?? 0),
+        icon: 'solar:calendar-mark-bold',
+      },
+      {
+        key: 'ongoing',
+        title: 'Ongoing',
+        value: String(count.ongoing ?? 0),
+        icon: 'solar:play-circle-bold',
+      },
+      {
+        key: 'cancelled',
+        title: 'Cancelled',
+        value: String(count.cancelled ?? 0),
+        icon: 'solar:close-circle-bold',
+      },
+      {
+        key: 'reports',
+        title: 'Reports',
+        value: String(count.reports ?? 0),
+        tone: Number(count.reports) > 0 ? 'error' : undefined,
+        icon: 'solar:danger-triangle-bold',
+      },
+    ],
+    [count, totalRecords]
+  );
 
   const filterFields = useMemo(
     () => [
       createFilterField.search({
         key: 'name',
         label: 'Keyword',
-        placeholder: 'Search by event, Circle or organizer',
-      }),
-      createFilterField.select({
-        key: 'host',
-        label: 'Hosting Circle',
-        options: hostOptions,
-        defaultValue: 'all',
-        ...FILTER_WIDTH,
-      }),
-      createFilterField.select({
-        key: 'location',
-        label: 'City',
-        options: locationOptions,
-        defaultValue: 'all',
-        ...FILTER_WIDTH,
-      }),
-      createFilterField.select({
-        key: 'audience',
-        label: 'Audience',
-        options: [ALL_OPTION, ...EVENT_AUDIENCE_OPTIONS],
-        defaultValue: 'all',
-        ...FILTER_WIDTH,
-      }),
-      createFilterField.select({
-        key: 'status',
-        label: 'Status',
-        options: [ALL_OPTION, ...LIST_STATUS_OPTIONS],
-        defaultValue: 'all',
-        ...FILTER_WIDTH,
+        placeholder: 'Search by event, circle or organizer',
       }),
     ],
-    [hostOptions, locationOptions]
+    []
   );
 
-  const filteredRows = useMemo(() => {
-    const keyword = filters.state.name.trim().toLowerCase();
-
-    return EVENTS.filter((row) => {
-      const matchesKeyword =
-        !keyword ||
-        row.name.toLowerCase().includes(keyword) ||
-        row.code.toLowerCase().includes(keyword) ||
-        (row.host || '').toLowerCase().includes(keyword) ||
-        (row.organizer || '').toLowerCase().includes(keyword);
-      const matchesHost = filters.state.host === 'all' || row.host === filters.state.host;
-      const matchesLocation = filters.state.location === 'all' || row.location === filters.state.location;
-      const matchesAudience = filters.state.audience === 'all' || row.audience === filters.state.audience;
-      const matchesStatus = filters.state.status === 'all' || row.status === filters.state.status;
-      const matchesReportedStat = activeStat !== 'reported' || row.reports > 0 || row.status === 'reported';
-      const matchesFullStat = activeStat !== 'thisWeek' || row.status === 'full' || row.going >= row.capacity;
-      const matchesCancelledStat = activeStat !== 'cancelled' || row.status === 'cancelled';
-
-      return (
-        matchesKeyword &&
-        matchesHost &&
-        matchesLocation &&
-        matchesAudience &&
-        matchesStatus &&
-        matchesReportedStat &&
-        matchesFullStat &&
-        matchesCancelledStat
-      );
-    }).sort((a, b) => b.dateSort.localeCompare(a.dateSort));
-  }, [activeStat, filters.state]);
-
-  const tableData = useMemo(
-    () => filteredRows.slice(table.page * PAGE_LIMIT, table.page * PAGE_LIMIT + PAGE_LIMIT),
-    [filteredRows, table.page]
-  );
-
-  const activeFilters = useMemo(
-    () =>
-      filterFields
-        .filter((field) => {
-          const value = filters.state[field.key];
-          if (field.type === 'search') return Boolean(value);
-          return value && value !== (field.defaultValue ?? 'all');
-        })
-        .map((field) => ({
-          ...field,
-          value: filters.state[field.key],
-        })),
-    [filterFields, filters.state]
-  );
+  const activeFilters = useMemo(() => {
+    const items = [];
+    if (filters.state.name) {
+      items.push({
+        key: 'name',
+        type: 'search',
+        label: 'Keyword',
+        value: filters.state.name,
+      });
+    }
+    if (filters.state.status && filters.state.status !== 'all') {
+      items.push({
+        key: 'status',
+        type: 'select',
+        label: 'Status',
+        value: filters.state.status,
+        options: LIST_STATUS_OPTIONS,
+        defaultValue: 'all',
+      });
+    }
+    return items;
+  }, [filters.state.name, filters.state.status]);
 
   const handleFilterChange = useCallback(
     (key, value) => {
       filters.setState({ [key]: value });
-      if (key === 'status' && value !== 'reported') {
-        setActiveStat((prev) => (prev === 'reported' ? null : prev));
+      if (key === 'status') {
+        setActiveStat((prev) => {
+          if (!value || value === 'all') return null;
+          if (['upcoming', 'ongoing', 'cancelled', 'reported'].includes(value)) return value;
+          return prev === value ? prev : null;
+        });
       }
       table.onResetPage();
     },
@@ -214,12 +234,15 @@ export function EventsListView() {
 
   const handleRemoveFilter = useCallback(
     (key) => {
-      const field = filterFields.find((item) => item.key === key);
-      filters.setState({ [key]: field?.defaultValue ?? '' });
-      if (key === 'status') setActiveStat((prev) => (prev === 'reported' ? null : prev));
+      if (key === 'status') {
+        filters.setState({ status: 'all' });
+        setActiveStat(null);
+      } else if (key === 'name') {
+        filters.setState({ name: '' });
+      }
       table.onResetPage();
     },
-    [filterFields, filters, table]
+    [filters, table]
   );
 
   const handleStatClick = useCallback(
@@ -227,12 +250,10 @@ export function EventsListView() {
       const next = activeStat === key ? null : key;
       setActiveStat(next);
 
-      if (next === 'reported') {
+      if (next === 'upcoming' || next === 'ongoing' || next === 'cancelled') {
+        filters.setState({ status: next });
+      } else if (next === 'reports') {
         filters.setState({ status: 'reported' });
-      } else if (next === 'cancelled') {
-        filters.setState({ status: 'cancelled' });
-      } else if (next === 'thisWeek') {
-        filters.setState({ status: 'full' });
       } else {
         filters.setState({ status: 'all' });
       }
@@ -246,13 +267,12 @@ export function EventsListView() {
     exportToCsv({
       filename: 'events',
       headers: EXPORT_HEADERS,
-      rows: filteredRows.map((row) => ({
+      rows: tableData.map((row) => ({
         ...row,
-        goingCap: `${row.going ?? 0} / ${row.capacity ?? 0}`,
-        status: getEventStatusOption(row.status)?.label || row.status,
+        statusLabel: getEventStatusOption(row.status)?.label || row.statusLabel || row.status,
       })),
     });
-  }, [filteredRows]);
+  }, [tableData]);
 
   return (
     <DashboardContent maxWidth={false}>
@@ -294,7 +314,7 @@ export function EventsListView() {
           },
         }}
       >
-        {EVENT_STATS.map((stat) => (
+        {displayStats.map((stat) => (
           <EventStatCard
             key={stat.key}
             title={stat.title}
@@ -310,8 +330,13 @@ export function EventsListView() {
 
       {viewMode === 'calendar' ? (
         <EventsCalendarPanel
-          events={filteredRows}
-          onEventClick={(id) => router.push(paths.adminDashboard.eventDetails(id))}
+          events={tableData}
+          onEventClick={(id) => {
+            const row = tableData.find((item) => item.id === id);
+            navigate(paths.adminDashboard.eventDetails(id), {
+              state: row ? { eventPreview: row } : undefined,
+            });
+          }}
         />
       ) : (
         <Card sx={{ minWidth: 0, overflow: 'hidden' }}>
@@ -321,12 +346,34 @@ export function EventsListView() {
             filterValues={filters.state}
             onFilterChange={handleFilterChange}
             onSearchChange={handleSearchChange}
+            slots={{
+              afterFilters: (
+                <TextField
+                  select
+                  size="small"
+                  label="Status"
+                  value={filters.state.status}
+                  onChange={(event) => handleFilterChange('status', event.target.value)}
+                  sx={{
+                    width: { xs: 1, md: 220 },
+                    minWidth: { md: 200 },
+                    flexShrink: 0,
+                  }}
+                >
+                  {LIST_STATUS_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              ),
+            }}
           />
 
           {activeFilters.length > 0 && (
             <FlexibleTableFiltersResult
               activeFilters={activeFilters}
-              totalResults={filteredRows.length}
+              totalResults={totalRecords}
               onResetFilters={handleReset}
               onRemoveFilter={handleRemoveFilter}
               sx={{ p: 2.5, pt: 0 }}
@@ -356,12 +403,14 @@ export function EventsListView() {
           >
             <Table
               size={table.dense ? 'small' : 'medium'}
-              sx={{ minWidth: 1400, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}
+              sx={{ minWidth: 2100, '& .MuiTableCell-head': { whiteSpace: 'nowrap' } }}
             >
               <TableHeadCustom order={table.order} orderBy={table.orderBy} headLabel={TABLE_HEAD} />
 
               <TableBody>
-                {tableData.length > 0 ? (
+                {isLoading || isFetching ? (
+                  <UserLoadingSkeleton />
+                ) : tableData.length > 0 ? (
                   tableData.map((row, index) => (
                     <EventTableRow
                       key={row.id}
@@ -379,7 +428,7 @@ export function EventsListView() {
           <TablePaginationCustom
             page={table.page}
             dense={table.dense}
-            count={filteredRows.length}
+            count={totalRecords}
             rowsPerPage={PAGE_LIMIT}
             rowsPerPageOptions={[]}
             onPageChange={table.onChangePage}

@@ -9,6 +9,12 @@ export const CIRCLE_JOINING_OPTIONS = [
   { value: 'approval', label: 'Approval', color: 'warning' },
 ];
 
+export const CIRCLE_PRIVACY_OPTIONS = [
+  { value: 'open', label: 'Open', color: 'success' },
+  { value: 'invite-only', label: 'Invite-only', color: 'info' },
+  { value: 'approval-required', label: 'Approval-required', color: 'warning' },
+];
+
 export const CIRCLE_VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public' },
   { value: 'private', label: 'Private' },
@@ -19,6 +25,9 @@ export const getCircleStatusOption = (status) =>
 
 export const getCircleJoiningOption = (joining) =>
   CIRCLE_JOINING_OPTIONS.find((option) => option.value === joining);
+
+export const getCirclePrivacyOption = (privacy) =>
+  CIRCLE_PRIVACY_OPTIONS.find((option) => option.value === String(privacy || '').toLowerCase());
 
 export const getCircleVisibilityOption = (visibility) =>
   CIRCLE_VISIBILITY_OPTIONS.find((option) => option.value === visibility);
