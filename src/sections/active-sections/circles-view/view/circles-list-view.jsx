@@ -6,7 +6,6 @@ import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
-import TextField from '@mui/material/TextField';
 
 import { paths } from 'src/routes/paths';
 
@@ -47,7 +46,6 @@ const TABLE_HEAD = [
 
 const DEFAULT_FILTERS = {
   name: '',
-  city: '',
   privacy: 'all',
   category: 'all',
 };
@@ -86,13 +84,11 @@ export function CirclesListView() {
   const filters = useSetState(DEFAULT_FILTERS);
   const [activeStat, setActiveStat] = useState(null);
   const keyword = useDebounce(filters.state.name, 500);
-  const city = useDebounce(filters.state.city, 500);
 
   const { data, isLoading, isFetching, error } = useGetCirclesQuery({
     page: table.page + 1,
     limit: PAGE_LIMIT,
     keyword: String(keyword || '').trim() || undefined,
-    city: String(city || '').trim() || undefined,
     privacy: filters.state.privacy === 'all' ? undefined : filters.state.privacy,
     category: filters.state.category === 'all' ? undefined : filters.state.category,
   });
@@ -107,6 +103,17 @@ export function CirclesListView() {
   }, [data?.data]);
 
   const totalRecords = data?.total_length || 0;
+
+  useEffect(() => {
+    table.onResetPage();
+  }, [keyword]);
+
+  useEffect(() => {
+    const maxPage = Math.max(0, Math.ceil(totalRecords / PAGE_LIMIT) - 1);
+    if (table.page > maxPage) {
+      table.setPage(maxPage);
+    }
+  }, [totalRecords, table.page, table.setPage]);
   const count = data?.count || {};
 
   const displayStats = useMemo(
@@ -143,16 +150,25 @@ export function CirclesListView() {
 
   const privacyOptions = useMemo(() => {
     const fromApi = Array.isArray(data?.privacyOptions) ? data.privacyOptions : [];
-    const source = fromApi.length ? fromApi : CIRCLE_PRIVACY_OPTIONS.map((item) => item.value);
+    const source = fromApi.length
+      ? fromApi
+      : CIRCLE_PRIVACY_OPTIONS.map((item) => item.value);
+
     return [
       ALL_OPTION,
-      ...source.map((value) => {
-        const option = CIRCLE_PRIVACY_OPTIONS.find((item) => item.value === value);
+      ...source.map((item) => {
+        const value = typeof item === 'string' ? item : item?.value || item?.privacy || '';
+        const option = CIRCLE_PRIVACY_OPTIONS.find(
+          (entry) => entry.value === String(value || '').toLowerCase()
+        );
         return {
           value,
-          label: option?.label || formatPrivacyLabel(value),
+          label:
+            (typeof item === 'object' && (item.label || item.name)) ||
+            option?.label ||
+            formatPrivacyLabel(value),
         };
-      }),
+      }).filter((item) => item.value),
     ];
   }, [data?.privacyOptions]);
 
@@ -160,10 +176,17 @@ export function CirclesListView() {
     const fromApi = Array.isArray(data?.categories) ? data.categories : [];
     return [
       ALL_OPTION,
-      ...fromApi.map((item) => ({
-        value: item._id || item.id,
-        label: item.name || item._id || '—',
-      })),
+      ...fromApi
+        .map((item) => {
+          if (typeof item === 'string') {
+            return { value: item, label: formatPrivacyLabel(item) };
+          }
+          return {
+            value: item._id || item.id || item.value || item.name || '',
+            label: item.name || item.label || item._id || '—',
+          };
+        })
+        .filter((item) => item.value),
     ];
   }, [data?.categories]);
 
@@ -172,23 +195,7 @@ export function CirclesListView() {
       createFilterField.search({
         key: 'name',
         label: 'Keyword',
-        placeholder: 'Search by Circle name or city',
-      }),
-      createFilterField.custom({
-        key: 'city',
-        label: 'City',
-        defaultValue: '',
-        component: ({ value, onChange }) => (
-          <TextField
-            fullWidth
-            size="small"
-            label="City"
-            placeholder="Filter by city"
-            value={value ?? ''}
-            onChange={(event) => onChange(event.target.value)}
-          />
-        ),
-        ...FILTER_WIDTH,
+        placeholder: 'Search by Circle name',
       }),
       createFilterField.select({
         key: 'category',
@@ -213,7 +220,7 @@ export function CirclesListView() {
       filterFields
         .filter((field) => {
           const value = filters.state[field.key];
-          if (field.type === 'search' || field.key === 'city') return Boolean(value);
+          if (field.type === 'search') return Boolean(value);
           return value && value !== (field.defaultValue ?? 'all');
         })
         .map((field) => ({

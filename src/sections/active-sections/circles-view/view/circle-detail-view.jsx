@@ -39,19 +39,27 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useTabs } from 'src/hooks/use-tabs';
 import { useParams, useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import { useGetCircleByIdQuery, useLazyGetCircleMembersQuery } from 'src/store/Reducer/circles-api';
+import {
+  useGetCircleByIdQuery,
+  useLazyGetCircleMembersQuery,
+  useUpdateCircleMutation,
+} from 'src/store/Reducer/circles-api';
+import { useGetReportsQuery } from 'src/store/Reducer/reports-api';
 import { varAlpha } from 'src/theme/styles';
 import { exportToCsv } from 'src/utils/export-to-csv';
 import { handleApiError } from 'src/utils/errorHandler';
 
 import { useLocation } from 'react-router-dom';
 
+import { mapApiReports } from '../../events-view/map-event-reports';
 import { getCirclePrivacyOption } from '../circle-status';
 import { mapCircleMemberApi, resolveCircleDetail } from '../map-circle-detail';
 
 import 'src/components/map/styles.css';
 
 const AVATAR_COLORS = ['#E6D5E8', '#D5DDEA', '#E8D5DE', '#E4DDD4', '#E7E3D4'];
+const ROLE_COLOR = { Owner: 'warning', Organizer: 'warning', Member: 'default' };
+const STATUS_COLOR = { Active: 'success', Muted: 'warning', Published: 'success', Draft: 'default', Completed: 'default' };
 
 const initials = (name) =>
   (name || '')
@@ -60,48 +68,6 @@ const initials = (name) =>
     .join('')
     .slice(0, 2)
     .toUpperCase();
-
-function SectionCard({ title, action, children }) {
-  return (
-    <Card sx={{ p: 2.5, height: 1 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
-        <Typography variant="subtitle1">{title}</Typography>
-        {action}
-      </Stack>
-      {children}
-    </Card>
-  );
-}
-
-function PersonRow({ person, action }) {
-  return (
-    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ py: 1.25 }}>
-      <Avatar
-        alt={person.name}
-        src={person.image ? getDisplayImage(person.image) : undefined}
-        sx={{
-          width: 40,
-          height: 40,
-          fontSize: 13,
-          fontWeight: 700,
-          color: 'text.primary',
-          bgcolor: AVATAR_COLORS[person.name.length % AVATAR_COLORS.length],
-        }}
-      >
-        {initials(person.name)}
-      </Avatar>
-      <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
-        <Typography variant="subtitle2" noWrap>
-          {person.name}
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }} noWrap>
-          {person.since || person.craft}
-        </Typography>
-      </Box>
-      {action}
-    </Stack>
-  );
-}
 
 function CircleCover({ name, avatarUrl, homeArea, statusLabel, joiningLabel, featured }) {
   const theme = useTheme();
@@ -380,20 +346,126 @@ function CircleMapCanvas({ latitude, longitude, height = 160, interactive = fals
   );
 }
 
-function MapLocationCard({ circle, area }) {
+function OverviewFact({ label, value }) {
+  const theme = useTheme();
+  const primary = theme.vars.palette.primary;
+
   return (
-    <SectionCard title="Map location">
-      <CircleMapCanvas latitude={area.latitude} longitude={area.longitude} />
-      <Typography variant="subtitle2" sx={{ mt: 1.5 }}>
-        {`City · ${area.homeArea || circle.city || '—'}`}
+    <Box
+      sx={{
+        p: 1.5,
+        minWidth: 0,
+        borderRadius: 1.5,
+        border: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+        background: `linear-gradient(135deg, ${varAlpha(primary.mainChannel, 0.12)} 0%, ${varAlpha(primary.darkChannel, 0.03)} 100%)`,
+      }}
+    >
+      <Typography variant="overline" sx={{ color: 'text.disabled' }}>
+        {label}
       </Typography>
-      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-        {`Coordinates · ${circle.coordinatesLabel || '—'}`}
+      <Typography variant="subtitle2" sx={{ wordBreak: 'break-word' }}>
+        {value}
       </Typography>
-      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-        {`Distance · ${circle.distanceLabel || '—'}`}
-      </Typography>
-    </SectionCard>
+    </Box>
+  );
+}
+
+function DetailSectionCard({ title, subtitle, icon, children }) {
+  const theme = useTheme();
+  const primary = theme.vars.palette.primary;
+
+  return (
+    <Card
+      sx={{
+        height: 1,
+        overflow: 'hidden',
+        position: 'relative',
+        border: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+        background: `linear-gradient(135deg, ${varAlpha(primary.mainChannel, 0.16)} 0%, ${varAlpha(primary.darkChannel, 0.04)} 100%)`,
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={1.5}
+        alignItems="center"
+        sx={{ px: { xs: 2, md: 2.5 }, pt: { xs: 2, md: 2.5 }, pb: 1.5 }}
+      >
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 1,
+            color: primary.contrastText,
+            background: `linear-gradient(135deg, ${primary.light} 0%, ${primary.main} 100%)`,
+          }}
+        >
+          <Iconify icon={icon || 'solar:info-circle-bold'} width={20} />
+        </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="subtitle1" noWrap>
+            {title}
+          </Typography>
+          {subtitle ? (
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+              {subtitle}
+            </Typography>
+          ) : null}
+        </Box>
+      </Stack>
+
+      <Box sx={{ px: { xs: 2, md: 2.5 }, pb: { xs: 2, md: 2.5 }, position: 'relative', zIndex: 1 }}>
+        {children}
+      </Box>
+
+      <Box
+        sx={{
+          top: -28,
+          right: -32,
+          width: 88,
+          height: 88,
+          opacity: 0.2,
+          borderRadius: '50%',
+          position: 'absolute',
+          background: `linear-gradient(135deg, ${primary.main} 0%, ${varAlpha(primary.mainChannel, 0)} 100%)`,
+        }}
+      />
+    </Card>
+  );
+}
+
+function MapLocationCard({ circle, area }) {
+  const facts = [
+    { label: 'City', value: area.homeArea || circle.city || '—' },
+    { label: 'Coordinates', value: circle.coordinatesLabel || '—' },
+    { label: 'Distance', value: circle.distanceLabel || '—' },
+  ];
+
+  return (
+    <DetailSectionCard
+      title="Map location"
+      subtitle={area.homeArea || circle.city || '—'}
+      icon="solar:map-point-bold"
+    >
+      <Box sx={{ borderRadius: 1.5, overflow: 'hidden' }}>
+        <CircleMapCanvas latitude={area.latitude} longitude={area.longitude} height={180} />
+      </Box>
+      <Box
+        sx={{
+          mt: 2,
+          display: 'grid',
+          gap: 1.5,
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+        }}
+      >
+        {facts.map((fact) => (
+          <OverviewFact key={fact.label} label={fact.label} value={fact.value} />
+        ))}
+      </Box>
+    </DetailSectionCard>
   );
 }
 
@@ -448,37 +520,99 @@ function OverviewPanel({ circle, area }) {
         </Box>
       </Card>
 
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1.2fr 0.8fr' } }}>
-        <SectionCard title="Creator">
-          {circle.organizers?.length ? (
-            <Stack divider={<Box sx={{ borderBottom: (theme) => `dashed 1px ${theme.vars.palette.divider}` }} />}>
-              {circle.organizers.map((person) => (
-                <PersonRow
-                  key={person.id}
-                  person={person}
-                  action={
-                    <Label variant="soft" color="warning">
-                      {person.role || 'Owner'}
-                    </Label>
-                  }
-                />
-              ))}
-            </Stack>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              —
-            </Typography>
-          )}
-        </SectionCard>
-
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 0.95fr) minmax(0, 1.05fr)' },
+          alignItems: 'stretch',
+        }}
+      >
+        <OrganizerCard organizers={circle.organizers || []} />
         <MapLocationCard circle={circle} area={area} />
       </Box>
     </Stack>
   );
 }
 
-const ROLE_COLOR = { Owner: 'warning', Organizer: 'warning', Member: 'default' };
-const STATUS_COLOR = { Active: 'success', Muted: 'warning', Published: 'success', Draft: 'default', Completed: 'default' };
+function OrganizerCard({ organizers = [] }) {
+  const person = organizers[0];
+
+  if (!person) {
+    return (
+      <DetailSectionCard title="Organizer" subtitle="—" icon="solar:user-bold">
+        <Typography variant="body2" color="text.secondary">
+          —
+        </Typography>
+      </DetailSectionCard>
+    );
+  }
+
+  const facts = [
+    { label: 'Name', value: person.name || '—' },
+    { label: 'Handle', value: person.craft || person.handle || '—' },
+    { label: 'Role', value: person.role || 'Owner' },
+    { label: 'Since', value: person.since || '—' },
+  ];
+
+  return (
+    <DetailSectionCard
+      title="Organizer"
+      subtitle={person.craft || person.handle || person.name || '—'}
+      icon="solar:user-bold"
+    >
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
+        <Avatar
+          alt={person.name}
+          src={person.image ? getDisplayImage(person.image) : undefined}
+          sx={{
+            width: 48,
+            height: 48,
+            fontSize: 14,
+            fontWeight: 700,
+            color: 'common.white',
+            bgcolor: 'primary.main',
+          }}
+        >
+          {initials(person.name)}
+        </Avatar>
+        <Box sx={{ minWidth: 0, flex: '1 1 auto' }}>
+          <Typography variant="subtitle1" noWrap>
+            {person.name}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+            {person.craft || person.handle || '—'}
+          </Typography>
+        </Box>
+        <Label variant="soft" color={ROLE_COLOR[person.role] || 'warning'} sx={{ flexShrink: 0 }}>
+          {person.role || 'Owner'}
+        </Label>
+      </Stack>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 1.5,
+          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(2, minmax(0, 1fr))' },
+        }}
+      >
+        {facts.map((fact) => (
+          <OverviewFact key={fact.label} label={fact.label} value={fact.value} />
+        ))}
+      </Box>
+    </DetailSectionCard>
+  );
+}
+
+const isActiveMemberStatus = (status) => {
+  const value = String(status || 'active').trim().toLowerCase();
+  return value === 'active';
+};
+
+const isPendingRequestStatus = (status) => {
+  const value = String(status || 'pending').trim().toLowerCase();
+  return value === 'pending';
+};
 
 const MEMBER_HEAD = [
   { id: 'member', label: 'Member', minWidth: 220 },
@@ -518,7 +652,7 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
 
   useEffect(() => {
     if (!expanded) {
-      setMembers(people || []);
+      setMembers((people || []).filter((person) => isActiveMemberStatus(person?.status)));
       setPage(0);
       setTotalPages(1);
     }
@@ -529,9 +663,10 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
     const cutoff = new Date('2026-10-03').getTime();
 
     return members.filter((person) => {
+      if (!isActiveMemberStatus(person?.status)) return false;
       const matchesQuery =
         !needle ||
-        person.name.toLowerCase().includes(needle) ||
+        (person.name || '').toLowerCase().includes(needle) ||
         (person.handle || '').toLowerCase().includes(needle) ||
         (person.craft || '').toLowerCase().includes(needle);
       const matchesRole = role === 'all' || person.role === role;
@@ -558,7 +693,9 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
 
     try {
       const response = await fetchMembers({ id: circleId, page: nextPage, limit: 20 }).unwrap();
-      const mapped = (response.data || []).map(mapCircleMemberApi);
+      const mapped = (response.data || [])
+        .map(mapCircleMemberApi)
+        .filter((person) => isActiveMemberStatus(person?.status));
 
       setMembers((prev) => {
         if (!expanded || nextPage === 1) return mapped;
@@ -750,6 +887,11 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
 }
 
 function RequestsPanel({ requests, onUpdateCircle }) {
+  const pendingRequests = useMemo(
+    () => (requests || []).filter((request) => isPendingRequestStatus(request?.status)),
+    [requests]
+  );
+
   const resolveRequest = (request, approved) => {
     onUpdateCircle((prev) => {
       const next = {
@@ -789,9 +931,9 @@ function RequestsPanel({ requests, onUpdateCircle }) {
         </Typography>
       </Stack>
 
-      {requests.length ? (
+      {pendingRequests.length ? (
         <Stack divider={<Box sx={{ borderBottom: (theme) => `dashed 1px ${theme.vars.palette.divider}` }} />}>
-          {requests.map((request) => (
+          {pendingRequests.map((request) => (
             <Stack key={request.id} direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} spacing={2} sx={{ py: 1.75 }}>
               <Avatar sx={{ width: 40, height: 40, fontSize: 13, fontWeight: 700, color: 'text.primary', bgcolor: AVATAR_COLORS[request.name.length % AVATAR_COLORS.length] }}>
                 {initials(request.name)}
@@ -1020,53 +1162,44 @@ function PollsPanel({ polls, onUpdateCircle }) {
   );
 }
 
-function ReportsPanel({ reports, onUpdateCircle }) {
-  if (!reports.length) return <EmptyContent filled title="No reports" sx={{ py: 10 }} />;
+function ReportsPanel({ resourceID }) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetReportsQuery({ resourceID }, { skip: !resourceID });
 
-  const clearReport = (report, message) => {
-    onUpdateCircle((prev) => ({
-      ...prev,
-      reports: prev.reports.filter((item) => item.id !== report.id),
-      health: {
-        ...prev.health,
-        openReports: Math.max(0, (prev.health?.openReports || 0) - 1),
-      },
-    }));
-    toast.success(message);
-  };
+  useEffect(() => {
+    if (error) handleApiError(error);
+  }, [error]);
+
+  const reports = useMemo(() => mapApiReports(data?.data || []), [data?.data]);
+
+  if ((isLoading || isFetching) && !reports.length) {
+    return <LoadingScreen />;
+  }
+
+  if (!reports.length) return <EmptyContent filled title="No reports" sx={{ py: 10 }} />;
 
   return (
     <Stack spacing={2}>
       {reports.map((report) => (
         <Card key={report.id} sx={{ p: { xs: 2, md: 2.5 } }}>
-          <Typography variant="overline" sx={{ color: 'text.disabled' }}>
-            Reported content
-          </Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }} sx={{ mt: 1.5 }}>
-            <Avatar sx={{ width: 40, height: 40, bgcolor: 'background.neutral', color: 'text.primary', fontWeight: 700 }}>??</Avatar>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }}>
             <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
-              <Typography variant="subtitle2">
-                {report.title || report.reason}
-                {report.reason && report.title ? ` · reported for ${report.reason}` : ''}
-              </Typography>
+              <Typography variant="subtitle2">{report.title}</Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {report.quote ? `“${report.quote}” · by ${report.by} · reported by ${report.reportedBy} · ${report.when}` : report.meta}
+                {report.description
+                  ? `${report.description}${report.meta ? ` · ${report.meta}` : ''}`
+                  : report.meta || [report.reason, report.when].filter(Boolean).join(' · ') || '—'}
               </Typography>
             </Box>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Button size="small" variant="outlined" color="inherit" onClick={() => toast.success('Opened report context')}>
-                View in context
-              </Button>
-              <Button size="small" variant="outlined" color="inherit" onClick={() => clearReport(report, 'Report dismissed')}>
-                Dismiss
-              </Button>
-              <Button size="small" variant="outlined" color="error" onClick={() => clearReport(report, 'Message removed')}>
-                Remove message
-              </Button>
-              <Button size="small" variant="outlined" color="error" onClick={() => clearReport(report, 'User banned from circle')}>
-                Ban from Circle
-              </Button>
-            </Stack>
+            {report.status ? (
+              <Label variant="soft" color="warning" sx={{ px: 1.25, height: 28, flexShrink: 0 }}>
+                {report.status}
+              </Label>
+            ) : null}
           </Stack>
         </Card>
       ))}
@@ -1108,12 +1241,14 @@ export function CircleDetailView() {
     isFetching,
     error,
   } = useGetCircleByIdQuery(id, { skip: !id });
+  const { data: reportsData } = useGetReportsQuery({ resourceID: id }, { skip: !id });
+  const reportsCount = reportsData?.total_length ?? mapApiReports(reportsData?.data || []).length;
+  const [updateCircleApi, { isLoading: isUpdatingCircle }] = useUpdateCircleMutation();
 
   const [circle, setCircle] = useState(() => resolveCircleDetail(id, null, circlePreview));
   const editDetails = useBoolean();
   const suspend = useBoolean();
   const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
   const [area, setArea] = useState({
     homeArea: '',
     latitude: 40.7233,
@@ -1168,7 +1303,7 @@ export function CircleDetailView() {
     { value: 'events', label: `Events · ${circle.events?.length ?? 0}` },
     { value: 'drops', label: `Open drops · ${circle.openDrops?.length ?? circle.drops?.length ?? 0}` },
     { value: 'polls', label: `Polls · ${circle.polls?.length ?? 0}` },
-    { value: 'reports', label: `Reports · ${circle.reports?.length ?? 0}` },
+    { value: 'reports', label: `Reports · ${reportsCount}` },
     // { value: 'activity', label: 'Activity log' },
   ];
 
@@ -1189,7 +1324,6 @@ export function CircleDetailView() {
               size="small"
               onClick={() => {
                 setEditName(circle.name);
-                setEditDescription(circle.purpose || circle.description || '');
                 editDetails.onTrue();
               }}
             >
@@ -1233,7 +1367,6 @@ export function CircleDetailView() {
             <IconButton
               onClick={() => {
                 setEditName(circle.name);
-                setEditDescription(circle.description || '');
                 editDetails.onTrue();
               }}
               sx={{
@@ -1292,9 +1425,7 @@ export function CircleDetailView() {
       {value === 'events' && <EventsPanel events={circle.events || []} />}
       {value === 'drops' && <DropsPanel drops={circle.openDrops || circle.drops || []} />}
       {value === 'polls' && <PollsPanel polls={circle.polls || []} onUpdateCircle={updateCircle} />}
-      {value === 'reports' && (
-        <ReportsPanel reports={circle.reports || []} onUpdateCircle={updateCircle} />
-      )}
+      {value === 'reports' && <ReportsPanel resourceID={id} />}
       {/* {value === 'activity' && <ActivityPanel items={circle.activity || []} />} */}
 
       <Dialog fullWidth maxWidth="sm" open={editDetails.value} onClose={editDetails.onFalse}>
@@ -1302,35 +1433,36 @@ export function CircleDetailView() {
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <TextField fullWidth label="Name" value={editName} onChange={(event) => setEditName(event.target.value)} />
-            <TextField
-              fullWidth
-              multiline
-              minRows={3}
-              label="Purpose"
-              value={editDescription}
-              onChange={(event) => setEditDescription(event.target.value)}
-            />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" color="inherit" onClick={editDetails.onFalse}>
+          <Button variant="outlined" color="inherit" onClick={editDetails.onFalse} disabled={isUpdatingCircle}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
+            disabled={isUpdatingCircle}
+            onClick={async () => {
               if (!editName.trim()) {
                 toast.error('Name is required');
                 return;
               }
-              updateCircle((prev) => ({
-                ...prev,
-                name: editName.trim(),
-                purpose: editDescription.trim(),
-                description: editDescription.trim(),
-              }));
-              editDetails.onFalse();
-              toast.success('Circle details updated');
+
+              try {
+                const response = await updateCircleApi({
+                  id,
+                  name: editName.trim(),
+                }).unwrap();
+
+                updateCircle((prev) => ({
+                  ...prev,
+                  name: editName.trim(),
+                }));
+                if (response.message) toast.success(response.message);
+                editDetails.onFalse();
+              } catch (apiError) {
+                handleApiError(apiError);
+              }
             }}
           >
             Save

@@ -49,7 +49,7 @@ export const circlesApi = createApi({
           message: res?.message,
           data: list,
           meta,
-          total_length: meta.totalRecords ?? list.length,
+          total_length: meta.totalRecords ?? meta.total ?? list.length,
           count: meta.count || {},
           categories: Array.isArray(meta.categories) ? meta.categories : [],
           privacyOptions: Array.isArray(meta.privacy) ? meta.privacy : [],
@@ -68,6 +68,18 @@ export const circlesApi = createApi({
         return list[0] || null;
       },
       providesTags: (result, error, id) => [{ type: 'circle', id }, 'circle'],
+    }),
+
+    updateCircle: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: API_ROUTES.CIRCLES_BY_ID(id),
+        method: 'PATCH',
+        body,
+        headers: ADMIN_ACCESS_TOKEN
+          ? { 'x-admin-access-token': ADMIN_ACCESS_TOKEN }
+          : undefined,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'circle', id }, 'circle'],
     }),
 
     getCircleMembers: builder.query({
@@ -98,5 +110,6 @@ export const circlesApi = createApi({
 export const {
   useGetCirclesQuery,
   useGetCircleByIdQuery,
+  useUpdateCircleMutation,
   useLazyGetCircleMembersQuery,
 } = circlesApi;

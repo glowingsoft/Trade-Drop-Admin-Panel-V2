@@ -15,6 +15,32 @@ import { paths } from 'src/routes/paths';
 
 import { getCirclePrivacyOption } from './circle-status';
 
+function CellText({ value, maxWidth }) {
+  const text = value || '—';
+  const showTip = Boolean(value) && value !== '—';
+
+  const content = (
+    <Typography
+      variant="body2"
+      noWrap
+      sx={{
+        maxWidth: maxWidth || 220,
+        display: 'block',
+      }}
+    >
+      {text}
+    </Typography>
+  );
+
+  if (!showTip) return content;
+
+  return (
+    <Tooltip title={text} arrow placement="top">
+      {content}
+    </Tooltip>
+  );
+}
+
 export function CircleTableRow({ row, serialNumber }) {
   const navigate = useNavigate();
   const detailsPath = paths.adminDashboard.circleDetails(row.id);
@@ -50,23 +76,36 @@ export function CircleTableRow({ row, serialNumber }) {
             {row.name?.charAt(0)}
           </Avatar>
 
-          <Link color="inherit" underline="hover" sx={{ cursor: 'default' }} noWrap>
-            {row.name || '—'}
-          </Link>
+          {row.name ? (
+            <Tooltip title={row.name} arrow placement="top">
+              <Link
+                color="inherit"
+                underline="hover"
+                sx={{ cursor: 'default', maxWidth: 200, display: 'block' }}
+                noWrap
+              >
+                {row.name}
+              </Link>
+            </Tooltip>
+          ) : (
+            <Link color="inherit" underline="hover" sx={{ cursor: 'default' }} noWrap>
+              —
+            </Link>
+          )}
         </Stack>
       </TableCell>
 
       <TableCell sx={{ maxWidth: 280 }}>
-        <Tooltip title={row.purpose || ''} arrow placement="top">
-          <Typography variant="body2" noWrap>
-            {row.purpose || '—'}
-          </Typography>
-        </Tooltip>
+        <CellText value={row.purpose} maxWidth={280} />
       </TableCell>
 
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.category || '—'}</TableCell>
+      <TableCell>
+        <CellText value={row.category} maxWidth={160} />
+      </TableCell>
 
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.city || '—'}</TableCell>
+      <TableCell>
+        <CellText value={row.city} maxWidth={140} />
+      </TableCell>
 
       <TableCell sx={{ whiteSpace: 'nowrap' }}>
         <Label variant="soft" color={privacyOption?.color || 'default'}>
@@ -84,13 +123,13 @@ export function CircleTableRow({ row, serialNumber }) {
             {row.organizer?.charAt(0)}
           </Avatar>
           <Stack sx={{ minWidth: 0 }}>
-            <Typography variant="body2" noWrap>
-              {row.organizer || '—'}
-            </Typography>
+            <CellText value={row.organizer} maxWidth={140} />
             {row.organizerHandle ? (
-              <Typography variant="caption" color="text.secondary" noWrap>
-                @{row.organizerHandle}
-              </Typography>
+              <Tooltip title={`@${row.organizerHandle}`} arrow placement="top">
+                <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 140, display: 'block' }}>
+                  @{row.organizerHandle}
+                </Typography>
+              </Tooltip>
             ) : null}
           </Stack>
         </Stack>

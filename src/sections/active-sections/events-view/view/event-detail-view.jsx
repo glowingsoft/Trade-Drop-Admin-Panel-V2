@@ -30,6 +30,7 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { EmptyContent } from 'src/components/empty-content';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
+import { LoadingScreen } from 'src/components/loading-screen';
 import { TableHeadCustom } from 'src/components/table';
 import { toast } from 'src/components/snackbar';
 import { getDisplayImage } from 'src/constants/upload';
@@ -38,10 +39,16 @@ import { useTabs } from 'src/hooks/use-tabs';
 import { RouterLink } from 'src/routes/components';
 import { useParams, useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
+import { useGetEventByIdQuery, useUpdateEventMutation } from 'src/store/Reducer/events-api';
+import { useGetReportsQuery } from 'src/store/Reducer/reports-api';
 import { varAlpha } from 'src/theme/styles';
 import { exportToCsv } from 'src/utils/export-to-csv';
+import { handleApiError } from 'src/utils/errorHandler';
 
-import { getEventDetail } from '../mocks/detail';
+import { useLocation } from 'react-router-dom';
+
+import { resolveEventDetail } from '../map-event-detail';
+import { mapApiReports } from '../map-event-reports';
 
 const AVATAR_COLORS = ['#E6D5E8', '#D5DDEA', '#E8D5DE', '#E4DDD4', '#E7E3D4'];
 
@@ -55,7 +62,7 @@ const ATTENDEE_HEAD = [
   { id: 'actions', label: '', width: 280 },
 ];
 
-const RSVP_COLOR = { Going: 'success', Waitlist: 'warning', Cancelled: 'default' };
+const RSVP_COLOR = { Going: 'success', Pending: 'info', Waitlist: 'warning', Cancelled: 'default' };
 
 const initials = (name) =>
   (name || '')
@@ -88,13 +95,69 @@ function Fact({ label, children }) {
   );
 }
 
-function SectionCard({ title, children }) {
+function SectionCard({ title, subtitle, icon, children }) {
+  const theme = useTheme();
+  const primary = theme.vars.palette.primary;
+
   return (
-    <Card sx={{ p: 2.5, height: 1 }}>
-      <Typography variant="subtitle1" sx={{ mb: 2 }}>
-        {title}
-      </Typography>
-      {children}
+    <Card
+      sx={{
+        height: 1,
+        overflow: 'hidden',
+        position: 'relative',
+        border: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+        background: `linear-gradient(135deg, ${varAlpha(primary.mainChannel, 0.16)} 0%, ${varAlpha(primary.darkChannel, 0.04)} 100%)`,
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={1.5}
+        alignItems="center"
+        sx={{ px: { xs: 2, md: 2.5 }, pt: { xs: 2, md: 2.5 }, pb: 1.5 }}
+      >
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 1,
+            color: primary.contrastText,
+            background: `linear-gradient(135deg, ${primary.light} 0%, ${primary.main} 100%)`,
+          }}
+        >
+          <Iconify icon={icon || 'solar:info-circle-bold'} width={20} />
+        </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="subtitle1" noWrap>
+            {title}
+          </Typography>
+          {subtitle ? (
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+              {subtitle}
+            </Typography>
+          ) : null}
+        </Box>
+      </Stack>
+
+      <Box sx={{ px: { xs: 2, md: 2.5 }, pb: { xs: 2, md: 2.5 }, position: 'relative', zIndex: 1 }}>
+        {children}
+      </Box>
+
+      <Box
+        sx={{
+          top: -28,
+          right: -32,
+          width: 88,
+          height: 88,
+          opacity: 0.2,
+          borderRadius: '50%',
+          position: 'absolute',
+          background: `linear-gradient(135deg, ${primary.main} 0%, ${varAlpha(primary.mainChannel, 0)} 100%)`,
+        }}
+      />
     </Card>
   );
 }
@@ -230,52 +293,86 @@ function EventCover({ name, avatarUrl, location, statusLabel, metaLabel }) {
 }
 
 function EventAboutCard({ event }) {
+  const facts = [
+    { label: 'Name', value: event.name || '—' },
+    { label: 'Purpose', value: event.purpose || event.description || '—' },
+    { label: 'Date', value: event.dateLabel || event.date || '—' },
+    { label: 'Time', value: event.timeLabel || event.time || '—' },
+    { label: 'Public area', value: event.publicArea || event.location || '—' },
+    { label: 'Exact meeting point', value: event.meetingPoint || event.exactMeetingPoint || '—' },
+    { label: 'Location type', value: event.locationType || '—' },
+    { label: 'Coordinates', value: event.coordinatesLabel || '—' },
+    { label: 'Lat', value: event.latLabel ?? event.lat ?? '—' },
+    { label: 'Lng', value: event.lngLabel ?? event.lng ?? '—' },
+    { label: 'Audience', value: event.audienceLabel || event.audience || '—' },
+    { label: 'Joining', value: event.joiningLabel || event.joining || '—' },
+    { label: 'Capacity', value: String(event.capacity ?? 0) },
+    { label: 'RSVP count', value: String(event.rsvpCount ?? event.going ?? 0) },
+    { label: 'Attendees', value: String(event.attendeesList?.length ?? 0) },
+    { label: 'Status', value: event.statusLabel || event.status || '—' },
+    { label: 'Suggestion status', value: event.suggestionStatusLabel ?? '—' },
+    { label: 'Suggested By', value: event.suggestedByLabel ?? '—' },
+    { label: 'Approved By', value: event.approvedByLabel ?? '—' },
+    { label: 'My RSVP', value: event.myRsvpLabel ?? '—' },
+    { label: 'Show to participants', value: event.myRsvpShowToParticipants ?? '—' },
+    { label: 'Created At', value: event.createdAtFull || event.createdAt || '—' },
+    { label: 'Updated At', value: event.updatedAtFull || event.updatedAt || '—' },
+  ];
+
   return (
     <Card sx={{ p: { xs: 2, md: 2.5 }, mb: 2 }}>
       <Typography variant="subtitle1" sx={{ mb: 1 }}>
         About
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
-        {event.description}
+        {event.purpose || event.description || '—'}
       </Typography>
       <Box
         sx={{
           display: 'grid',
           gap: 2,
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, minmax(0, 1fr))' },
+          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, minmax(0, 1fr))' },
         }}
       >
-        <Fact label="Date">
-          <Typography variant="subtitle2">{event.dateLabel}</Typography>
-        </Fact>
-        <Fact label="Time">
-          <Typography variant="subtitle2">{event.timeLabel}</Typography>
-        </Fact>
-        <Fact label="Public area">
-          <Typography variant="subtitle2">{event.publicArea || event.location}</Typography>
-        </Fact>
-        <Fact label="Exact meeting point">
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            <Typography variant="subtitle2">{event.meetingPoint}</Typography>
-            {event.meetingPointNote ? (
-              <Label variant="soft" color="default">
-                {event.meetingPointNote}
-              </Label>
-            ) : null}
-          </Stack>
-        </Fact>
-        <Fact label="Capacity">
-          <Typography variant="subtitle2">{event.capacity}</Typography>
-        </Fact>
-        <Fact label="Created">
-          <Typography variant="subtitle2">{event.createdAt}</Typography>
-        </Fact>
+        {facts.map((fact) => (
+          <Fact key={fact.label} label={fact.label}>
+            <Typography variant="subtitle2" sx={{ wordBreak: 'break-word' }}>
+              {fact.value}
+            </Typography>
+          </Fact>
+        ))}
       </Box>
     </Card>
   );
 }
 
+function CircleOpenDropsCard({ drops = [] }) {
+  return (
+    <Card sx={{ p: { xs: 2, md: 2.5 }, mb: 2 }}>
+      <Typography variant="subtitle1" sx={{ mb: 1.5 }}>
+        {`Circle open drops · ${drops.length}`}
+      </Typography>
+      {drops.length ? (
+        <Stack divider={<Box sx={{ borderBottom: (theme) => `dashed 1px ${theme.vars.palette.divider}` }} />}>
+          {drops.map((drop) => (
+            <Stack key={drop.id || drop.title} spacing={0.5} sx={{ py: 1.25 }}>
+              <Typography variant="subtitle2">{drop.title || '—'}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {`Date: ${drop.date || '—'}`}
+              </Typography>
+            </Stack>
+          ))}
+        </Stack>
+      ) : (
+        <EmptyContent filled title="No open drops" sx={{ py: 6 }} />
+      )}
+    </Card>
+  );
+}
+
 function RsvpPanel({ event }) {
+  const theme = useTheme();
+  const primary = theme.vars.palette.primary;
   const rsvp = event.rsvp || { going: 0, pending: 0, waitlist: 0, cancelled: 0 };
   const capacity = event.capacity || 0;
   const taken = rsvp.going || 0;
@@ -286,13 +383,29 @@ function RsvpPanel({ event }) {
     { label: 'Waitlist', value: rsvp.waitlist },
     { label: 'Cancelled', value: rsvp.cancelled },
   ];
+  const visibilityFacts = [
+    { label: 'Shown publicly', value: event.visibilityList?.shown || 0 },
+    { label: 'Going but hidden', value: event.visibilityList?.hidden || 0 },
+  ];
 
   return (
     <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1.2fr 0.8fr' } }}>
-      <SectionCard title="RSVP breakdown">
+      <SectionCard
+        title="RSVP breakdown"
+        subtitle={`${taken} of ${capacity} places taken`}
+        icon="solar:users-group-rounded-bold"
+      >
         <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' } }}>
           {stats.map((item) => (
-            <Box key={item.label} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'background.neutral' }}>
+            <Box
+              key={item.label}
+              sx={{
+                p: 1.5,
+                borderRadius: 1.5,
+                border: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+                background: `linear-gradient(135deg, ${varAlpha(primary.mainChannel, 0.12)} 0%, ${varAlpha(primary.darkChannel, 0.03)} 100%)`,
+              }}
+            >
               <Typography variant="h5">{item.value}</Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 {item.label}
@@ -304,24 +417,45 @@ function RsvpPanel({ event }) {
         <LinearProgress
           variant="determinate"
           value={percent}
-          sx={{ mt: 2.5, height: 8, borderRadius: 99, bgcolor: 'background.neutral' }}
+          sx={{
+            mt: 2.5,
+            height: 8,
+            borderRadius: 99,
+            bgcolor: varAlpha(primary.mainChannel, 0.12),
+            '& .MuiLinearProgress-bar': {
+              borderRadius: 99,
+              background: `linear-gradient(90deg, ${primary.main} 0%, ${primary.light} 100%)`,
+            },
+          }}
         />
         <Typography variant="caption" sx={{ mt: 1.25, display: 'block', color: 'text.secondary' }}>
           {`${taken} of ${capacity} places taken. When someone cancels, the first person on the waitlist gets an offer to accept the place.`}
         </Typography>
       </SectionCard>
 
-      <SectionCard title="Visibility on attendee list">
-        <Stack spacing={1.5}>
-          <Stack direction="row" justifyContent="space-between">
-            <Typography variant="body2">Shown publicly</Typography>
-            <Typography variant="subtitle2">{event.visibilityList?.shown || 0}</Typography>
-          </Stack>
-          <Stack direction="row" justifyContent="space-between">
-            <Typography variant="body2">Going but hidden</Typography>
-            <Typography variant="subtitle2">{event.visibilityList?.hidden || 0}</Typography>
-          </Stack>
-        </Stack>
+      <SectionCard
+        title="Visibility on attendee list"
+        subtitle="Admins see everyone"
+        icon="solar:eye-bold"
+      >
+        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          {visibilityFacts.map((item) => (
+            <Box
+              key={item.label}
+              sx={{
+                p: 1.5,
+                borderRadius: 1.5,
+                border: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+                background: `linear-gradient(135deg, ${varAlpha(primary.mainChannel, 0.12)} 0%, ${varAlpha(primary.darkChannel, 0.03)} 100%)`,
+              }}
+            >
+              <Typography variant="h5">{item.value}</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {item.label}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
         <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
           Attendees choose whether they appear on the list. Admins see everyone.
         </Typography>
@@ -342,7 +476,8 @@ function AttendeesPanel({ attendees, onRemove }) {
     return attendees.filter((person) => {
       const matchesQuery =
         !needle ||
-        person.name.toLowerCase().includes(needle) ||
+        (person.name || '').toLowerCase().includes(needle) ||
+        (person.handle || '').toLowerCase().includes(needle) ||
         (person.craft || '').toLowerCase().includes(needle);
       const matchesStatus = status === 'all' || person.status === status;
       return matchesQuery && matchesStatus;
@@ -398,6 +533,7 @@ function AttendeesPanel({ attendees, onRemove }) {
         >
           <MenuItem value="all">All</MenuItem>
           <MenuItem value="Going">Going</MenuItem>
+          <MenuItem value="Pending">Pending</MenuItem>
           <MenuItem value="Waitlist">Waitlist</MenuItem>
           <MenuItem value="Cancelled">Cancelled</MenuItem>
         </TextField>
@@ -506,7 +642,24 @@ function AttendeesPanel({ attendees, onRemove }) {
   );
 }
 
-function ReportsPanel({ reports, onClear }) {
+function ReportsPanel({ resourceID }) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetReportsQuery({ resourceID }, { skip: !resourceID });
+
+  useEffect(() => {
+    if (error) handleApiError(error);
+  }, [error]);
+
+  const reports = useMemo(() => mapApiReports(data?.data || []), [data?.data]);
+
+  if ((isLoading || isFetching) && !reports.length) {
+    return <LoadingScreen />;
+  }
+
   if (!reports.length) return <EmptyContent filled title="No reports" sx={{ py: 10 }} />;
 
   return (
@@ -517,12 +670,16 @@ function ReportsPanel({ reports, onClear }) {
             <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
               <Typography variant="subtitle2">{report.title}</Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {`${report.reason} · ${report.when}`}
+                {report.description
+                  ? `${report.description}${report.meta ? ` · ${report.meta}` : ''}`
+                  : report.meta || [report.reason, report.when].filter(Boolean).join(' · ') || '—'}
               </Typography>
             </Box>
-            <Button size="small" variant="outlined" color="inherit" onClick={() => onClear(report)}>
-              Dismiss
-            </Button>
+            {report.status ? (
+              <Label variant="soft" color="warning" sx={{ px: 1.25, height: 28, flexShrink: 0 }}>
+                {report.status}
+              </Label>
+            ) : null}
           </Stack>
         </Card>
       ))}
@@ -555,17 +712,51 @@ function ActivityPanel({ items }) {
 export function EventDetailView() {
   const { id } = useParams();
   const router = useRouter();
+  const location = useLocation();
+  const eventPreview = location.state?.eventPreview;
   const { value, onChange } = useTabs('rsvps');
-  const [event, setEvent] = useState(() => getEventDetail(id));
+  const {
+    data: apiEvent,
+    isLoading,
+    isFetching,
+    error,
+    refetch: refetchEvent,
+  } = useGetEventByIdQuery(id, { skip: !id, refetchOnMountOrArgChange: true });
+  const { data: reportsData } = useGetReportsQuery({ resourceID: id }, { skip: !id });
+  const reportsCount = reportsData?.total_length ?? mapApiReports(reportsData?.data || []).length;
+  const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateEventMutation();
+  const resolvedEvent = useMemo(
+    () => resolveEventDetail(id, apiEvent, eventPreview),
+    [id, apiEvent, eventPreview]
+  );
+  const [eventOverride, setEventOverride] = useState(null);
+  const event = useMemo(
+    () => (eventOverride && resolvedEvent ? { ...resolvedEvent, ...eventOverride } : resolvedEvent),
+    [resolvedEvent, eventOverride]
+  );
   const editDetails = useBoolean();
   const cancelEvent = useBoolean();
-  const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
+  const [editPurpose, setEditPurpose] = useState('');
+  const [editCapacity, setEditCapacity] = useState('');
   const [cancelReason, setCancelReason] = useState('');
 
+  const openEditDialog = () => {
+    setEditPurpose(event?.purpose || event?.description || '');
+    setEditCapacity(String(event?.capacity ?? ''));
+    editDetails.onTrue();
+  };
+
   useEffect(() => {
-    setEvent(getEventDetail(id));
+    if (error && !eventPreview) handleApiError(error);
+  }, [error, eventPreview]);
+
+  useEffect(() => {
+    setEventOverride(null);
   }, [id]);
+
+  if ((isLoading || isFetching) && !event) {
+    return <LoadingScreen />;
+  }
 
   if (!event) {
     return (
@@ -585,10 +776,14 @@ export function EventDetailView() {
   }
 
   const tabs = [
-    { value: 'rsvps', label: 'RSVPs' },
-    { value: 'attendees', label: `Attendees · ${event.rsvp?.going || event.attendeesList.length}` },
-    { value: 'reports', label: `Reports · ${event.reports.length}` },
-    { value: 'activity', label: 'Activity log' },
+    { value: 'rsvps', label: `RSVPs · ${event.rsvpCount ?? event.rsvp?.going ?? 0}` },
+    { value: 'attendees', label: `Attendees · ${event.attendeesList?.length || 0}` },
+    {
+      value: 'openDrops',
+      label: `Circle open drops · ${event.circleOpenDrops?.length || 0}`,
+    },
+    { value: 'reports', label: `Reports · ${reportsCount}` },
+    // { value: 'activity', label: 'Activity log' },
   ];
 
   return (
@@ -602,24 +797,7 @@ export function EventDetailView() {
         ]}
         action={
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              onClick={() => toast.success(`Message started with ${event.organizer}`)}
-            >
-              Message organizer
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              onClick={() => {
-                setEditName(event.name);
-                setEditDescription(event.description || '');
-                editDetails.onTrue();
-              }}
-            >
+            <Button variant="outlined" color="inherit" size="small" onClick={openEditDialog}>
               Edit event
             </Button>
             <Button variant="outlined" color="error" size="small" onClick={cancelEvent.onTrue}>
@@ -631,15 +809,21 @@ export function EventDetailView() {
       />
 
       <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-        Hosted by{' '}
-        <Link
-          component={RouterLink}
-          href={event.circleId ? paths.adminDashboard.circleDetails(event.circleId) : paths.adminDashboard.circles}
-          underline="hover"
-        >
-          {event.host}
-        </Link>
-        {` · organized by ${event.organizer} · ID ${event.code}`}
+        {event.circleName || event.host ? (
+          <>
+            Hosted by{' '}
+            <Link
+              component={RouterLink}
+              href={event.circleId ? paths.adminDashboard.circleDetails(event.circleId) : paths.adminDashboard.circles}
+              underline="hover"
+            >
+              {event.circleName || event.host}
+            </Link>
+            {event.organizer && event.organizer !== '—' ? ` · organized by ${event.organizer}` : ''}
+          </>
+        ) : (
+          `Created ${event.createdAtFull || event.createdAt} · Updated ${event.updatedAtFull || event.updatedAt}`
+        )}
       </Typography>
 
       <Card sx={{ mb: 3, height: { xs: 'auto', md: 320 }, position: 'relative' }}>
@@ -647,8 +831,8 @@ export function EventDetailView() {
           name={event.name}
           avatarUrl={getDisplayImage(event.image)}
           location={event.publicArea || event.location}
-          statusLabel={event.publishLabel || 'Published'}
-          metaLabel={`${event.placesLeft} places left`}
+          statusLabel={event.publishLabel || event.statusLabel || 'Published'}
+          metaLabel={`${event.placesLeft ?? Math.max(0, (event.capacity || 0) - (event.rsvpCount || 0))} places left`}
         />
 
         <Box
@@ -665,11 +849,7 @@ export function EventDetailView() {
         >
           <Tooltip title="Edit" arrow placement="top">
             <IconButton
-              onClick={() => {
-                setEditName(event.name);
-                setEditDescription(event.description || '');
-                editDetails.onTrue();
-              }}
+              onClick={openEditDialog}
               sx={{
                 color: 'common.white',
                 bgcolor: (theme) => varAlpha(theme.vars.palette.common.whiteChannel, 0.16),
@@ -719,66 +899,86 @@ export function EventDetailView() {
       )}
       {value === 'attendees' && (
         <AttendeesPanel
-          attendees={event.attendeesList}
+          attendees={event.attendeesList || []}
           onRemove={(person) => {
-            setEvent((prev) => {
-              const nextList = prev.attendeesList.filter((item) => item.id !== person.id);
-              const rsvp = { ...(prev.rsvp || { going: 0, pending: 0, waitlist: 0, cancelled: 0 }) };
+            setEventOverride((prev) => {
+              const base = prev || resolvedEvent;
+              const nextList = (base.attendeesList || []).filter((item) => item.id !== person.id);
+              const rsvp = { ...(base.rsvp || { going: 0, pending: 0, waitlist: 0, cancelled: 0 }) };
               if (person.status === 'Going') rsvp.going = Math.max(0, (rsvp.going || 0) - 1);
               if (person.status === 'Waitlist') rsvp.waitlist = Math.max(0, (rsvp.waitlist || 0) - 1);
               if (person.status === 'Cancelled') rsvp.cancelled = Math.max(0, (rsvp.cancelled || 0) - 1);
-              return { ...prev, attendeesList: nextList, rsvp };
+              return { ...base, attendeesList: nextList, rsvp };
             });
           }}
         />
       )}
-      {value === 'reports' && (
-        <ReportsPanel
-          reports={event.reports}
-          onClear={(report) => {
-            setEvent((prev) => ({
-              ...prev,
-              reports: prev.reports.filter((item) => item.id !== report.id),
-            }));
-            toast.success('Report dismissed');
-          }}
-        />
-      )}
-      {value === 'activity' && <ActivityPanel items={event.activity} />}
+      {value === 'openDrops' && <CircleOpenDropsCard drops={event.circleOpenDrops || []} />}
+      {value === 'reports' && <ReportsPanel resourceID={id} />}
+      {/* {value === 'activity' && <ActivityPanel items={event.activity || []} />} */}
 
       <Dialog fullWidth maxWidth="sm" open={editDetails.value} onClose={editDetails.onFalse}>
         <DialogTitle>Edit event</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField fullWidth label="Name" value={editName} onChange={(eventInput) => setEditName(eventInput.target.value)} />
             <TextField
               fullWidth
               multiline
               minRows={3}
-              label="Description"
-              value={editDescription}
-              onChange={(eventInput) => setEditDescription(eventInput.target.value)}
+              label="Purpose"
+              value={editPurpose}
+              onChange={(eventInput) => setEditPurpose(eventInput.target.value)}
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label="Capacity"
+              value={editCapacity}
+              onChange={(eventInput) => setEditCapacity(eventInput.target.value)}
+              inputProps={{ min: 1 }}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" color="inherit" onClick={editDetails.onFalse}>
+          <Button variant="outlined" color="inherit" onClick={editDetails.onFalse} disabled={isUpdatingEvent}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
-              if (!editName.trim()) {
-                toast.error('Name is required');
+            disabled={isUpdatingEvent}
+            onClick={async () => {
+              const purpose = editPurpose.trim();
+              const capacity = Number(editCapacity);
+
+              if (!purpose) {
+                toast.error('Purpose is required');
                 return;
               }
-              setEvent((prev) => ({
-                ...prev,
-                name: editName.trim(),
-                description: editDescription.trim(),
-              }));
-              editDetails.onFalse();
-              toast.success('Event updated');
+              if (!Number.isFinite(capacity) || capacity < 1) {
+                toast.error('Capacity must be at least 1');
+                return;
+              }
+
+              try {
+                const response = await updateEvent({
+                  id,
+                  purpose,
+                  capacity,
+                }).unwrap();
+
+                const rsvpCount = event?.rsvpCount ?? event?.rsvp?.going ?? 0;
+                setEventOverride({
+                  purpose,
+                  description: purpose,
+                  capacity,
+                  placesLeft: Math.max(0, capacity - rsvpCount),
+                });
+                if (response.message) toast.success(response.message);
+                editDetails.onFalse();
+                refetchEvent();
+              } catch (apiError) {
+                handleApiError(apiError);
+              }
             }}
           >
             Save
@@ -812,7 +1012,11 @@ export function EventDetailView() {
                 toast.error('Cancellation reason is required');
                 return;
               }
-              setEvent((prev) => ({ ...prev, publishLabel: 'Cancelled', status: 'closed' }));
+              setEventOverride((prev) => ({
+                ...(prev || resolvedEvent),
+                publishLabel: 'Cancelled',
+                status: 'closed',
+              }));
               cancelEvent.onFalse();
               setCancelReason('');
               toast.success('Event cancelled');

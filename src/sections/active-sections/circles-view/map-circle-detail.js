@@ -29,6 +29,46 @@ const mapRole = (roleRaw) => {
   return 'Member';
 };
 
+const mapJoinRequest = (request, index = 0) => {
+  if (!request || typeof request !== 'object') return null;
+
+  const user = request.user || request.member || request.profile || {};
+  const status = request.status ? titleCase(request.status) : 'Pending';
+  const createdAt =
+    request.createdAt || request.requestedAt || request.joinedAt || request.updatedAt || '';
+
+  return {
+    id:
+      request._id ||
+      request.id ||
+      request.userId ||
+      user._id ||
+      user.id ||
+      `join-${index}`,
+    name: user.name || request.name || user.handle || request.handle || '—',
+    handle: user.handle || request.handle || '',
+    craft:
+      request.craft ||
+      request.discipline ||
+      user.craft ||
+      (user.handle || request.handle ? `@${user.handle || request.handle}` : '') ||
+      '—',
+    status,
+    note: request.note || request.message || request.reason || '',
+    when: createdAt ? fDate(createdAt) : request.when || '—',
+    stuck: request.stuck || '',
+    raw: request,
+  };
+};
+
+const pickJoinRequests = (api) => {
+  if (Array.isArray(api?.pendingMembers)) return api.pendingMembers;
+  if (Array.isArray(api?.joinRequests)) return api.joinRequests;
+  if (Array.isArray(api?.pendingRequests)) return api.pendingRequests;
+  if (Array.isArray(api?.requests)) return api.requests;
+  return [];
+};
+
 const mapLatestMember = (member) => {
   const roleRaw = member?.role || 'member';
   const joinedAt = member?.joinedAt || '';
@@ -192,6 +232,10 @@ export function mapApiCircleToDetail(api) {
   const latestEventMapped = mapLatestEvent(api.latestEvent);
   const events = latestEventMapped ? [latestEventMapped] : [];
   const openDrops = (Array.isArray(api.openDrops) ? api.openDrops : []).map(mapOpenDrop).filter(Boolean);
+  const joinRequests = pickJoinRequests(api)
+    .map(mapJoinRequest)
+    .filter(Boolean)
+    .filter((request) => String(request.status || 'pending').toLowerCase() === 'pending');
   const memberCount = api.memberCount ?? api.membersCount ?? api.members ?? latestMembers.length;
 
   return {
@@ -223,7 +267,7 @@ export function mapApiCircleToDetail(api) {
     latestEvent: api.latestEvent ?? null,
     openDrops,
     memberCount,
-    pendingRequestCount: api.pendingRequestCount ?? 0,
+    pendingRequestCount: api.pendingRequestCount ?? joinRequests.length,
     joinedInvitationCount: api.joinedInvitationCount ?? 0,
     pendingInvitationCount: api.pendingInvitationCount ?? 0,
     createdAt: api.createdAt ? fDate(api.createdAt) : '—',
@@ -262,7 +306,7 @@ export function mapApiCircleToDetail(api) {
     people: latestMembers,
     drops: openDrops,
     events,
-    joinRequests: [],
+    joinRequests,
     reports: [],
     activity: [],
   };
