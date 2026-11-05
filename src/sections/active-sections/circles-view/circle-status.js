@@ -1,8 +1,20 @@
 export const CIRCLE_STATUS_OPTIONS = [
   { value: 'active', label: 'Active', color: 'success' },
+  { value: 'suspended', label: 'Suspended', color: 'error' },
   { value: 'reported', label: 'Reported', color: 'error' },
   { value: 'reviewing', label: 'Reviewing', color: 'warning' },
 ];
+
+export const isCircleSuspended = (status) => {
+  const value = String(status || '').trim().toLowerCase();
+  return value === 'suspended' || value === 'inactive' || value === 'blocked';
+};
+
+export const resolveCircleLifecycleStatus = (api = {}) => {
+  if (api?.isSuspended === true || api?.suspended === true) return 'suspended';
+  if (api?.isSuspended === false || api?.suspended === false) return api?.status || 'active';
+  return api?.status || 'active';
+};
 
 export const CIRCLE_JOINING_OPTIONS = [
   { value: 'open', label: 'Open', color: 'default' },

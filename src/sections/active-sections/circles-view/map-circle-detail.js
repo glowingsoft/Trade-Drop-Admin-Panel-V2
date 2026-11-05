@@ -1,5 +1,6 @@
 import { fDate, fDateTime } from 'src/utils/format-time';
 
+import { resolveCircleLifecycleStatus } from './circle-status';
 import { getCircleDetail } from './mocks/detail';
 
 const formatDistance = (meters) => {
@@ -253,7 +254,7 @@ export function mapApiCircleToDetail(api) {
     city: api.city || '—',
     privacy,
     joining: privacy,
-    status: privacy,
+    status: resolveCircleLifecycleStatus(api),
     locationRaw: api.location || null,
     location: api.city || '—',
     homeArea: api.city || '—',

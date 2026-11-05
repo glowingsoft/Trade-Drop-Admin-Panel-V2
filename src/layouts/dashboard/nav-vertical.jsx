@@ -5,7 +5,6 @@ import { hideScrollY, varAlpha } from 'src/theme/styles';
 
 import { Logo } from 'src/components/logo';
 import { NavSectionMini, NavSectionVertical } from 'src/components/nav-section';
-import { Scrollbar } from 'src/components/scrollbar';
 
 import { NavToggleButton } from '../components/nav-toggle-button';
 
@@ -17,30 +16,45 @@ export function NavVertical({ sx, data, slots, isNavMini, layoutQuery, onToggleN
   const renderNavVertical = (
     <>
       {slots?.topArea ?? (
-        <Box sx={{ pl: 2.5, pt: 2.5, pb: 1 }}>
+        <Box sx={{ pl: 2.5, pt: 2.5, pb: 1, flexShrink: 0 }}>
           <Logo width={85} height={50} />
         </Box>
       )}
 
-      <Scrollbar fillContent>
-        <NavSectionVertical data={data} sx={{ px: 1.5, flex: '1 1 auto' }} {...other} />
-
-        {/* {slots?.bottomArea ?? <NavUpgrade />} */}
-      </Scrollbar>
+      <Box
+        sx={{
+          flex: '1 1 auto',
+          minHeight: 0,
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+        }}
+        onWheel={(event) => event.stopPropagation()}
+      >
+        <NavSectionVertical data={data} sx={{ px: 1.5, pb: 2 }} {...other} />
+      </Box>
     </>
   );
 
   const renderNavMini = (
     <>
       {slots?.topArea ?? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2.5 }}>
-          <Logo  width={65} height={50}/>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2.5, flexShrink: 0 }}>
+          <Logo width={65} height={50} />
         </Box>
       )}
 
       <NavSectionMini
         data={data}
-        sx={{ pb: 2, px: 0.5, ...hideScrollY, flex: '1 1 auto', overflowY: 'auto' }}
+        sx={{
+          pb: 2,
+          px: 0.5,
+          ...hideScrollY,
+          flex: '1 1 auto',
+          minHeight: 0,
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+        }}
         {...other}
       />
 
@@ -54,9 +68,11 @@ export function NavVertical({ sx, data, slots, isNavMini, layoutQuery, onToggleN
         top: 0,
         left: 0,
         height: 1,
+        maxHeight: '100vh',
         display: 'none',
         position: 'fixed',
         flexDirection: 'column',
+        overflow: 'hidden',
         bgcolor: 'var(--layout-nav-bg)',
         zIndex: 'var(--layout-nav-zIndex)',
         width: isNavMini ? 'var(--layout-nav-mini-width)' : 'var(--layout-nav-vertical-width)',

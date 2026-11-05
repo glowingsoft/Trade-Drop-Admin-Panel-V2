@@ -39,7 +39,12 @@ import { useTabs } from 'src/hooks/use-tabs';
 import { RouterLink } from 'src/routes/components';
 import { useParams, useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import { useGetEventByIdQuery, useUpdateEventMutation } from 'src/store/Reducer/events-api';
+import {
+  useCancelEventMutation,
+  useGetEventByIdQuery,
+  usePublishEventMutation,
+  useUpdateEventMutation,
+} from 'src/store/Reducer/events-api';
 import { useGetReportsQuery } from 'src/store/Reducer/reports-api';
 import { varAlpha } from 'src/theme/styles';
 import { exportToCsv } from 'src/utils/export-to-csv';
@@ -47,6 +52,7 @@ import { handleApiError } from 'src/utils/errorHandler';
 
 import { useLocation } from 'react-router-dom';
 
+import { isEventCancelled } from '../event-status';
 import { resolveEventDetail } from '../map-event-detail';
 import { mapApiReports } from '../map-event-reports';
 
@@ -711,7 +717,6 @@ function ActivityPanel({ items }) {
 
 export function EventDetailView() {
   const { id } = useParams();
-  const router = useRouter();
   const location = useLocation();
   const eventPreview = location.state?.eventPreview;
   const { value, onChange } = useTabs('rsvps');
@@ -725,6 +730,8 @@ export function EventDetailView() {
   const { data: reportsData } = useGetReportsQuery({ resourceID: id }, { skip: !id });
   const reportsCount = reportsData?.total_length ?? mapApiReports(reportsData?.data || []).length;
   const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateEventMutation();
+  const [cancelEventApi, { isLoading: isCancellingEvent }] = useCancelEventMutation();
+  const [publishEventApi, { isLoading: isPublishingEvent }] = usePublishEventMutation();
   const resolvedEvent = useMemo(
     () => resolveEventDetail(id, apiEvent, eventPreview),
     [id, apiEvent, eventPreview]
@@ -736,9 +743,10 @@ export function EventDetailView() {
   );
   const editDetails = useBoolean();
   const cancelEvent = useBoolean();
+  const publishEvent = useBoolean();
   const [editPurpose, setEditPurpose] = useState('');
   const [editCapacity, setEditCapacity] = useState('');
-  const [cancelReason, setCancelReason] = useState('');
+  const eventIsCancelled = isEventCancelled(event?.status);
 
   const openEditDialog = () => {
     setEditPurpose(event?.purpose || event?.description || '');
@@ -800,9 +808,20 @@ export function EventDetailView() {
             <Button variant="outlined" color="inherit" size="small" onClick={openEditDialog}>
               Edit event
             </Button>
-            <Button variant="outlined" color="error" size="small" onClick={cancelEvent.onTrue}>
-              Cancel event
-            </Button>
+            {eventIsCancelled ? (
+              <Button
+                variant="outlined"
+                color="success"
+                size="small"
+                onClick={publishEvent.onTrue}
+              >
+                Publish event
+              </Button>
+            ) : (
+              <Button variant="outlined" color="error" size="small" onClick={cancelEvent.onTrue}>
+                Cancel event
+              </Button>
+            )}
           </Stack>
         }
         sx={{ mb: 1 }}
@@ -990,40 +1009,68 @@ export function EventDetailView() {
         open={cancelEvent.value}
         onClose={cancelEvent.onFalse}
         title="Cancel event"
-        content={
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography variant="body2">
-              Everyone who RSVP&apos;d will get an automatic notice. The event stays visible as Cancelled for 7 days.
-            </Typography>
-            <TextField
-              fullWidth
-              label="Reason"
-              value={cancelReason}
-              onChange={(eventInput) => setCancelReason(eventInput.target.value)}
-            />
-          </Stack>
-        }
+        content="Everyone who RSVP'd will get an automatic notice. The event stays visible as Cancelled for 7 days."
         action={
           <Button
             variant="contained"
             color="error"
-            onClick={() => {
-              if (!cancelReason.trim()) {
-                toast.error('Cancellation reason is required');
-                return;
+            disabled={isCancellingEvent}
+            onClick={async () => {
+              try {
+                const response = await cancelEventApi(id).unwrap();
+                const nextStatus = response?.data?.status;
+                if (nextStatus) {
+                  setEventOverride((prev) => ({
+                    ...(prev || {}),
+                    status: nextStatus,
+                    statusLabel: String(nextStatus),
+                    publishLabel: String(nextStatus),
+                  }));
+                }
+                if (response.message) toast.success(response.message);
+                cancelEvent.onFalse();
+                refetchEvent();
+              } catch (apiError) {
+                handleApiError(apiError);
               }
-              setEventOverride((prev) => ({
-                ...(prev || resolvedEvent),
-                publishLabel: 'Cancelled',
-                status: 'closed',
-              }));
-              cancelEvent.onFalse();
-              setCancelReason('');
-              toast.success('Event cancelled');
-              router.push(paths.adminDashboard.events);
             }}
           >
             Cancel event
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={publishEvent.value}
+        onClose={publishEvent.onFalse}
+        title="Publish event"
+        content="Publishing makes this event active again for attendees and search."
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            disabled={isPublishingEvent}
+            onClick={async () => {
+              try {
+                const response = await publishEventApi(id).unwrap();
+                const nextStatus = response?.data?.status;
+                if (nextStatus) {
+                  setEventOverride((prev) => ({
+                    ...(prev || {}),
+                    status: nextStatus,
+                    statusLabel: String(nextStatus),
+                    publishLabel: String(nextStatus),
+                  }));
+                }
+                if (response.message) toast.success(response.message);
+                publishEvent.onFalse();
+                refetchEvent();
+              } catch (apiError) {
+                handleApiError(apiError);
+              }
+            }}
+          >
+            Publish event
           </Button>
         }
       />

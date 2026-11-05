@@ -78,7 +78,35 @@ export const eventsApi = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'event', id }, 'event'],
     }),
+
+    cancelEvent: builder.mutation({
+      query: (id) => ({
+        url: API_ROUTES.EVENTS_CANCEL(id),
+        method: 'POST',
+        headers: ADMIN_ACCESS_TOKEN
+          ? { 'x-admin-access-token': ADMIN_ACCESS_TOKEN }
+          : undefined,
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'event', id }, 'event'],
+    }),
+
+    publishEvent: builder.mutation({
+      query: (id) => ({
+        url: API_ROUTES.EVENTS_PUBLISH(id),
+        method: 'POST',
+        headers: ADMIN_ACCESS_TOKEN
+          ? { 'x-admin-access-token': ADMIN_ACCESS_TOKEN }
+          : undefined,
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'event', id }, 'event'],
+    }),
   }),
 });
 
-export const { useGetEventsQuery, useGetEventByIdQuery, useUpdateEventMutation } = eventsApi;
+export const {
+  useGetEventsQuery,
+  useGetEventByIdQuery,
+  useUpdateEventMutation,
+  useCancelEventMutation,
+  usePublishEventMutation,
+} = eventsApi;
