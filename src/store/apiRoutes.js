@@ -66,6 +66,7 @@ export const API_ROUTES = {
     EVENTS_CANCEL: (id) => `/events/${id}/cancel`,
     EVENTS_PUBLISH: (id) => `/events/${id}/publish`,
 
+    REPORTS: '/reports',
     ADMIN_REPORTS: '/admin/reports',
     ADMIN_REPORTS_BY_ID: (id) => `/admin/reports/${id}`,
 };

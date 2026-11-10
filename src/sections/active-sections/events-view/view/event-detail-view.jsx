@@ -648,13 +648,16 @@ function AttendeesPanel({ attendees, onRemove }) {
   );
 }
 
-function ReportsPanel({ resourceID }) {
+function ReportsPanel({ resourceID, resourceType = 'event' }) {
   const {
     data,
     isLoading,
     isFetching,
     error,
-  } = useGetReportsQuery({ resourceID }, { skip: !resourceID });
+  } = useGetReportsQuery(
+    { resourceID, resourceType },
+    { skip: !resourceID }
+  );
 
   useEffect(() => {
     if (error) handleApiError(error);
@@ -727,7 +730,10 @@ export function EventDetailView() {
     error,
     refetch: refetchEvent,
   } = useGetEventByIdQuery(id, { skip: !id, refetchOnMountOrArgChange: true });
-  const { data: reportsData } = useGetReportsQuery({ resourceID: id }, { skip: !id });
+  const { data: reportsData } = useGetReportsQuery(
+    { resourceID: id, resourceType: 'event' },
+    { skip: !id }
+  );
   const reportsCount = reportsData?.total_length ?? mapApiReports(reportsData?.data || []).length;
   const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateEventMutation();
   const [cancelEventApi, { isLoading: isCancellingEvent }] = useCancelEventMutation();
@@ -933,7 +939,7 @@ export function EventDetailView() {
         />
       )}
       {value === 'openDrops' && <CircleOpenDropsCard drops={event.circleOpenDrops || []} />}
-      {value === 'reports' && <ReportsPanel resourceID={id} />}
+      {value === 'reports' && <ReportsPanel resourceID={id} resourceType="event" />}
       {/* {value === 'activity' && <ActivityPanel items={event.activity || []} />} */}
 
       <Dialog fullWidth maxWidth="sm" open={editDetails.value} onClose={editDetails.onFalse}>

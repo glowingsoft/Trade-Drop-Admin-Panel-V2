@@ -655,7 +655,7 @@ const MEMBER_HEAD = [
   { id: 'status', label: 'Status', width: 130 },
   { id: 'connection', label: 'Connection status', minWidth: 160 },
   { id: 'canConnect', label: 'Can send request', width: 160, align: 'center' },
-  { id: 'actions', label: '', width: 280 },
+  { id: 'actions', label: '', width: 140 },
 ];
 
 const EVENT_HEAD = [
@@ -671,12 +671,11 @@ const DROP_HEAD = [
   { id: 'date', label: 'Date', width: 160 },
 ];
 
-function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
+function MembersPanel({ circleId, people, memberCount = 0 }) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [role, setRole] = useState('all');
   const [joined, setJoined] = useState('any');
-  const [pendingRemove, setPendingRemove] = useState(null);
   const [members, setMembers] = useState(people || []);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -761,25 +760,6 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
     toast.success('Members exported');
   };
 
-  const handleRemove = () => {
-    if (!pendingRemove) return;
-    setMembers((prev) => prev.filter((item) => item.id !== pendingRemove.id));
-    onUpdateCircle((prev) => {
-      const nextPeople = (prev.people || []).filter((item) => item.id !== pendingRemove.id);
-      const nextLatest = (prev.latestMembers || []).filter((item) => item.id !== pendingRemove.id);
-      const nextCount = Math.max(0, (prev.memberCount ?? prev.members ?? 0) - 1);
-      return {
-        ...prev,
-        people: nextPeople,
-        latestMembers: nextLatest.length ? nextLatest : nextPeople,
-        members: nextCount,
-        memberCount: nextCount,
-      };
-    });
-    toast.success(`${pendingRemove.name} removed`);
-    setPendingRemove(null);
-  };
-
   return (
     <Card>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ p: 2 }}>
@@ -859,29 +839,18 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
                     {person.canSendConnectionRequestLabel || '—'}
                   </TableCell>
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                    <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ flexWrap: 'nowrap' }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="inherit"
-                        sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 1.5 }}
-                        onClick={() => {
-                          toast.success(`Opening profile for ${person.name}`);
-                          router.push(paths.adminDashboard.users.root);
-                        }}
-                      >
-                        View profile
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="inherit"
-                        sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 1.5 }}
-                        onClick={() => setPendingRemove(person)}
-                      >
-                        Remove
-                      </Button>
-                    </Stack>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="inherit"
+                      sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 1.5 }}
+                      onClick={() => {
+                        toast.success(`Opening profile for ${person.name}`);
+                        router.push(paths.adminDashboard.users.root);
+                      }}
+                    >
+                      View profile
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -903,18 +872,6 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
           </Button>
         </Stack>
       ) : null}
-
-      <ConfirmDialog
-        open={Boolean(pendingRemove)}
-        onClose={() => setPendingRemove(null)}
-        title="Remove member"
-        content={pendingRemove ? `Remove ${pendingRemove.name} from this circle?` : null}
-        action={
-          <Button variant="contained" color="error" onClick={handleRemove}>
-            Remove
-          </Button>
-        }
-      />
     </Card>
   );
 }
@@ -1157,13 +1114,16 @@ function PollsPanel({ polls, onUpdateCircle }) {
   );
 }
 
-function ReportsPanel({ resourceID }) {
+function ReportsPanel({ resourceID, resourceType = 'circle' }) {
   const {
     data,
     isLoading,
     isFetching,
     error,
-  } = useGetReportsQuery({ resourceID }, { skip: !resourceID });
+  } = useGetReportsQuery(
+    { resourceID, resourceType },
+    { skip: !resourceID }
+  );
 
   useEffect(() => {
     if (error) handleApiError(error);
@@ -1235,7 +1195,10 @@ export function CircleDetailView() {
     isFetching,
     error,
   } = useGetCircleByIdQuery(id, { skip: !id });
-  const { data: reportsData } = useGetReportsQuery({ resourceID: id }, { skip: !id });
+  const { data: reportsData } = useGetReportsQuery(
+    { resourceID: id, resourceType: 'circle' },
+    { skip: !id }
+  );
   const reportsCount = reportsData?.total_length ?? mapApiReports(reportsData?.data || []).length;
   const [updateCircleApi, { isLoading: isUpdatingCircle }] = useUpdateCircleMutation();
   const [suspendCircleApi, { isLoading: isSuspendingCircle }] = useSuspendCircleMutation();
@@ -1422,7 +1385,6 @@ export function CircleDetailView() {
           circleId={circle._id || circle.id}
           people={circle.latestMembers || circle.people || []}
           memberCount={circle.memberCount ?? circle.members ?? 0}
-          onUpdateCircle={updateCircle}
         />
       )}
       {value === 'requests' && (
@@ -1431,7 +1393,7 @@ export function CircleDetailView() {
       {value === 'events' && <EventsPanel events={circle.events || []} />}
       {value === 'drops' && <DropsPanel drops={circle.openDrops || circle.drops || []} />}
       {value === 'polls' && <PollsPanel polls={circle.polls || []} onUpdateCircle={updateCircle} />}
-      {value === 'reports' && <ReportsPanel resourceID={id} />}
+      {value === 'reports' && <ReportsPanel resourceID={id} resourceType="circle" />}
       {/* {value === 'activity' && <ActivityPanel items={circle.activity || []} />} */}
 
       <Dialog fullWidth maxWidth="sm" open={editDetails.value} onClose={editDetails.onFalse}>

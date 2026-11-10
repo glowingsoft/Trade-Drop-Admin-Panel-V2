@@ -11,6 +11,7 @@ export function mapApiReport(item, index = 0) {
 
   const id = item._id || item.id || `report-${index}`;
   const reason = item.reason || item.category || item.type || item.reportType || '';
+  const resourceType = item.resourceType || item.resource_type || '';
   const title = item.title || reason || item.status || 'Report';
   const status = item.status || '';
   const description = item.description || item.details || item.note || item.message || item.quote || '';
@@ -20,15 +21,31 @@ export function mapApiReport(item, index = 0) {
     personName(item.createdBy) ||
     personName(item.user) ||
     '';
+  const reportedUserId =
+    item.reportedUserId ||
+    item.reportedUser?._id ||
+    item.reportedUser?.id ||
+    '';
+  const resourceId = item.resourceId || item.resourceID || item.resource?._id || item.resource?.id || '';
+  const blockUser = Boolean(item.blockUser);
   const createdAt = item.createdAt || item.reportedAt || item.updatedAt || '';
   const when = createdAt ? fToNow(createdAt) || fDateTime(createdAt) : '';
 
-  const metaParts = [status, reportedBy ? `reported by ${reportedBy}` : '', when].filter(Boolean);
+  const metaParts = [
+    status,
+    resourceType,
+    reportedBy ? `reported by ${reportedBy}` : '',
+    when,
+  ].filter(Boolean);
 
   return {
     id,
     title,
     reason,
+    resourceType,
+    resourceId,
+    reportedUserId,
+    blockUser,
     status,
     description,
     reportedBy,
