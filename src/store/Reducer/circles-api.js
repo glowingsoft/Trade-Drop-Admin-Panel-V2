@@ -82,6 +82,17 @@ export const circlesApi = createApi({
       invalidatesTags: (result, error, { id }) => [{ type: 'circle', id }, 'circle'],
     }),
 
+    suspendCircle: builder.mutation({
+      query: (id) => ({
+        url: API_ROUTES.CIRCLES_SUSPEND(id),
+        method: 'POST',
+        headers: ADMIN_ACCESS_TOKEN
+          ? { 'x-admin-access-token': ADMIN_ACCESS_TOKEN }
+          : undefined,
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'circle', id }, 'circle'],
+    }),
+
     getCircleMembers: builder.query({
       query: ({ id, page = 1, limit = 20 } = {}) => ({
         url: API_ROUTES.CIRCLES_MEMBERS(id),
@@ -111,5 +122,6 @@ export const {
   useGetCirclesQuery,
   useGetCircleByIdQuery,
   useUpdateCircleMutation,
+  useSuspendCircleMutation,
   useLazyGetCircleMembersQuery,
 } = circlesApi;

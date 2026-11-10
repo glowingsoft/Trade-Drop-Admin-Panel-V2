@@ -59,10 +59,14 @@ export const API_ROUTES = {
     CIRCLES_ALL: '/circles/all',
     CIRCLES_BY_ID: (id) => `/circles/${id}`,
     CIRCLES_MEMBERS: (id) => `/circles/${id}/members`,
+    CIRCLES_SUSPEND: (id) => `/circles/${id}/suspend`,
 
     EVENTS_ALL: '/events/all',
     EVENTS_BY_ID: (id) => `/events/${id}`,
+    EVENTS_CANCEL: (id) => `/events/${id}/cancel`,
+    EVENTS_PUBLISH: (id) => `/events/${id}/publish`,
 
+    REPORTS: '/reports',
     ADMIN_REPORTS: '/admin/reports',
     ADMIN_REPORTS_BY_ID: (id) => `/admin/reports/${id}`,
 };

@@ -29,6 +29,11 @@ export const EVENT_VISIBILITY_OPTIONS = [
 export const getEventStatusOption = (status) =>
   EVENT_STATUS_OPTIONS.find((option) => option.value === String(status || '').toLowerCase());
 
+export const isEventCancelled = (status) => {
+  const value = String(status || '').trim().toLowerCase();
+  return value === 'cancelled' || value === 'canceled' || value === 'closed';
+};
+
 export const getEventAudienceOption = (audience) =>
   EVENT_AUDIENCE_OPTIONS.find((option) => option.value === String(audience || '').toLowerCase());
 

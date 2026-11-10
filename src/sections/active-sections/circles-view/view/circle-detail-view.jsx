@@ -42,6 +42,7 @@ import { paths } from 'src/routes/paths';
 import {
   useGetCircleByIdQuery,
   useLazyGetCircleMembersQuery,
+  useSuspendCircleMutation,
   useUpdateCircleMutation,
 } from 'src/store/Reducer/circles-api';
 import { useGetReportsQuery } from 'src/store/Reducer/reports-api';
@@ -52,7 +53,12 @@ import { handleApiError } from 'src/utils/errorHandler';
 import { useLocation } from 'react-router-dom';
 
 import { mapApiReports } from '../../events-view/map-event-reports';
-import { getCirclePrivacyOption } from '../circle-status';
+import {
+  getCirclePrivacyOption,
+  getCircleStatusOption,
+  isCircleSuspended,
+  resolveCircleLifecycleStatus,
+} from '../circle-status';
 import { mapCircleMemberApi, resolveCircleDetail } from '../map-circle-detail';
 
 import 'src/components/map/styles.css';
@@ -69,7 +75,7 @@ const initials = (name) =>
     .slice(0, 2)
     .toUpperCase();
 
-function CircleCover({ name, avatarUrl, homeArea, statusLabel, joiningLabel, featured }) {
+function CircleCover({ name, avatarUrl, homeArea, statusLabel, joiningLabel, featured, suspended }) {
   const theme = useTheme();
   const primaryDark = theme.vars?.palette?.primary?.dark || theme.palette.primary.dark;
   const primaryMain = theme.vars?.palette?.primary?.main || theme.palette.primary.main;
@@ -189,6 +195,26 @@ function CircleCover({ name, avatarUrl, homeArea, statusLabel, joiningLabel, fea
               >
                 <Typography variant="caption" sx={{ fontWeight: 700 }}>
                   {joiningLabel}
+                </Typography>
+              </Stack>
+            ) : null}
+
+            {suspended ? (
+              <Stack
+                direction="row"
+                spacing={0.5}
+                alignItems="center"
+                sx={{
+                  py: 0.25,
+                  px: 1,
+                  borderRadius: 100,
+                  bgcolor: varAlpha(theme.vars.palette.error.mainChannel, 0.28),
+                  border: `1px solid ${varAlpha(theme.vars.palette.error.mainChannel, 0.5)}`,
+                }}
+              >
+                <Iconify icon="solar:danger-triangle-bold" width={14} />
+                <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                  Suspended
                 </Typography>
               </Stack>
             ) : null}
@@ -471,10 +497,17 @@ function MapLocationCard({ circle, area }) {
 
 function OverviewPanel({ circle, area }) {
   const privacyOption = getCirclePrivacyOption(circle.privacy);
+  const statusOption = getCircleStatusOption(String(circle.status || 'active').toLowerCase());
   const facts = [
     { label: 'Name', value: circle.name || '—' },
     { label: 'Purpose', value: circle.purpose || circle.description || '—' },
     { label: 'Category', value: circle.category || '—' },
+    {
+      label: 'Status',
+      value: isCircleSuspended(circle.status)
+        ? 'Suspended'
+        : statusOption?.label || circle.status || 'Active',
+    },
     { label: 'Cover image', value: circle.coverImage || circle.image || '—' },
     { label: 'City', value: circle.city || area?.homeArea || '—' },
     { label: 'Privacy', value: privacyOption?.label || circle.privacy || '—' },
@@ -622,7 +655,7 @@ const MEMBER_HEAD = [
   { id: 'status', label: 'Status', width: 130 },
   { id: 'connection', label: 'Connection status', minWidth: 160 },
   { id: 'canConnect', label: 'Can send request', width: 160, align: 'center' },
-  { id: 'actions', label: '', width: 280 },
+  { id: 'actions', label: '', width: 140 },
 ];
 
 const EVENT_HEAD = [
@@ -638,12 +671,11 @@ const DROP_HEAD = [
   { id: 'date', label: 'Date', width: 160 },
 ];
 
-function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
+function MembersPanel({ circleId, people, memberCount = 0 }) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [role, setRole] = useState('all');
   const [joined, setJoined] = useState('any');
-  const [pendingRemove, setPendingRemove] = useState(null);
   const [members, setMembers] = useState(people || []);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -728,25 +760,6 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
     toast.success('Members exported');
   };
 
-  const handleRemove = () => {
-    if (!pendingRemove) return;
-    setMembers((prev) => prev.filter((item) => item.id !== pendingRemove.id));
-    onUpdateCircle((prev) => {
-      const nextPeople = (prev.people || []).filter((item) => item.id !== pendingRemove.id);
-      const nextLatest = (prev.latestMembers || []).filter((item) => item.id !== pendingRemove.id);
-      const nextCount = Math.max(0, (prev.memberCount ?? prev.members ?? 0) - 1);
-      return {
-        ...prev,
-        people: nextPeople,
-        latestMembers: nextLatest.length ? nextLatest : nextPeople,
-        members: nextCount,
-        memberCount: nextCount,
-      };
-    });
-    toast.success(`${pendingRemove.name} removed`);
-    setPendingRemove(null);
-  };
-
   return (
     <Card>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ p: 2 }}>
@@ -826,29 +839,18 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
                     {person.canSendConnectionRequestLabel || '—'}
                   </TableCell>
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                    <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ flexWrap: 'nowrap' }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="inherit"
-                        sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 1.5 }}
-                        onClick={() => {
-                          toast.success(`Opening profile for ${person.name}`);
-                          router.push(paths.adminDashboard.users.root);
-                        }}
-                      >
-                        View profile
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="inherit"
-                        sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 1.5 }}
-                        onClick={() => setPendingRemove(person)}
-                      >
-                        Remove
-                      </Button>
-                    </Stack>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="inherit"
+                      sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 1.5 }}
+                      onClick={() => {
+                        toast.success(`Opening profile for ${person.name}`);
+                        router.push(paths.adminDashboard.users.root);
+                      }}
+                    >
+                      View profile
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -870,64 +872,22 @@ function MembersPanel({ circleId, people, memberCount = 0, onUpdateCircle }) {
           </Button>
         </Stack>
       ) : null}
-
-      <ConfirmDialog
-        open={Boolean(pendingRemove)}
-        onClose={() => setPendingRemove(null)}
-        title="Remove member"
-        content={pendingRemove ? `Remove ${pendingRemove.name} from this circle?` : null}
-        action={
-          <Button variant="contained" color="error" onClick={handleRemove}>
-            Remove
-          </Button>
-        }
-      />
     </Card>
   );
 }
 
-function RequestsPanel({ requests, onUpdateCircle }) {
+function RequestsPanel({ requests }) {
   const pendingRequests = useMemo(
     () => (requests || []).filter((request) => isPendingRequestStatus(request?.status)),
     [requests]
   );
-
-  const resolveRequest = (request, approved) => {
-    onUpdateCircle((prev) => {
-      const next = {
-        ...prev,
-        joinRequests: prev.joinRequests.filter((item) => item.id !== request.id),
-      };
-
-      if (approved) {
-        next.people = [
-          ...prev.people,
-          {
-            id: `m-${Date.now()}`,
-            name: request.name,
-            craft: request.craft,
-            role: 'Member',
-            joined: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            joinedAt: new Date().toISOString().slice(0, 10),
-            messages: 0,
-            reportsAgainst: 0,
-            status: 'Active',
-          },
-        ];
-        next.members = (prev.members || 0) + 1;
-      }
-
-      return next;
-    });
-    toast.success(approved ? `${request.name} approved` : `${request.name} declined`);
-  };
 
   return (
     <Card sx={{ p: { xs: 2, md: 2.5 } }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
         <Typography variant="subtitle1">Pending join requests</Typography>
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          Organizers normally handle these. Admins can act if a request is stuck more than 7 days.
+          View only. Organizers handle approve and decline in the app.
         </Typography>
       </Stack>
 
@@ -944,19 +904,11 @@ function RequestsPanel({ requests, onUpdateCircle }) {
                   {`${request.craft} · ${request.when}${request.note ? ` · “${request.note}”` : ''}`}
                 </Typography>
               </Box>
-              <Stack direction="row" spacing={1} alignItems="center">
-                {request.stuck ? (
-                  <Label variant="soft" color="warning">
-                    {request.stuck}
-                  </Label>
-                ) : null}
-                <Button size="small" variant="outlined" color="inherit" onClick={() => resolveRequest(request, true)}>
-                  Approve
-                </Button>
-                <Button size="small" variant="outlined" color="inherit" onClick={() => resolveRequest(request, false)}>
-                  Decline
-                </Button>
-              </Stack>
+              {request.stuck ? (
+                <Label variant="soft" color="warning">
+                  {request.stuck}
+                </Label>
+              ) : null}
             </Stack>
           ))}
         </Stack>
@@ -1162,13 +1114,16 @@ function PollsPanel({ polls, onUpdateCircle }) {
   );
 }
 
-function ReportsPanel({ resourceID }) {
+function ReportsPanel({ resourceID, resourceType = 'circle' }) {
   const {
     data,
     isLoading,
     isFetching,
     error,
-  } = useGetReportsQuery({ resourceID }, { skip: !resourceID });
+  } = useGetReportsQuery(
+    { resourceID, resourceType },
+    { skip: !resourceID }
+  );
 
   useEffect(() => {
     if (error) handleApiError(error);
@@ -1231,7 +1186,6 @@ function ActivityPanel({ items }) {
 
 export function CircleDetailView() {
   const { id } = useParams();
-  const router = useRouter();
   const location = useLocation();
   const circlePreview = location.state?.circlePreview;
   const { value, onChange } = useTabs('overview');
@@ -1241,9 +1195,13 @@ export function CircleDetailView() {
     isFetching,
     error,
   } = useGetCircleByIdQuery(id, { skip: !id });
-  const { data: reportsData } = useGetReportsQuery({ resourceID: id }, { skip: !id });
+  const { data: reportsData } = useGetReportsQuery(
+    { resourceID: id, resourceType: 'circle' },
+    { skip: !id }
+  );
   const reportsCount = reportsData?.total_length ?? mapApiReports(reportsData?.data || []).length;
   const [updateCircleApi, { isLoading: isUpdatingCircle }] = useUpdateCircleMutation();
+  const [suspendCircleApi, { isLoading: isSuspendingCircle }] = useSuspendCircleMutation();
 
   const [circle, setCircle] = useState(() => resolveCircleDetail(id, null, circlePreview));
   const editDetails = useBoolean();
@@ -1296,6 +1254,7 @@ export function CircleDetailView() {
   }
 
   const privacyOption = getCirclePrivacyOption(circle.privacy);
+  const circleIsSuspended = isCircleSuspended(circle.status);
   const tabs = [
     { value: 'overview', label: 'Overview' },
     { value: 'members', label: `Members · ${circle.memberCount ?? circle.members ?? circle.people?.length ?? 0}` },
@@ -1304,7 +1263,6 @@ export function CircleDetailView() {
     { value: 'drops', label: `Open drops · ${circle.openDrops?.length ?? circle.drops?.length ?? 0}` },
     { value: 'polls', label: `Polls · ${circle.polls?.length ?? 0}` },
     { value: 'reports', label: `Reports · ${reportsCount}` },
-    // { value: 'activity', label: 'Activity log' },
   ];
 
   return (
@@ -1329,17 +1287,27 @@ export function CircleDetailView() {
             >
               Edit details
             </Button>
-            <Button variant="outlined" color="error" size="small" onClick={suspend.onTrue}>
-              Suspend Circle
+            <Button
+              variant="outlined"
+              color={circleIsSuspended ? 'success' : 'error'}
+              size="small"
+              onClick={suspend.onTrue}
+            >
+              {circleIsSuspended ? 'Unsuspend Circle' : 'Suspend Circle'}
             </Button>
           </Stack>
         }
         sx={{ mb: 1 }}
       />
 
-      <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-        {`Created ${circle.createdAtFull || circle.createdAt} · Updated ${circle.updatedAtFull || circle.updatedAt}`}
-      </Typography>
+      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {`Created ${circle.createdAtFull || circle.createdAt} · Updated ${circle.updatedAtFull || circle.updatedAt}`}
+        </Typography>
+        <Label variant="soft" color={circleIsSuspended ? 'error' : 'success'}>
+          {circleIsSuspended ? 'Suspended' : 'Active'}
+        </Label>
+      </Stack>
 
       <Card sx={{ mb: 3, height: { xs: 'auto', md: 320 }, position: 'relative' }}>
         <CircleCover
@@ -1349,6 +1317,7 @@ export function CircleDetailView() {
           statusLabel={privacyOption?.label || circle.privacy || '—'}
           joiningLabel={circle.category || null}
           featured={circle.featured}
+          suspended={circleIsSuspended}
         />
 
         <Box
@@ -1416,23 +1385,27 @@ export function CircleDetailView() {
           circleId={circle._id || circle.id}
           people={circle.latestMembers || circle.people || []}
           memberCount={circle.memberCount ?? circle.members ?? 0}
-          onUpdateCircle={updateCircle}
         />
       )}
       {value === 'requests' && (
-        <RequestsPanel requests={circle.joinRequests || []} onUpdateCircle={updateCircle} />
+        <RequestsPanel requests={circle.joinRequests || []} />
       )}
       {value === 'events' && <EventsPanel events={circle.events || []} />}
       {value === 'drops' && <DropsPanel drops={circle.openDrops || circle.drops || []} />}
       {value === 'polls' && <PollsPanel polls={circle.polls || []} onUpdateCircle={updateCircle} />}
-      {value === 'reports' && <ReportsPanel resourceID={id} />}
+      {value === 'reports' && <ReportsPanel resourceID={id} resourceType="circle" />}
       {/* {value === 'activity' && <ActivityPanel items={circle.activity || []} />} */}
 
       <Dialog fullWidth maxWidth="sm" open={editDetails.value} onClose={editDetails.onFalse}>
         <DialogTitle>Edit circle details</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField fullWidth label="Name" value={editName} onChange={(event) => setEditName(event.target.value)} />
+            <TextField
+              fullWidth
+              label="Name"
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -1473,20 +1446,35 @@ export function CircleDetailView() {
       <ConfirmDialog
         open={suspend.value}
         onClose={suspend.onFalse}
-        title="Suspend Circle"
-        content="Suspending hides this Circle from search and map, and pauses discussion and events."
+        title={circleIsSuspended ? 'Unsuspend Circle' : 'Suspend Circle'}
+        content={
+          circleIsSuspended
+            ? 'Unsuspending makes this Circle visible again in search and map, and resumes discussion and events.'
+            : 'Suspending hides this Circle from search and map, and pauses discussion and events.'
+        }
         action={
           <Button
             variant="contained"
-            color="error"
-            onClick={() => {
-              updateCircle((prev) => ({ ...prev, status: 'reviewing' }));
-              suspend.onFalse();
-              toast.success('Circle suspended');
-              router.push(paths.adminDashboard.circles);
+            color={circleIsSuspended ? 'success' : 'error'}
+            disabled={isSuspendingCircle}
+            onClick={async () => {
+              try {
+                const response = await suspendCircleApi(id).unwrap();
+                const nextStatus = resolveCircleLifecycleStatus(response?.data || {});
+                if (nextStatus) {
+                  updateCircle((prev) => ({
+                    ...prev,
+                    status: nextStatus,
+                  }));
+                }
+                if (response.message) toast.success(response.message);
+                suspend.onFalse();
+              } catch (apiError) {
+                handleApiError(apiError);
+              }
             }}
           >
-            Suspend
+            {circleIsSuspended ? 'Unsuspend' : 'Suspend'}
           </Button>
         }
       />
