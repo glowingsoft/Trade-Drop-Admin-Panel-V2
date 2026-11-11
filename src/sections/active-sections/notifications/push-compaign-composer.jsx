@@ -124,13 +124,13 @@ const PushCompaignComposer = ({ title, icon }) => {
             <CardHeader title={title} avatar={<Iconify icon={icon} />} />
             <CardContent>
                 <Form methods={methods} onSubmit={onSubmit}>
-                    <Field.Text name="title" label="Title" placeholder="New taps-in waiting for you" />
+                    <Field.Text name="title" label="Title" placeholder="New drop-ins waiting for you" />
                     <Field.Text
                         name="message"
                         label="Message"
                         multiline
                         rows={4}
-                        placeholder="Your barter's waiting - 3 new taps-in this week ✦"
+                        placeholder="Your barter's waiting - 3 new drop-ins this week ✦"
                         sx={{ mt: 3 }}
                     />
                     <Field.Select
