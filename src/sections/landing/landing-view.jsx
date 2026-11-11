@@ -471,7 +471,7 @@ function Header({ light, onToggle }) {
 export function LandingView() {
   const heroRef = useRef(null);
   const [heroOn, setHeroOn] = useState(false);
-  const [light, setLight] = useState(false);
+  const [light, setLight] = useState(true);
 
   const toggleTheme = () => {
     setLight((value) => !value);
