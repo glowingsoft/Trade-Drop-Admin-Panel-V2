@@ -64,7 +64,7 @@ export function OverviewAppView() {
 
         <Grid item xs={12} md={3}>
           <CourseWidgetSummary
-            title="Taps In Sent"
+            title="Drop In Sent"
             total={dashboard.cards.tapInsSent}
             color="primary"
             icon={`${CONFIG.site.basePath}/assets/icons/navbar/ic-tab.svg`}

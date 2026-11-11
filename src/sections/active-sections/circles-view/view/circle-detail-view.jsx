@@ -30,10 +30,8 @@ import { EmptyContent } from 'src/components/empty-content';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 import { LoadingScreen } from 'src/components/loading-screen';
-import { Map, MapControl, MapMarker } from 'src/components/map';
 import { TableHeadCustom } from 'src/components/table';
 import { toast } from 'src/components/snackbar';
-import { CONFIG } from 'src/config-global';
 import { getDisplayImage } from 'src/constants/upload';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useTabs } from 'src/hooks/use-tabs';
@@ -49,6 +47,7 @@ import { useGetReportsQuery } from 'src/store/Reducer/reports-api';
 import { varAlpha } from 'src/theme/styles';
 import { exportToCsv } from 'src/utils/export-to-csv';
 import { handleApiError } from 'src/utils/errorHandler';
+import { getGoogleMapsApiKey } from 'src/utils/google-maps';
 
 import { useLocation } from 'react-router-dom';
 
@@ -245,128 +244,51 @@ function CircleCover({ name, avatarUrl, homeArea, statusLabel, joiningLabel, fea
   );
 }
 
-function osmEmbedSrc(latitude, longitude, zoomDelta = 0.03) {
-  const west = longitude - zoomDelta;
-  const south = latitude - zoomDelta;
-  const east = longitude + zoomDelta;
-  const north = latitude + zoomDelta;
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${west}%2C${south}%2C${east}%2C${north}&layer=mapnik`;
+function googleMapEmbedSrc(latitude, longitude) {
+  const apiKey = getGoogleMapsApiKey();
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  if (!apiKey || !Number.isFinite(lat) || !Number.isFinite(lng)) return '';
+  return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${lat},${lng}&zoom=14`;
 }
 
-function ApproximateAreaOverlay({ size = 72 }) {
-  return (
-    <Box
-      sx={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        zIndex: 2,
-        pointerEvents: 'none',
-        transform: 'translate(-50%, -50%)',
-        border: (theme) => `dashed 2px ${theme.vars.palette.primary.main}`,
-        bgcolor: (theme) => varAlpha(theme.vars.palette.primary.mainChannel, 0.12),
-      }}
-    />
-  );
-}
+function CircleMapCanvas({ latitude, longitude, height = 160 }) {
+  const src = googleMapEmbedSrc(latitude, longitude);
 
-function MapZoomControls({ onZoomIn, onZoomOut }) {
-  return (
-    <Stack
-      spacing={0.5}
-      sx={{
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        zIndex: 3,
-        bgcolor: 'background.paper',
-        borderRadius: 1,
-        border: (theme) => `1px solid ${theme.vars.palette.divider}`,
-        boxShadow: (theme) => theme.customShadows?.z8 || theme.shadows[2],
-      }}
-    >
-      <IconButton size="small" onClick={onZoomIn} aria-label="Zoom in">
-        <Iconify icon="mingcute:add-line" width={18} />
-      </IconButton>
-      <Box sx={{ borderTop: (theme) => `1px solid ${theme.vars.palette.divider}` }} />
-      <IconButton size="small" onClick={onZoomOut} aria-label="Zoom out">
-        <Iconify icon="mingcute:minimize-line" width={18} />
-      </IconButton>
-    </Stack>
-  );
-}
-
-function CircleMapCanvas({ latitude, longitude, height = 160, interactive = false, onMapClick }) {
-  const hasMapbox = Boolean(CONFIG.mapbox.apiKey);
-  const [viewState, setViewState] = useState({
-    latitude,
-    longitude,
-    zoom: interactive ? 12.5 : 12,
-  });
-  const [zoomDelta, setZoomDelta] = useState(0.03);
-
-  useEffect(() => {
-    setViewState((prev) => ({
-      ...prev,
-      latitude,
-      longitude,
-    }));
-  }, [latitude, longitude]);
-
-  if (hasMapbox) {
+  if (!src) {
     return (
-      <Box sx={{ height, borderRadius: 1.5, overflow: 'hidden', position: 'relative' }}>
-        <Map
-          {...viewState}
-          onMove={(event) => setViewState(event.viewState)}
-          mapStyle="mapbox://styles/mapbox/light-v10"
-          onClick={
-            interactive
-              ? (event) => onMapClick?.({ latitude: event.lngLat.lat, longitude: event.lngLat.lng })
-              : undefined
-          }
-          style={{ width: '100%', height: '100%' }}
-        >
-          <MapControl hideGeolocate={!interactive} hideScale />
-          <MapMarker
-            latitude={latitude}
-            longitude={longitude}
-            draggable={interactive}
-            onDragEnd={
-              interactive
-                ? (event) => onMapClick?.({ latitude: event.lngLat.lat, longitude: event.lngLat.lng })
-                : undefined
-            }
-          />
-        </Map>
-        <ApproximateAreaOverlay size={interactive ? 110 : 72} />
+      <Box
+        sx={{
+          height,
+          borderRadius: 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'background.neutral',
+        }}
+      >
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          Google Maps key missing
+        </Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ height, borderRadius: 1.5, overflow: 'hidden', position: 'relative', bgcolor: 'background.neutral' }}>
+    <Box sx={{ height, borderRadius: 1.5, overflow: 'hidden', position: 'relative' }}>
       <Box
         component="iframe"
-        title="Circle map area"
-        src={osmEmbedSrc(latitude, longitude, zoomDelta)}
+        title="Circle map location"
+        src={src}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
         sx={{
           border: 0,
           width: 1,
-          height: 'calc(100% + 56px)',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          pointerEvents: interactive ? 'auto' : 'none',
+          height: 1,
+          display: 'block',
         }}
-      />
-      <ApproximateAreaOverlay size={interactive ? 110 : 72} />
-      <MapZoomControls
-        onZoomIn={() => setZoomDelta((value) => Math.max(0.005, Number((value * 0.65).toFixed(4))))}
-        onZoomOut={() => setZoomDelta((value) => Math.min(0.2, Number((value / 0.65).toFixed(4))))}
       />
     </Box>
   );

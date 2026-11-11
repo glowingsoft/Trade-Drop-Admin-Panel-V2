@@ -45,7 +45,7 @@ const TABS = [
   },
   {
     value: 'tapHistory',
-    label: 'Tap History',
+    label: 'Drop In History',
     icon: 'fluent:cursor-click-20-filled',
   },
   {

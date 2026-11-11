@@ -6,31 +6,34 @@ export function getGoogleMapsApiKey() {
   return CONFIG.googleMaps?.apiKey || '';
 }
 
-export function loadGoogleMapsPlaces() {
+export function loadGoogleMaps(libraries = ['places']) {
   const apiKey = getGoogleMapsApiKey();
   if (!apiKey) {
     return Promise.reject(new Error('Missing Google Maps API key'));
   }
 
-  if (window.google?.maps?.places) {
+  if (window.google?.maps) {
     return Promise.resolve(window.google);
   }
 
   if (loadPromise) return loadPromise;
 
+  const libs = Array.isArray(libraries) ? libraries.filter(Boolean).join(',') : String(libraries || '');
+
   loadPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[data-google-maps-places="true"]');
+    const existing = document.querySelector('script[data-google-maps="true"]');
     if (existing) {
       existing.addEventListener('load', () => resolve(window.google));
       existing.addEventListener('error', () => reject(new Error('Failed to load Google Maps')));
+      if (window.google?.maps) resolve(window.google);
       return;
     }
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}${libs ? `&libraries=${libs}` : ''}`;
     script.async = true;
     script.defer = true;
-    script.dataset.googleMapsPlaces = 'true';
+    script.dataset.googleMaps = 'true';
     script.onload = () => resolve(window.google);
     script.onerror = () => {
       loadPromise = null;
@@ -40,6 +43,10 @@ export function loadGoogleMapsPlaces() {
   });
 
   return loadPromise;
+}
+
+export function loadGoogleMapsPlaces() {
+  return loadGoogleMaps(['places']);
 }
 
 export function searchGooglePlaces(input) {
