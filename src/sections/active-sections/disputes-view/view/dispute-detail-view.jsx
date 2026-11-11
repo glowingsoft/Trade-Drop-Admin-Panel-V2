@@ -347,7 +347,7 @@ export function DisputeDetailView() {
                 >
                   <Fact label="Need" value={dispute.tradeNeed} />
                   <Fact label="Offer" value={dispute.tradeOffer} />
-                  <Fact label="Tap-in" value={dispute.tradeTapIn} />
+                  <Fact label="Drop-in" value={dispute.tradeTapIn} />
                   <Fact label="Area" value={dispute.tradeArea} />
                 </Stack>
               </CardContent>

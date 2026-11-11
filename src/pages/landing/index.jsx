@@ -7,7 +7,7 @@ import { LandingView } from 'src/sections/landing/landing-view';
 const metadata = {
   title: `TradeDrop - ${CONFIG.site.name}`,
   description:
-    'TradeDrop is a private barter for photographers, stylists, and the people who make the work. Post a drop. Tap in. Trade the craft.',
+    'TradeDrop is a private barter for photographers, stylists, and the people who make the work. Post a drop. Drop in. Trade the craft.',
 };
 
 export default function Page() {

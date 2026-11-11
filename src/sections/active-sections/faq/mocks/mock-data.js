@@ -1,7 +1,7 @@
 export const DUMMYDATA = [
   {
     id: 1,
-    question: 'How does Tap In work?',
+    question: 'How does Drop In work?',
     answer:
       "Send a structured counter-offer on someone's drop. Chat unlocks once they accept.",
   },

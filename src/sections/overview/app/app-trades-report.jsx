@@ -14,7 +14,7 @@ import { DashboardNoData } from './dashboard-no-data';
 // ----------------------------------------------------------------------
 
 const STATS = [
-  { key: 'tapsIn', label: 'Taps in' },
+  { key: 'tapsIn', label: 'Drop in' },
   { key: 'tradesStarted', label: 'Trades started' },
   { key: 'completed', label: 'Completed' },
   { key: 'completionRate', label: 'Completion rate', isPercent: true },
