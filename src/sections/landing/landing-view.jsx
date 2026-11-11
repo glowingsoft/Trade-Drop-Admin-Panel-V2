@@ -146,7 +146,7 @@ const PRODUCT = [
     wide: true,
   },
   {
-    title: 'The tap',
+    title: 'The drop-in',
     text: 'A counter-offer with terms. Chat does not open because someone liked the idea. It opens because you accepted.',
   },
   {
@@ -232,20 +232,20 @@ const EVENTS = [
 
 const COMPARE = [
   { label: 'What you pay', theirs: 'A cut, or nothing but “exposure”', ours: 'Nothing. The trade is the payment.' },
-  { label: 'How you meet', theirs: 'A DM with no terms', ours: 'A drop, then a tap, then a yes.' },
+  { label: 'How you meet', theirs: 'A DM with no terms', ours: 'A drop, then a drop-in, then a yes.' },
   { label: 'Who sees the room', theirs: 'Everyone, always', ours: 'Public, or private until you open it.' },
   { label: 'What counts', theirs: 'Followers', ours: 'Trades that actually closed.' },
 ];
 
 const NOTES = [
   { name: 'Amira Cole', role: 'Stylist, New York', quote: 'I had the studio until six. I needed color. We did not talk about a rate.' },
-  { name: 'Jules Adeyemi', role: 'Colorist, Toronto', quote: 'The tap said what I would give and what I wanted back. That was enough to say yes.' },
+  { name: 'Jules Adeyemi', role: 'Colorist, Toronto', quote: 'The drop-in said what I would give and what I wanted back. That was enough to say yes.' },
 ];
 
 const QUESTIONS = [
   { q: 'Is TradeDrop free to use?', a: 'Yes. There is no fee on a trade and no checkout. You exchange the work.' },
   { q: 'What goes on a drop?', a: 'Two lines that matter: what you need, and what you offer. City and craft sit beside them.' },
-  { q: 'When can we message?', a: 'After the drop owner accepts the tap. Before that, the offer stays on the board.' },
+  { q: 'When can we message?', a: 'After the drop owner accepts the drop-in. Before that, the offer stays on the board.' },
   { q: 'Can a circle stay hidden?', a: 'Yes. Private circles are not listed. Flagged circles wait for review before they are discoverable.' },
   { q: 'Who can host an event?', a: 'A member, or the circle. It is a date in a city, not another post in a feed.' },
   { q: 'Do I give up my clients?', a: 'No. A trade is one day. The next paid job is still yours.' },
@@ -846,7 +846,7 @@ export function LandingView() {
                   <Title>Drops that are actually specific.</Title>
                 </Box>
                 <Typography sx={{ maxWidth: 360, color: muted, fontFamily: mono, fontSize: 14, lineHeight: 1.7, alignSelf: { md: 'end' } }}>
-                  A useful drop can be answered in one tap. Vague posts do not survive here.
+                  A useful drop can be answered in one drop-in. Vague posts do not survive here.
                 </Typography>
               </Stack>
             </Reveal>
@@ -1182,7 +1182,7 @@ export function LandingView() {
               Post the need. Name the offer.
             </Typography>
             <Typography sx={{ mt: 2, maxWidth: 520, color: 'rgba(245,232,200,0.88)', fontFamily: mono, fontSize: '14px', lineHeight: 1.7 }}>
-              A drop is both halves. A tap is the yes. Circles and events are where the work meets.
+              A drop is both halves. A drop-in is the yes. Circles and events are where the work meets.
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 4 }}>
               <Button
