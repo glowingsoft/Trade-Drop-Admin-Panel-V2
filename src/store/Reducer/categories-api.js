@@ -44,7 +44,7 @@ export const categoriesApi = createApi({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['category'],
+      invalidatesTags: (result, error, { id }) => [{ type: 'category', id }, 'category'],
     }),
 
     getTimingChips: builder.query({

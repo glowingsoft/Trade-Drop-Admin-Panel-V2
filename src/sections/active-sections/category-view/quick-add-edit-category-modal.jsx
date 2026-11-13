@@ -30,6 +30,8 @@ import {
   useUpdateCategoryMutation,
 } from 'src/store/Reducer/categories-api';
 
+import { getCategoryInterests } from './map-category';
+
 const toSlug = (value) =>
   String(value || '')
     .trim()
@@ -52,7 +54,6 @@ const schema = zod.object({
     .string()
     .transform((value) => toSlug(value))
     .pipe(zod.string().min(1, 'Slug is required')),
-  chipGroup: zod.string().trim().min(1, 'Chip group is required'),
   sortOrder: zod.coerce.number({ invalid_type_error: 'Sort order is required' }).int().min(1, {
     message: 'Sort order must be at least 1',
   }),
@@ -81,7 +82,6 @@ const QuickAddEditCategoryModal = ({ currentCategory, open, onClose }) => {
       image: currentCategory?.image || '',
       name: currentCategory?.name || '',
       slug: currentCategory?.slug || toSlug(currentCategory?.name || ''),
-      chipGroup: currentCategory?.chipGroup || '',
       sortOrder: currentCategory?.sortOrder ?? '',
       status: currentCategory?.active === false ? 'inactive' : 'active',
     }),
@@ -129,7 +129,6 @@ const QuickAddEditCategoryModal = ({ currentCategory, open, onClose }) => {
       const nextValues = {
         slug: data.slug,
         name: data.name.trim(),
-        chipGroup: data.chipGroup.trim(),
         image,
         sortOrder: Number(data.sortOrder),
         status: data.status === 'inactive' ? 'inactive' : 'active',
@@ -141,7 +140,6 @@ const QuickAddEditCategoryModal = ({ currentCategory, open, onClose }) => {
         const previousValues = {
           slug: currentCategory.slug || '',
           name: (currentCategory.name || '').trim(),
-          chipGroup: (currentCategory.chipGroup || '').trim(),
           image: toImagePublicId(currentCategory.image),
           sortOrder: Number(currentCategory.sortOrder),
           status: currentCategory.active === false ? 'inactive' : 'active',
@@ -159,7 +157,10 @@ const QuickAddEditCategoryModal = ({ currentCategory, open, onClose }) => {
         response = await updateCategory({ id: currentCategory._id, ...payload }).unwrap();
       } else {
         const { status, ...payload } = nextValues;
-        response = await addCategory(payload).unwrap();
+        response = await addCategory({
+          ...payload,
+          intrests: getCategoryInterests(currentCategory),
+        }).unwrap();
       }
 
       if (response.message) toast.success(response.message);
@@ -172,7 +173,7 @@ const QuickAddEditCategoryModal = ({ currentCategory, open, onClose }) => {
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <Form methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ textAlign: "center" }}>
+        <DialogTitle sx={{ textAlign: 'center' }}>
           {currentCategory ? 'Edit Category' : 'Add Category'}
         </DialogTitle>
         <DialogContent>
@@ -181,12 +182,10 @@ const QuickAddEditCategoryModal = ({ currentCategory, open, onClose }) => {
           <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Field.Text name="name" label="Name" />
             <Field.Text name="slug" label="Slug" />
-            <Field.Text name="chipGroup" label="Chip Group" />
             <Field.Text name="sortOrder" label="Sort Order" type="number" />
 
             {currentCategory ? (
               <Field.Select name="status" label="Status">
-                {/* <MenuItem value="">Status</MenuItem> */}
                 <Divider sx={{ borderStyle: 'dashed' }} />
                 {WALLET_STATUS_OPTIONS.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
