@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -50,12 +51,27 @@ const parseTagInput = (value) =>
 const chipSx = {
   height: 32,
   borderRadius: 1,
-  bgcolor: (theme) => varAlpha(theme.vars.palette.primary.mainChannel, 0.12),
+  bgcolor: (theme) => varAlpha(theme.vars.palette.primary.mainChannel, 0.16),
   color: 'text.primary',
   fontWeight: 600,
+  transition: 'background-color 120ms ease, color 120ms ease',
+  '&:hover': {
+    bgcolor: 'grey.700',
+    color: 'common.white',
+    '& .MuiChip-deleteIcon': {
+      color: 'common.white',
+      opacity: 1,
+    },
+  },
   '& .MuiChip-deleteIcon': {
-    color: 'text.secondary',
+    color: 'text.primary',
+    opacity: 0.72,
     fontSize: 18,
+    transition: 'opacity 120ms ease, color 120ms ease',
+    '&:hover': {
+      opacity: 1,
+      color: 'error.light',
+    },
   },
 };
 
@@ -67,12 +83,43 @@ const previewChipSx = {
   fontWeight: 600,
 };
 
-function TagsComposer({ categoryName, items, draft, setDraft, onAdd, onRemove, inputRef, saving }) {
+function TagsComposer({
+  categoryName,
+  items,
+  draft,
+  setDraft,
+  onAdd,
+  onRemove,
+  onCancelEdit,
+  editingValue,
+  inputRef,
+  saving,
+}) {
+  const isEditing = Boolean(editingValue);
+
   return (
     <Card sx={{ p: { xs: 2, md: 2.5 }, mb: 3 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        {`Add tags to ${categoryName}`}
-      </Typography>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ sm: 'center' }}
+        justifyContent="space-between"
+        spacing={1}
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="h6">
+          {isEditing ? `Edit tag in ${categoryName}` : `Add tags to ${categoryName}`}
+        </Typography>
+        {isEditing ? (
+          <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
+            <Label variant="soft" color="warning">
+              {`Editing: ${editingValue}`}
+            </Label>
+            <Button size="small" color="inherit" disabled={saving} onClick={onCancelEdit}>
+              Cancel
+            </Button>
+          </Stack>
+        ) : null}
+      </Stack>
 
       <Box
         sx={{
@@ -80,68 +127,96 @@ function TagsComposer({ categoryName, items, draft, setDraft, onAdd, onRemove, i
           px: 1.5,
           py: 1.25,
           borderRadius: 1.5,
-          border: (theme) => `1px solid ${theme.vars.palette.divider}`,
+          border: (theme) =>
+            `1px solid ${isEditing ? theme.vars.palette.warning.main : theme.vars.palette.divider}`,
+          boxShadow: (theme) =>
+            isEditing ? `inset 0 0 0 1px ${varAlpha(theme.vars.palette.warning.mainChannel, 0.24)}` : 'none',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: 1,
-          bgcolor: 'background.paper',
+          bgcolor: (theme) =>
+            isEditing ? varAlpha(theme.vars.palette.warning.mainChannel, 0.04) : 'background.paper',
         }}
         onClick={() => inputRef.current?.focus()}
       >
-        {items.map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            onDelete={
-              saving
-                ? undefined
-                : (event) => {
-                    event?.stopPropagation?.();
-                    onRemove(item);
-                  }
-            }
-            onClick={(event) => event.stopPropagation()}
-            sx={chipSx}
-          />
-        ))}
+        {items.map((item) => {
+          const isActiveEdit = isEditing && item === editingValue;
+          return (
+            <Chip
+              key={item}
+              label={item}
+              deleteIcon={<Iconify icon="mingcute:close-line" width={16} />}
+              onDelete={
+                saving
+                  ? undefined
+                  : (event) => {
+                      event?.stopPropagation?.();
+                      onRemove(item);
+                    }
+              }
+              onClick={(event) => event.stopPropagation()}
+              sx={{
+                ...chipSx,
+                ...(isActiveEdit && {
+                  bgcolor: (theme) => varAlpha(theme.vars.palette.warning.mainChannel, 0.2),
+                  outline: (theme) => `1px solid ${theme.vars.palette.warning.main}`,
+                }),
+              }}
+            />
+          );
+        })}
         <TextField
           inputRef={inputRef}
           value={draft}
           disabled={saving}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ',') {
+            if (event.key === 'Escape' && isEditing) {
+              event.preventDefault();
+              onCancelEdit();
+              return;
+            }
+            if (event.key === 'Enter' || (!isEditing && event.key === ',')) {
               event.preventDefault();
               onAdd(draft);
             }
           }}
           onPaste={(event) => {
+            if (isEditing) return;
             const text = event.clipboardData.getData('text');
             if (text.includes(',') || text.includes('\n')) {
               event.preventDefault();
               onAdd(text);
             }
           }}
-          placeholder={items.length ? 'Type another tag, press Enter...' : 'Type a tag, press Enter...'}
+          placeholder={
+            isEditing
+              ? 'Update tag name, press Enter to save...'
+              : items.length
+                ? 'Type another tag, press Enter...'
+                : 'Type a tag, press Enter...'
+          }
           variant="standard"
           InputProps={{ disableUnderline: true }}
           sx={{
             flex: 1,
             minWidth: 180,
-            '& .MuiInputBase-input': { py: 0.75, typography: 'body2' },
+            '& .MuiInputBase-input': { py: 0.75, typography: 'body2', fontWeight: isEditing ? 600 : 400 },
           }}
         />
       </Box>
 
       <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: 'text.secondary' }}>
-        Press Enter or type a comma to add. Paste several tags at once. Duplicates are ignored.
+        {isEditing
+          ? 'Change the name above and press Enter to save. Press Esc or Cancel to stop editing.'
+          : 'Press Enter or type a comma to add. Paste several tags at once. Duplicates are ignored.'}
       </Typography>
     </Card>
   );
 }
 
-function TagsTable({ categoryName, items, categoryActive, onEdit, onRemove, saving }) {
+function TagsTable({ categoryName, items, categoryActive, editingValue, onEdit, onRemove, saving }) {
   return (
     <Card sx={{ p: { xs: 2, md: 2.5 }, height: 1 }}>
       <Stack
@@ -158,8 +233,14 @@ function TagsTable({ categoryName, items, categoryActive, onEdit, onRemove, savi
       </Stack>
 
       {items.length ? (
-        <Box sx={{ overflowX: 'auto' }}>
-          <Table size="medium" sx={{ minWidth: 520 }}>
+        <Box
+          sx={{
+            maxHeight: 360,
+            overflowY: 'auto',
+            overflowX: 'auto',
+          }}
+        >
+          <Table size="medium" stickyHeader sx={{ minWidth: 520 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Tag</TableCell>
@@ -170,47 +251,75 @@ function TagsTable({ categoryName, items, categoryActive, onEdit, onRemove, savi
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((item) => (
-                <TableRow key={item} hover>
-                  <TableCell>
-                    <Typography variant="subtitle2">{item}</Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {toTagSlug(item) || '—'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Label variant="soft" color={categoryActive ? 'success' : 'error'}>
-                      {categoryActive ? 'Active' : 'Inactive'}
-                    </Label>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                      <Tooltip title="Edit">
-                        <span>
-                          <IconButton size="small" disabled={saving} onClick={() => onEdit(item)}>
-                            <Iconify icon="solar:pen-bold" width={18} />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <span>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            disabled={saving}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onRemove(item);
-                            }}
-                          >
-                            <Iconify icon="solar:trash-bin-trash-bold" width={18} />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {items.map((item) => {
+                const isActiveEdit = Boolean(editingValue) && item === editingValue;
+                return (
+                  <TableRow
+                    key={item}
+                    hover
+                    selected={isActiveEdit}
+                    sx={
+                      isActiveEdit
+                        ? {
+                            bgcolor: (theme) => varAlpha(theme.vars.palette.warning.mainChannel, 0.08),
+                          }
+                        : undefined
+                    }
+                  >
+                    <TableCell>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Box>
+                          <Typography variant="subtitle2">{item}</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            {toTagSlug(item) || '—'}
+                          </Typography>
+                        </Box>
+                        {isActiveEdit ? (
+                          <Label variant="soft" color="warning">
+                            Editing
+                          </Label>
+                        ) : null}
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Label variant="soft" color={categoryActive ? 'success' : 'error'}>
+                        {categoryActive ? 'Active' : 'Inactive'}
+                      </Label>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                        <Tooltip title="Edit">
+                          <span>
+                            <IconButton
+                              size="small"
+                              color={isActiveEdit ? 'warning' : 'default'}
+                              disabled={saving}
+                              onClick={() => onEdit(item)}
+                            >
+                              <Iconify icon="solar:pen-bold" width={18} />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              disabled={saving}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onRemove(item);
+                              }}
+                            >
+                              <Iconify icon="solar:trash-bin-trash-bold" width={18} />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Box>
@@ -387,7 +496,15 @@ export function CategoryDetailView() {
   const handleEdit = (item) => {
     setEditingValue(item);
     setDraft(item);
-    inputRef.current?.focus();
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select?.();
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingValue(null);
+    setDraft('');
   };
 
   const handleRemove = async (item) => {
@@ -447,6 +564,8 @@ export function CategoryDetailView() {
         setDraft={setDraft}
         onAdd={handleAdd}
         onRemove={handleRemove}
+        onCancelEdit={handleCancelEdit}
+        editingValue={editingValue}
         inputRef={inputRef}
         saving={saving}
       />
@@ -463,6 +582,7 @@ export function CategoryDetailView() {
           categoryName={categoryName}
           items={items}
           categoryActive={categoryActive}
+          editingValue={editingValue}
           onEdit={handleEdit}
           onRemove={handleRemove}
           saving={saving}

@@ -52,9 +52,9 @@ const TABLE_HEAD = [
   { id: 'icon', label: 'Icon' },
   { id: 'name', label: 'Name' },
   { id: 'slug', label: 'Slug' },
-  { id: 'interests', label: 'Interests' },
-  { id: 'sortOrder', label: 'Sort Order' },
-  { id: 'status', label: 'Status' },
+  { id: 'interests', label: 'Interests', width: 220 },
+  { id: 'sortOrder', label: 'Sort Order', width: 110 },
+  { id: 'status', label: 'Status', width: 110 },
   { id: 'actions', label: 'Actions', width: 100 },
 ];
 
