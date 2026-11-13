@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { Avatar } from '@mui/material';
 
@@ -17,6 +18,7 @@ export function CategoryTableRow({ row, serialNumber, onEditRow }) {
   const navigate = useNavigate();
   const status = row.active === false ? 'inactive' : 'active';
   const interests = getCategoryInterests(row);
+  const interestsLabel = interests.length ? interests.join(', ') : '—';
   const categoryId = row._id || row.id;
 
   const handleOpenDetails = () => {
@@ -54,8 +56,21 @@ export function CategoryTableRow({ row, serialNumber, onEditRow }) {
 
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.slug || '—'}</TableCell>
 
-      <TableCell sx={{ whiteSpace: 'nowrap', maxWidth: 260 }}>
-        {interests.length ? interests.join(', ') : '—'}
+      <TableCell sx={{ maxWidth: 220, width: 220 }}>
+        <Tooltip title={interests.length ? interestsLabel : ''} placement="top-start">
+          <Typography
+            variant="body2"
+            noWrap
+            sx={{
+              maxWidth: 220,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {interestsLabel}
+          </Typography>
+        </Tooltip>
       </TableCell>
 
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.sortOrder ?? '—'}</TableCell>
