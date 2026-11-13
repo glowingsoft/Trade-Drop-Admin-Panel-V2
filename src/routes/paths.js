@@ -202,6 +202,7 @@ export const paths = {
     events: `${ROOTS.ADMIN_DASHBOARD}/events`,
     eventDetails: (id) => `${ROOTS.ADMIN_DASHBOARD}/events/${id}`,
     categories: `${ROOTS.ADMIN_DASHBOARD}/categories`,
+    categoryDetails: (id) => `${ROOTS.ADMIN_DASHBOARD}/categories/${id}`,
     timingChips: `${ROOTS.ADMIN_DASHBOARD}/timing-chips`,
     badges: `${ROOTS.ADMIN_DASHBOARD}/badges`,
     disputes: `${ROOTS.ADMIN_DASHBOARD}/disputes`,

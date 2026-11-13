@@ -69,7 +69,7 @@ export const navDataAdmin = [
       { title: "Circles", path: paths.adminDashboard.circles, icon: ICONS.chat, deepMatch: true },
       { title: "Events", path: paths.adminDashboard.events, icon: ICONS.calendar, deepMatch: true },
       { title: "Drops", path: paths.adminDashboard.drops, icon: ICONS.request },
-      { title: "Category", path: paths.adminDashboard.categories, icon: ICONS.category },
+      { title: "Category", path: paths.adminDashboard.categories, icon: ICONS.category, deepMatch: true },
       { title: "Timing chips", path: paths.adminDashboard.timingChips, icon: ICONS.timingChips },
       { title: "Badges", path: paths.adminDashboard.badges, icon: ICONS.badges },
       { title: "Disputes", path: paths.adminDashboard.disputes, icon: ICONS.disputes, deepMatch: true },
