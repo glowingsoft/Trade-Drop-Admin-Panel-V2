@@ -430,7 +430,11 @@ function OverviewPanel({ circle, area }) {
         ? 'Suspended'
         : statusOption?.label || circle.status || 'Active',
     },
-    { label: 'Cover image', value: circle.coverImage || circle.image || '—' },
+    {
+      label: 'Cover image',
+      type: 'image',
+      value: circle.coverImage || circle.image || '',
+    },
     { label: 'City', value: circle.city || area?.homeArea || '—' },
     { label: 'Privacy', value: privacyOption?.label || circle.privacy || '—' },
     { label: 'Location type', value: circle.locationRaw?.type || '—' },
@@ -467,9 +471,31 @@ function OverviewPanel({ circle, area }) {
               <Typography variant="overline" sx={{ color: 'text.disabled' }}>
                 {fact.label}
               </Typography>
-              <Typography variant="subtitle2" sx={{ wordBreak: 'break-word' }}>
-                {fact.value}
-              </Typography>
+              {fact.type === 'image' ? (
+                fact.value ? (
+                  <Box
+                    component="img"
+                    alt="Cover"
+                    src={getDisplayImage(fact.value)}
+                    sx={{
+                      mt: 0.5,
+                      width: 72,
+                      height: 72,
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                      border: (theme) => `1px solid ${theme.vars.palette.divider}`,
+                      display: 'block',
+                      bgcolor: 'background.neutral',
+                    }}
+                  />
+                ) : (
+                  <Typography variant="subtitle2">—</Typography>
+                )
+              ) : (
+                <Typography variant="subtitle2" sx={{ wordBreak: 'break-word' }}>
+                  {fact.value}
+                </Typography>
+              )}
             </Box>
           ))}
         </Box>
